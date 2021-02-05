@@ -14,11 +14,13 @@ x2 = np.array([1, 1, 1])
 vector = x2-x1
 print(vector)
 
+#Scientific constants
 h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
+#Function calculating scatter angle from initial and final energy (Joules)
 def compton_angle(E_initial, E_final):
     E_initial = E_initial*e
     E_final = E_final*e
