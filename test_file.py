@@ -28,3 +28,9 @@ def compton_angle(E_initial, E_final):
     final = h*c/E_final
     angle = np.arccos(1 - (m_e*c/h)*(final-initial))
     return angle
+
+#Calculating error on scatter angle
+def angle_err(err_initial, err_final):
+    denom = np.sqrt(1-(1-m_e*c/h)**2)
+    err_angle = np.sqrt((err_initial*denom)+(err_final*denom))
+    return err_angle
