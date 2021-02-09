@@ -76,21 +76,22 @@ def phi_angle(N):
     else:
         return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
 
-def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps):
+def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1):
     a = np.tan(alpha)
     
     x_prime_vals = []
     y_prime_vals = []
     
+    z_prime = z_prime - r1[2]
     for i in np.linspace(0, 2*np.pi, steps): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
 
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi))
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
 
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
-                     np.cos(phi)*np.sin(theta)) 
+                     np.cos(phi)*np.sin(theta)) + r1[0]
         
         y_prime_vals.append(y_prime)
     
@@ -154,12 +155,13 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     plt.show()
     return figure
 
-r1 = np.array([0.5, 0, 0])
-r2 = np.array([0.5, 0, -1])
+
+r1 = np.array([0, 0, -1])
+r2 = np.array([0, 1, -10])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
-x, y =x_prime_y_prime_output(1, theta, phi, alpha=np.pi/8, steps=180)
+x, y = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1)
 # print(x, y)
 plot_it(x, ys=np.array([y]), y_labels=np.array(['Cone intersection on plane']), individual_points=True)
 # test change
