@@ -7,8 +7,9 @@ Created on Wed Feb  3 13:34:21 2021
 
 import numpy as np
 import scipy.constants
-import sympy as sym
-from sym import symbols, function, acos
+import sympy
+from sympy import symbols, Function, acos
+import math
 
 x1 = np.array([0, 0, 0])
 x2 = np.array([1, 1, 1])
@@ -49,22 +50,23 @@ def theta(x, x0, y, y0, z, z0):
 
 def theta_err(xval, yval, zval, x0val, y0val, z0val, dx, dx0, dy, dy0, dz, dz0):
     '''Finding error on the calculated value of theta'''
-    x,y,z,x0,y0,z0 = sym.symbols('x y z x0 y0 z0')
-    f = sym.Function('f')
-    f = acos((z-z0)/sym.sqrt((x-x0)**2+(y-y0)**2+(z-z0)**2))
-    div_x = sym.diff(f,x)
-    div_y = sym.diff(f,y)
-    div_z = sym.diff(f,z)
-    div_x0 = sym.diff(f,x0)
-    div_y0 = sym.diff(f,y0)
-    div_z0 = sym.diff(f,z0)
+    x,y,z,x0,y0,z0 = sympy.symbols('x y z x0 y0 z0')
+    f = sympy.Function('f')
+    f = acos((z-z0)/sympy.sqrt((x-x0)**2+(y-y0)**2+(z-z0)**2))
+    div_x = sympy.diff(f,x)
+    div_y = sympy.diff(f,y)
+    div_z = sympy.diff(f,z)
+    div_x0 = sympy.diff(f,x0)
+    div_y0 = sympy.diff(f,y0)
+    div_z0 = sympy.diff(f,z0)
     dee_x = div_x.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     dee_y = div_y.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     dee_z = div_z.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     dee_x0 = div_x0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     dee_y0 = div_y0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     dee_z0 = div_z0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
-    f_error = np.sqrt((dee_x*dx)**2+(dee_y*dy)**2+(dee_z*dz)**2+
+    f_error = math.sqrt((dee_x*dx)**2+(dee_y*dy)**2+(dee_z*dz)**2+
                       (dee_x0*dx0)**2+(dee_y0*dy0)**2+(dee_z0*dz0)**2)
     return f_error
-    
+
+theta_err(0,0,0,2,2,2,0.2,0.2,0.2,0.2,0.2,0.2)
