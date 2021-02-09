@@ -71,8 +71,10 @@ def phi_angle(N):
     phi
 
     '''
-    
-    return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    if N[0] == 0:
+        return 0
+    else:
+        return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1):
     a = np.tan(alpha)
@@ -151,6 +153,7 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     plt.grid(True)
     plt.show()
     return figure
+
 
 plot_it(x=np.linspace(0, 10, 11), ys=np.array([np.linspace(0, 10, 11)]), y_labels=np.array(['y=x']))
 
