@@ -7,7 +7,8 @@ Created on Wed Feb  3 13:34:21 2021
 
 import numpy as np
 import scipy.constants
-
+from sympy import *
+import sympy as sym
 
 x1 = np.array([0, 0, 0])
 x2 = np.array([1, 1, 1])
@@ -45,3 +46,24 @@ def theta(x, x0, y, y0, z, z0):
     denom = np.sqrt((diff_x)**2+(diff_y)**2+(diff_z)**2)
     theta = np.arccos(diff_z*denom)
     return theta
+
+def theta_err(xval, yval, zval, x0val, y0val, z0val, dx, dx0, dy, dy0, dz, dz0):
+    '''Finding error on the calculated value of theta'''
+    x,y,z,x0,y0,z0 = sym.symbols('x y z x0 y0 z0')
+    f = np.arccos((z-z0)/np.sqrt((x-x0)**2+(y-y0)**2+(z-z0)**2))
+    div_x = sym.diff(f,x)
+    div_y = diff(f,y)
+    div_z = diff(f,z)
+    div_x0 = diff(f,x0)
+    div_y0 = diff(f,y0)
+    div_z0 = diff(f,z0)
+    dee_x = div_x.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    dee_y = div_y.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    dee_z = div_z.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    dee_x0 = div_x0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    dee_y0 = div_y0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    dee_z0 = div_z0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
+    f_error = np.sqrt((dee_x*dx)**2+(dee_y*dy)**2+(dee_z*dz)**2+
+                      (dee_x0*dx0)**2+(dee_y0*dy0)**2+(dee_z0*dz0)**2)
+    
+    
