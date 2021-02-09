@@ -65,5 +65,6 @@ def theta_err(xval, yval, zval, x0val, y0val, z0val, dx, dx0, dy, dy0, dz, dz0):
     dee_z0 = div_z0.evalf(subs={x:xval,x0:x0val,y:yval,y0:y0val,z:zval,z0:z0val})
     f_error = np.sqrt((dee_x*dx)**2+(dee_y*dy)**2+(dee_z*dz)**2+
                       (dee_x0*dx0)**2+(dee_y0*dy0)**2+(dee_z0*dz0)**2)
+    return f_error
     
     
