@@ -99,7 +99,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1):
     
     return x_prime_vals, y_prime_vals
 
-def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
     Plot many different ys versus the same x on the same axes, graph, and figure.
     
@@ -119,9 +119,6 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     
     y_name : string
         The name on the y-axis.
-        
-    y_labels : array_like
-        Array of size np.shape(ys)[0] where each element y_labels[i] corresponds to ys[i].
     
     plot_title : string
         The title on the graph.
@@ -140,28 +137,30 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     # Plot
     figure = plt.figure(figsize=(10,6))
     plt.axis('equal')
-    plt.axhline(y=0)
-    plt.axvline(x=0)
+    plt.axhline(y=0, color='k')
+    plt.axvline(x=0, color='k')
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
+    plt.plot(r1[0], r1[1], 'ro')
+    plt.axhline(y=r1[1], color='g')
+    plt.axvline(x=r1[0], color='g')
     for i, k in enumerate(ys):
-        plt.plot(x, k, label=y_labels[i])
+        plt.plot(x, k)
         # Useful to plot individual points for mean duration against square.
         if individual_points:
             plt.plot(x, k, 'r.')
-    plt.legend(fontsize=16)
     plt.grid(True)
     plt.show()
     return figure
 
 
-r1 = np.array([0, 0, -1])
-r2 = np.array([0, 1, -10])
+r1 = np.array([0, 0.1, 0])
+r2 = np.array([0, 0.1, -1])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
 x, y = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1)
 # print(x, y)
-plot_it(x, ys=np.array([y]), y_labels=np.array(['Cone intersection on plane']), individual_points=True)
+plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
 # test change
