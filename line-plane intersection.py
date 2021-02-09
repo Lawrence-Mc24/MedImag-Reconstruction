@@ -28,8 +28,6 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
 
-
-
 def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
     Returns cone axis vector as a list in primed axes.
