@@ -160,3 +160,4 @@ phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 x, y =x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180)
 # print(x, y)
 plot_it(x, ys=np.array([y]), y_labels=np.array(['Cone intersection on plane']), individual_points=True)
+# test change
