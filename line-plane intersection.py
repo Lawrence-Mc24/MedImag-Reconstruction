@@ -139,7 +139,8 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     # Plot
     figure = plt.figure(figsize=(10,6))
     plt.axis('equal')
-
+    plt.axhline(y=0)
+    plt.axvline(x=0)
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
@@ -153,8 +154,8 @@ def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individu
     plt.show()
     return figure
 
-r1 = np.array([0, 0, 0])
-r2 = np.array([0, 0, -1])
+r1 = np.array([0.5, 0, 0])
+r2 = np.array([0.5, 0, -1])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
