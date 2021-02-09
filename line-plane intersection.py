@@ -6,6 +6,7 @@ Created on Fri Feb  5 15:09:55 2021
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
@@ -15,13 +16,13 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     ----------
     x_prime, y_prime, z_prime : TYPE - float
         DESCRIPTION - x,y,z coordinate of the hit on the scattering detector in primed (global) coordinate system. z=0 by definition.
-    x_0__prime, y_0__prime, z_0__prime : TYPE - float
+    x_0_prime, y_0_prime, z_0_prime : TYPE - float
         DESCRIPTION - x_0, y_0, z_0 coordinate of the hit on the absorbing detector in primed (global) coordinate system.
 
     Returns
     -------
     theta : float
-        DESCRIPTION.
+        The angle between the cone axial vector and the z_prime axis (radians).
 
     '''
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
@@ -53,7 +54,6 @@ def N(z):
     in the primed coordinate frame.
 
     '''
-    
     return [-z[1], z[0], 0]
 
 def phi_angle(N):
@@ -80,7 +80,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps):
     x_prime_vals = []
     y_prime_vals = []
     
-    for i in range(0,2*np.pi, steps): #i is our psi variable
+    for i in np.linspace(0, 2*np.pi, steps): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
 
@@ -95,3 +95,68 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps):
         x_prime_vals.append(x_prime)
     
     return x_prime_vals, y_prime_vals
+
+def plot_it(x, ys, y_labels, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+    '''
+    Plot many different ys versus the same x on the same axes, graph, and figure.
+    
+    ---------------------
+    Parameters:
+    ---------------------
+    
+    x : array_like
+        The independent variable to be plotted on be x-axis.
+    
+    ys : array_like
+        Array of dependent variables to be plotted on be y-axis, where each row of ys is an array
+        of y-values to plot against x.
+    
+    x_name : string
+        The name on the x-axis.
+    
+    y_name : string
+        The name on the y-axis.
+        
+    y_labels : array_like
+        Array of size np.shape(ys)[0] where each element y_labels[i] corresponds to ys[i].
+    
+    plot_title : string
+        The title on the graph.
+        
+    individual_points : Boolean, optional
+        If True, will plot individual points as 'r.'. The default is False.
+    
+    --------------------
+    Returns:
+    --------------------
+    
+    figure : matplotlib.figure.Figure
+        The plot.
+    '''
+    
+    # Plot
+    figure = plt.figure(figsize=(10,6))
+
+    plt.title(plot_title, fontsize=16)
+    plt.xlabel(x_name, fontsize=16)
+    plt.ylabel(y_name, fontsize=16)
+    for i, k in enumerate(ys):
+        plt.plot(x, k, label=y_labels[i])
+        # Useful to plot individual points for mean duration against square.
+        if individual_points:
+            plt.plot(x, k, 'r.')
+    plt.legend(fontsize=16)
+    plt.grid(True)
+    plt.show()
+    return figure
+
+plot_it(x=np.linspace(0, 10, 11), ys=np.array([np.linspace(0, 10, 11)]), y_labels=np.array(['y=x']))
+
+r1 = np.array([0, 0, 0])
+r2 = np.array([0.05, 0, -1])
+theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+# print(f'theta = {theta}, phi = {phi}')
+x, y =x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180)
+# print(x, y)
+plot_it(x, ys=np.array([y]), y_labels=np.array(['Cone intersection on plane']), individual_points=True)
