@@ -265,7 +265,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
     for i, k in enumerate(r1s):
-        print(f'k = {k}')
         plt.plot(k[0], k[1], 'ro')
         plt.axhline(y=k[1], color='g')
         plt.axvline(x=k[0], color='g')
@@ -288,6 +287,13 @@ r6 = np.array([0.5, 0.1, -1])
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+
+heatmap, xedges, yedges = np.histogram2d(np.concatenate((xy1[0], xy2[0], xy3[0])), np.concatenate((xy1[1], xy2[1], xy3[1])), bins=50)
+extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+
+plt.clf()
+plt.imshow(heatmap.T, extent=extent, origin='lower')
+plt.show()
 
 # NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
 # sizes in which case they cannot be broadcast into the same 3d np array.
