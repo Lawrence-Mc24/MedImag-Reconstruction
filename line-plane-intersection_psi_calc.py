@@ -188,13 +188,13 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     return figure
 
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 r1 = np.array([0, 0.7, 3])
 r2 = np.array([0, 0.1, 2.5])
-=======
+# =======
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
->>>>>>> 475782e39419bd51b01eb5ddce76c230bb87d090
+# >>>>>>> 475782e39419bd51b01eb5ddce76c230bb87d090
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
