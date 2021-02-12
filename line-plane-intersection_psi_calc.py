@@ -87,27 +87,25 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
     c13 = np.cos(phi)*np.sin(theta)
-    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
+    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
     
     c21 = np.sin(phi)*np.cos(theta)
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
-    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
+    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
      
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, along the curve'''
     psi = 0
     psi_list = [0]
-    for i in range(n):
+    while True:
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
         if psi >= 2*np.pi:
-
             break
         else:
             psi_list.append(psi)
-
     return psi_list
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
@@ -190,7 +188,7 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     return figure
 
 
-r1 = np.array([0, 0.7, 0])
+r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
