@@ -87,12 +87,12 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
     c13 = np.cos(phi)*np.sin(theta)
-    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13) + a*z(-c11*np.sin(psi) + c12*np.cos(psi))
+    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
     
     c21 = np.sin(phi)*np.cos(theta)
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
-    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23) + a*z(-c21*np.sin(psi) + c22*np.cos(psi))
+    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
      
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
@@ -103,10 +103,11 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
         if psi >= 2*np.pi:
+
             break
         else:
             psi_list.append(psi)
-    
+
     return psi_list
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
@@ -116,7 +117,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     y_prime_vals = []
     
     z_prime = z_prime - r1[2]
-    ds = np.pi*estimate*np.tan(alpha)/steps
+    ds = 2*np.pi*estimate*np.tan(alpha)/steps
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -189,12 +190,12 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     return figure
 
 
-r1 = np.array([0, 0.1, 0])
+r1 = np.array([0, 0.7, 0])
 r2 = np.array([0, 0.1, -1])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
 x, y = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1, estimate=1)
 # print(x, y)
-plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
+plot_it(x, ys=np.array([y]), r1=r1, individual_points=True)
 # test change
