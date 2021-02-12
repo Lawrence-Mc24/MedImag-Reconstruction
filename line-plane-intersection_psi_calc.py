@@ -78,7 +78,7 @@ def phi_angle(N):
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz_prime/dpsi'''
-    return - z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
+    return z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
 
 def dpsi(ds, theta, phi, psi, z_prime, a):
     '''Calculate the dpsi increment for a given ds at a given psi for given angles.'''
@@ -99,7 +99,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, along the curve'''
     psi = 0
     psi_list = [0]
-    for i in range(n):
+    while True:
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
         if psi >= 2*np.pi:
@@ -190,8 +190,8 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     return figure
 
 
-r1 = np.array([0, 0.7, 0])
-r2 = np.array([0, 0.1, -1])
+r1 = np.array([0, 0.7, 3])
+r2 = np.array([0, 0.1, 2.5])
 theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
 phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
 # print(f'theta = {theta}, phi = {phi}')
