@@ -7,8 +7,12 @@ Created on Fri Feb  5 15:09:55 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.constants
 
-
+h = scipy.constants.h
+m_e = scipy.constants.m_e
+c = scipy.constants.c
+e = scipy.constants.e
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
