@@ -288,8 +288,9 @@ r6 = np.array([0.5, 0.1, -1])
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-print(f'xy3 = {xy3}')
-print(xy1)
+
+# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
+# sizes in which case they cannot be broadcast into the same 3d np array.
 xys = [give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
                 give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
                 give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)]
