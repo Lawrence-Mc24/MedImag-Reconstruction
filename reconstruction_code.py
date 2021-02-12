@@ -7,6 +7,23 @@ Created on Fri Feb  5 15:09:55 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.constants
+
+h = scipy.constants.h
+m_e = scipy.constants.m_e
+c = scipy.constants.c
+e = scipy.constants.e
+
+def compton_angle(E_initial, E_final):
+    '''Function calculating Compton scatter angle from initial and final
+    energy (Joules)'''
+    # May not need e factor depending on detector energy output
+    E_initial = E_initial*e
+    E_final = E_final*e
+    initial = h*c/E_initial
+    final = h*c/E_final
+    angle = np.arccos(1 - (m_e*c/h)*(final-initial))
+    return angle
 
 def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
@@ -96,7 +113,8 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
      
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
-    '''calculate list of psi values required to keep the point spacing at a fixed length, ds, along the curve'''
+    '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
+    along the curve'''
     psi = 0
     psi_list = [0]
     while True:
@@ -115,7 +133,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     y_prime_vals = []
     
     z_prime = z_prime - r1[2]
-    ds = 2*np.pi*estimate*np.tan(alpha)/steps
+    ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -187,13 +205,93 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
+def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
+    '''
+    Computes an array of (x, y) points on the imaging plane a distance z_prime from the scatter detector
+    for an event at points r1, r2.
+    Parameters
+    ----------
+    r1 : array_like
+        Hit point on the (first) Compton scatter detector of the form np.array([x1, y1, z1]), 
+        where the coordinates are in the global (primed) frame.
+    r2 : array_like
+        Hit point on the (second) absorbing detector of the form np.array([x2, y2, z2]), 
+        where the coordinates are in the global (primed) frame.
+    z_prime : float
+        Perpendicuar distance between the scatter detector and the imaging plane.
+    Returns
+    -------
+    ndarray
+        Numpy array of the form np.array([x, y]) of the (x, y) values imaged on the imaging plane.
+    '''
+    theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    # print(f'theta = {theta}, phi = {phi}')
+    x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
+    # print(x, y)
+    return np.array([x, y])
 
-r1 = np.array([-0.5, 0.9, 0.5])
-r2 = np.array([0.05, 0.1, -1])
-theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
-# print(f'theta = {theta}, phi = {phi}')
-x, y = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1, estimate=1)
-# print(x, y)
-plot_it(x, ys=np.array([y]), r1=r1, individual_points=True)
-# test change
+def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+    '''
+    Plot many different sets of (x, y) arrays on the same axes, graph, and figure.
+    Parameters
+    ----------
+    xys : array_like
+        Array where each item is an array of the form np.array([x, y]) and x, y are the arrays to be
+        plotted.
+    r1s : array_like
+        Array of points on the first detector of the form np.array([x1, y1, z1]). Plot (x1, y1) and
+        axes around it.
+    x_name : string
+        The name on the x-axis.
+    y_name : string
+        The name on the y-axis.
+    plot_title : string
+        The title on the graph.
+    individual_points : Boolean, optional
+        If True, will plot individual points as 'r.'. The default is False.
+    Returns
+    -------
+    figure : matplotlib.figure.Figure
+        The plot.
+    '''
+    
+    # Plot
+    figure = plt.figure(figsize=(10,6))
+    plt.axis('equal')
+    plt.axhline(y=0, color='k')
+    plt.axvline(x=0, color='k')
+    plt.title(plot_title, fontsize=16)
+    plt.xlabel(x_name, fontsize=16)
+    plt.ylabel(y_name, fontsize=16)
+    for i, k in enumerate(r1s):
+        print(f'k = {k}')
+        plt.plot(k[0], k[1], 'ro')
+        plt.axhline(y=k[1], color='g')
+        plt.axvline(x=k[0], color='g')
+    for i, k in enumerate(xys):
+        plt.plot(k[0], k[1])
+        # Useful to plot individual points for mean duration against square.
+        if individual_points:
+            plt.plot(k[0], k[1], 'r.')
+    plt.grid(True)
+    plt.show()
+    return figure
+
+
+r1 = np.array([0, 0.1, 0])
+r2 = np.array([0, 0.1, -1])
+r3 = np.array([0, 0.3, 0.1])
+r4 = np.array([0.5, 0.1, -1])
+r5 = np.array([0, 0.4, -0.1])
+r6 = np.array([0.5, 0.1, -1])
+xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+print(f'xy3 = {xy3}')
+print(xy1)
+xys = [give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
+                give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
+                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)]
+plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
+#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
