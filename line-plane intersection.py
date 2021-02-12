@@ -17,6 +17,7 @@ e = scipy.constants.e
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
     energy (Joules)'''
+    # May not need e factor depending on detector energy output
     E_initial = E_initial*e
     E_final = E_final*e
     initial = h*c/E_initial
@@ -248,7 +249,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.grid(True)
     plt.show()
     return figure
-
 
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
