@@ -8,6 +8,18 @@ Created on Fri Feb  5 15:09:55 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
+def compton_angle(E_initial, E_final):
+    '''Function calculating Compton scatter angle from initial and final
+    energy (Joules)'''
+    E_initial = E_initial*e
+    E_final = E_final*e
+    initial = h*c/E_initial
+    final = h*c/E_final
+    angle = np.arccos(1 - (m_e*c/h)*(final-initial))
+    return angle
+
 def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
     Calculate the angle between the cone axial vector and the z_prime axis
