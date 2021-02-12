@@ -183,7 +183,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps):
     # print(x, y)
     return np.array([x, y])
 
-def plot_it2(xys, r1, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
     Plot many different sets of (x, y) arrays on the same axes, graph, and figure.
 
@@ -193,7 +193,8 @@ def plot_it2(xys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poin
         Array where each item is an array of the form np.array([x, y]) and x, y are the arrays to be
         plotted.
     r1 : array_like
-        Point of the form np.array([x1, y1, z1]). Plot (x1, y1) and axes around it.
+        Array of points on the first detector of the form np.array([x1, y1, z1]). Plot (x1, y1) and
+        axes around it.
     x_name : string
         The name on the x-axis.
     y_name : string
@@ -218,9 +219,11 @@ def plot_it2(xys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poin
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    plt.plot(r1[0], r1[1], 'ro')
-    plt.axhline(y=r1[1], color='g')
-    plt.axvline(x=r1[0], color='g')
+    for i, k in enumerate(r1s):
+        print(f'k = {k}')
+        plt.plot(k[0], k[1], 'ro')
+        plt.axhline(y=k[1], color='g')
+        plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
@@ -233,11 +236,11 @@ def plot_it2(xys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poin
 
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
-r3 = np.array([0, 0.1, 0.1])
-r4 = np.array([0, 0.1, -1])
+r3 = np.array([0, 0.3, 0.1])
+r4 = np.array([0.5, 0.1, -1])
 xys = np.array([give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180),
                 give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180)])
 
-plot_it2(xys, r1, individual_points=True)
+plot_it2(xys, np.array([r1, r3]), individual_points=True)
 #plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
 # test change
