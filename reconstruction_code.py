@@ -288,11 +288,18 @@ xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estim
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
-heatmap, xedges, yedges = np.histogram2d(np.concatenate((xy1[0], xy2[0], xy3[0])), np.concatenate((xy1[1], xy2[1], xy3[1])), bins=50)
+x = np.concatenate((xy1[0], xy2[0], xy3[0]))
+y = np.concatenate((xy1[1], xy2[1], xy3[1]))
+plt.hist2d(x, y, bins=50)
+plt.colorbar()
+plt.show()
+
+heatmap, xedges, yedges = np.histogram2d(x, y, bins=50)
 extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
 
 plt.clf()
 plt.imshow(heatmap.T, extent=extent, origin='lower')
+plt.colorbar()
 plt.show()
 
 # NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
