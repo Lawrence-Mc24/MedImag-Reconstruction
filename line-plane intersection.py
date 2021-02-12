@@ -194,7 +194,7 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     xys : array_like
         Array where each item is an array of the form np.array([x, y]) and x, y are the arrays to be
         plotted.
-    r1 : array_like
+    r1s : array_like
         Array of points on the first detector of the form np.array([x1, y1, z1]). Plot (x1, y1) and
         axes around it.
     x_name : string
@@ -240,9 +240,12 @@ r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
 r3 = np.array([0, 0.3, 0.1])
 r4 = np.array([0.5, 0.1, -1])
+r5 = np.array([0, 0.4, -0.1])
+r6 = np.array([0.5, 0.1, -1])
 xys = np.array([give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180),
-                give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180)])
+                give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180)])
 
-plot_it2(xys, np.array([r1, r3]), individual_points=True)
+plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
 #plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
 # test change
