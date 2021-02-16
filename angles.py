@@ -32,11 +32,20 @@ def compton_angle(E_initial, E_final):
     angle = np.arccos(1 - (m_e*c/h)*(final-initial))
     return angle
 
-def compton_angle_err(err_initial, err_final):
+def compton_angle_err(E_initial, E_final, err_initial, err_final):
     '''Error on the Compton angle'''
-    denom = np.sqrt(1-(1-m_e*c/h)**2)
-    err_angle = np.sqrt((err_initial*denom)+(err_final*denom))
-    return err_angle
+    E_initial = E_initial*e*1000
+    E_final = E_final*e*1000
+    f = sympy.Function('f')
+    En_final, En_initial = sympy.symbols('En_final En_initial')
+    f = acos(1 - (m_e*c/h)*((h*c/En_final)-(h*c/En_initial)))
+    subs={En_initial:E_initial, En_final:E_final}
+    div_final = sympy.diff(f,En_final)
+    div_initial = sympy.diff(f,En_initial)
+    dee_initial = div_initial.evalf(subs=subs)
+    dee_final = div_final.evalf(subs=subs)
+    f_error = math.sqrt((dee_initial*err_initial)**2+(dee_final*err_final)**2)
+    return f_error
 
 def theta(x, x0, y, y0, z, z0):
     '''Finding the angle between the line of response and the normal to the
@@ -69,5 +78,3 @@ def theta_err(xval, yval, zval, x0val, y0val, z0val, dx, dx0, dy, dy0, dz, dz0):
     f_error = math.sqrt((dee_x*dx)**2+(dee_y*dy)**2+(dee_z*dz)**2+
                       (dee_x0*dx0)**2+(dee_y0*dy0)**2+(dee_z0*dz0)**2)
     return f_error
-
-print(theta_err(0,0,0,2,2,2,0.2,0.2,0.2,0.2,0.2,0.2))
