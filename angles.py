@@ -24,27 +24,23 @@ e = scipy.constants.e
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
-    energy (Joules)'''
-    E_initial = E_initial*e
-    E_final = E_final*e
-    initial = h*c/E_initial
-    final = h*c/E_final
-    angle = np.arccos(1 - (m_e*c/h)*(final-initial))
+    energy (keV)'''
+    E_i = E_initial
+    E_f = E_final
+    angle = np.arccos(1 - (511)*((1/E_f)-(1/E_i)))
     return angle
 
-def compton_angle_err(E_initial, E_final, err_initial, err_final):
-    '''Error on the Compton angle'''
-    E_initial = E_initial*e*1000
-    E_final = E_final*e*1000
+def compton_angle_err(E_i, E_f, err_i, err_f):
+    '''Error on the Compton angle taking energies as (keV)'''
+    En_f, En_i = sympy.symbols('En_f En_i')
     f = sympy.Function('f')
-    En_final, En_initial = sympy.symbols('En_final En_initial')
-    f = acos(1 - (m_e*c/h)*((h*c/En_final)-(h*c/En_initial)))
-    subs={En_initial:E_initial, En_final:E_final}
-    div_final = sympy.diff(f,En_final)
-    div_initial = sympy.diff(f,En_initial)
-    dee_initial = div_initial.evalf(subs=subs)
-    dee_final = div_final.evalf(subs=subs)
-    f_error = math.sqrt((dee_initial*err_initial)**2+(dee_final*err_final)**2)
+    f = acos(1 - (511)*((1/En_f)-(1/En_i)))
+    subs={En_i:E_i, En_f:E_f}
+    div_f = sympy.diff(f,En_f)
+    div_i = sympy.diff(f,En_i)
+    dee_i = div_i.evalf(subs=subs)
+    dee_f = div_f.evalf(subs=subs)
+    f_error = math.sqrt((dee_i*err_i)**2+(dee_f*err_f)**2)
     return f_error
 
 def theta(x, x0, y, y0, z, z0):
