@@ -287,11 +287,47 @@ xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estim
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
+<<<<<<< Updated upstream
+=======
+# Iterate through alpha
+# Arbitrarily choose alpha to be 45 degrees and its error to be 5%
+alpha = np.pi/4
+alpha_err = alpha*0.05
+# Plot for alpha and its min & max boundaries
+alpha_bounds = np.array([alpha-alpha_err, alpha, alpha+alpha_err])
+xy1s = []
+xy2s = []
+xy3s = []
+for angle in alpha_bounds:
+    xy1s.append(give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
+    xy2s.append(give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1))
+    xy3s.append(give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1))
+plot_it2(xy1s, np.array([r1, r1, r1]), individual_points=True)
+plot_it2(xy2s, np.array([r3, r3, r3]), individual_points=True)
+plot_it2(xy3s, np.array([r5, r5, r5]), individual_points=True)
+
+
+x = np.concatenate((xy1[0], xy2[0], xy3[0]))
+y = np.concatenate((xy1[1], xy2[1], xy3[1]))
+plt.hist2d(x, y, bins=50)
+plt.colorbar()
+plt.show()
+
+heatmap, xedges, yedges = np.histogram2d(x, y, bins=128)
+extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+heatmap[heatmap != 0] = 1
+plt.clf()
+plt.imshow(heatmap.T, extent=extent, origin='lower')
+plt.colorbar()
+plt.show()
+
+
 # NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
-# sizes in which case they cannot be broadcast into the same 3d np array.
+# sizes in which case they cannot be broadcast into the same 3d array
 xys = [give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
                 give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
                 give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)]
 plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
 #plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
+<<<<<<< Updated upstream
 
