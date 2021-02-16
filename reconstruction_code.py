@@ -280,13 +280,31 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
 
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
-r3 = np.array([0, 0.3, 0.1])
+r3 = np.array([0.2, 0.3, 0.1])
 r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+
+# Iterate through alpha
+# Arbitrarily choose alpha to be 45 degrees and its error to be 5%
+alpha = np.pi/4
+alpha_err = alpha*0.05
+# Plot for alpha and its min & max boundaries
+alpha_bounds = np.array([alpha-alpha_err, alpha, alpha+alpha_err])
+xy1s = []
+xy2s = []
+xy3s = []
+for angle in alpha_bounds:
+    xy1s.append(give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
+    xy2s.append(give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1))
+    xy3s.append(give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1))
+plot_it2(xy1s, np.array([r1, r1, r1]), individual_points=True)
+plot_it2(xy2s, np.array([r3, r3, r3]), individual_points=True)
+plot_it2(xy3s, np.array([r5, r5, r5]), individual_points=True)
+
 
 x = np.concatenate((xy1[0], xy2[0], xy3[0]))
 y = np.concatenate((xy1[1], xy2[1], xy3[1]))
