@@ -165,9 +165,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     psi_list = [0]
     while True:
         d = dpsi(ds, theta, phi, psi, z_prime, a)
-        print(f'd = {d}')
         psi += d
-        print(f'psi = {psi}')
         if psi >= 2*np.pi:
             break
         else:
@@ -348,6 +346,40 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
+def calculate_heatmap(x, y, bins=50):
+    '''
+    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
+    number of bins.
+
+    Parameters
+    ----------
+    x : numpy_array
+        Must be a numpy array, not a list!
+    y : numpy_array
+        DESCRIPTION.
+    bins : TYPE, optional
+        DESCRIPTION. The default is 50.
+
+    Returns
+    -------
+    heatmap : numpy_array
+        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+    extent : TYPE
+        DESCRIPTION.
+
+    '''
+    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    return heatmap, extent
+
+def plot_heatmap(heatmap, extent):
+    '''Plot a heatmap using plt.imshow().'''
+    plt.clf()
+    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    plt.colorbar()
+    plt.show()
+
 
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
@@ -359,23 +391,50 @@ xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estim
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
+# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
+# sizes in which case they cannot be broadcast into the same 3d np array.
+xys = [xy1, xy2, xy3]
+plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
+#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
+
+
 # Iterate through alpha
 # Arbitrarily choose alpha to be 45 degrees and its error to be 5%
 alpha = np.pi/4
 alpha_err = alpha*0.05
 # Plot for alpha and its min & max boundaries
-alpha_bounds = np.array([alpha-alpha_err, alpha, alpha+alpha_err])
-xy1s = []
-xy2s = []
-xy3s = []
+alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
+xy1s = np.array([])
+x1s = np.array([])
+x2s = np.array([])
+x3s = np.array([])
+y1s = np.array([])
+y2s = np.array([])
+y3s = np.array([])
 for angle in alpha_bounds:
-    xy1s.append(give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
-    xy2s.append(give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1))
-    xy3s.append(give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1))
-plot_it2(xy1s, np.array([r1, r1, r1]), individual_points=True)
-plot_it2(xy2s, np.array([r3, r3, r3]), individual_points=True)
-plot_it2(xy3s, np.array([r5, r5, r5]), individual_points=True)
+    xy1s = np.append(xy1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
+    x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
+    y1s = np.append(y1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
+    x2s = np.append(x2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
+    y2s = np.append(y2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
+    x3s = np.append(x3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
+    y3s = np.append(y3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
+# plot_it2(np.array([x1s, y1s]), np.array([r1, r1, r1]), individual_points=True)
+# plot_it2(np.array([x2s, y2s]), np.array([r3, r3, r3]), individual_points=True)
+# plot_it2(np.array([x3s, y3s]), np.array([r5, r5, r5]), individual_points=True)
 
+xs = np.array([x1s, x2s, x3s])
+ys = np.array([y1s, y2s, y3s])
+heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=250)
+# plot_heatmap(xs, ys)
+heatmap1, extent1 = calculate_heatmap(x1s, y1s)
+heatmap2, extent2 = calculate_heatmap(x2s, y2s)
+heatmap3, extent3 = calculate_heatmap(x3s, y3s)
+
+plot_heatmap(heatmap_combined, extent_combined)
+
+heatmap_combined[heatmap_combined != 0] = 1
+plot_heatmap(heatmap_combined, extent_combined)
 
 x = np.concatenate((xy1[0], xy2[0], xy3[0]))
 y = np.concatenate((xy1[1], xy2[1], xy3[1]))
@@ -383,18 +442,6 @@ plt.hist2d(x, y, bins=50)
 plt.colorbar()
 plt.show()
 
-heatmap, xedges, yedges = np.histogram2d(x, y, bins=50)
-extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+plot_heatmap(*calculate_heatmap(x, y))
 
-plt.clf()
-plt.imshow(heatmap.T, extent=extent, origin='lower')
-plt.colorbar()
-plt.show()
 
-# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
-# sizes in which case they cannot be broadcast into the same 3d np array.
-xys = [give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
-                give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
-                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)]
-plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
