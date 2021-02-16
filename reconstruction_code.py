@@ -298,7 +298,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
     # print(f'theta = {theta}, phi = {phi}')
-    x, y = x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate)
+    x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
     # print(x, y)
     return np.array([x, y])
 
@@ -356,9 +356,7 @@ r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-plot_it2(xy1, np.array([r1]))
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-plot_it2(xy2, np.array([r3]))
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
 # Iterate through alpha
