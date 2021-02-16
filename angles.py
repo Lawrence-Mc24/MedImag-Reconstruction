@@ -21,20 +21,21 @@ h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
+comp = m_e*(c**2)/(e*1000)
 
 def compton_angle(E_initial, E_final):
-    '''Function calculating Compton scatter angle from initial and final
+    '''Function calculating Compton scatter angle (radians) from initial and final
     energy (keV)'''
     E_i = E_initial
     E_f = E_final
-    angle = np.arccos(1 - (511)*((1/E_f)-(1/E_i)))
+    angle = np.arccos(1 - (comp)*((1/E_f)-(1/E_i)))
     return angle
 
 def compton_angle_err(E_i, E_f, err_i, err_f):
-    '''Error on the Compton angle taking energies as (keV)'''
+    '''Error on the Compton angle (radians) taking energies as (keV)'''
     En_f, En_i = sympy.symbols('En_f En_i')
     f = sympy.Function('f')
-    f = acos(1 - (511)*((1/En_f)-(1/En_i)))
+    f = acos(1 - (comp)*((1/En_f)-(1/En_i)))
     subs={En_i:E_i, En_f:E_f}
     div_f = sympy.diff(f,En_f)
     div_i = sympy.diff(f,En_i)

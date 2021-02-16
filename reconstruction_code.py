@@ -13,16 +13,14 @@ h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
+comp = m_e*(c**2)/(e*1000)
 
 def compton_angle(E_initial, E_final):
-    '''Function calculating Compton scatter angle from initial and final
-    energy (Joules)'''
-    # May not need e factor depending on detector energy output
-    E_initial = E_initial*e
-    E_final = E_final*e
-    initial = h*c/E_initial
-    final = h*c/E_final
-    angle = np.arccos(1 - (m_e*c/h)*(final-initial))
+    '''Function calculating Compton scatter angle (radians) from initial and final
+    energy (keV)'''
+    E_i = E_initial
+    E_f = E_final
+    angle = np.arccos(1 - (comp)*((1/E_f)-(1/E_i)))
     return angle
 
 def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
