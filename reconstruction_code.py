@@ -8,6 +8,7 @@ Created on Fri Feb  5 15:09:55 2021
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
+import sys
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -111,7 +112,52 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
-     
+
+def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
+    '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
+    h = dz(theta, phi, psi, z_prime, a)
+    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+    c11 = np.cos(phi)*np.cos(theta)
+    c12 = -np.sin(phi)
+    c13 = np.cos(phi)*np.sin(theta)
+    print(dx, theta, phi, psi, z_prime, a)
+    print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
+    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
+    print(f'dx_psi = {dx_psi}')
+    # sys.exit()
+    return dx/dx_psi
+
+def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
+    '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
+    h = dz(theta, phi, psi, z_prime, a)
+    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+    c21 = np.sin(phi)*np.cos(theta)
+    c22 = np.cos(phi)
+    c23 = np.sin(phi)*np.sin(theta)
+    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
+    print(dy, theta, phi, psi, z_prime, a)
+    print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
+    print(f'dy_psi = {dy_psi}')
+    # sys.exit()
+    return dy/dy_psi
+
+def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
+    '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
+    psi = 0
+    psi_list = [0]
+    while True:
+        d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
+        print(f'd = {d}')
+        psi += d
+        print(f'psi = {psi}')
+        if np.abs(psi) >= 2*np.pi:
+            break
+        else:
+            psi_list.append(psi)
+    
+    print(f'psi_list = {psi_list}')
+    return psi_list
+
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
     along the curve'''
@@ -119,12 +165,37 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     psi_list = [0]
     while True:
         d = dpsi(ds, theta, phi, psi, z_prime, a)
+        print(f'd = {d}')
         psi += d
+        print(f'psi = {psi}')
         if psi >= 2*np.pi:
             break
         else:
             psi_list.append(psi)
     return psi_list
+
+def x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate):
+    a = np.tan(alpha)
+    
+    x_prime_vals = []
+    y_prime_vals = []
+    
+    z_prime = z_prime - r1[2]
+    dx = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    for i in psi_calculator2(dx, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
+        
+        z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
+        
+        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
+                     np.cos(phi)*np.sin(theta)) + r1[0]
+        
+        y_prime_vals.append(y_prime)
+    
+        x_prime_vals.append(x_prime)
+    return x_prime_vals, y_prime_vals
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
@@ -227,7 +298,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
     # print(f'theta = {theta}, phi = {phi}')
-    x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
+    x, y = x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate)
     # print(x, y)
     return np.array([x, y])
 
@@ -285,7 +356,9 @@ r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+plot_it2(xy1, np.array([r1]))
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+plot_it2(xy2, np.array([r3]))
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
 # Iterate through alpha
