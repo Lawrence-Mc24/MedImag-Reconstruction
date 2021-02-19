@@ -18,7 +18,34 @@ c = scipy.constants.c
 e = scipy.constants.e
 
 simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
-data = pd.read_csv(simdata_path, sep=";")
+dataframe = pd.read_csv(simdata_path, sep=";")
+
+x_prime = dataframe['X_1 [cm]']
+y_prime = dataframe['Y_1 [cm]']
+z_prime = dataframe['Z_1 [cm]']
+x_0_prime = dataframe['X_2 [cm]']
+y_0_prime = dataframe['Y_2 [cm]']
+z_0_prime = dataframe['Z_2 [cm]']
+
+def cone_vector_new(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
+    '''Takes positional data from table and returns list of direction vectors
+    every point pair'''
+    vector_array = []
+    diff_x = x_prime - x_0_prime
+    diff_y = y_prime - y_0_prime
+    diff_z = z_prime - z_0_prime
+    for i in range(len(x_prime)):
+        vector_array.append([diff_x[i], diff_y[i], diff_z[i]])
+    return vector_array
+
+def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
+    '''
+    Returns cone axis vector as a list in primed axes.
+    '''
+    diff_x = x_prime - x_0_prime
+    diff_y = y_prime - y_0_prime
+    diff_z = z_prime - z_0_prime
+    return [(diff_x), (diff_y), (diff_z)]
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
@@ -48,16 +75,14 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
         The angle between the cone axial vector and the z_prime axis (radians).
 
     '''
-    theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
-    return theta
-
-
-
-def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
-    '''
-    Returns cone axis vector as a list in primed axes.
-    '''
-    return [(x_prime-x_0_prime), (y_prime-y_0_prime), (z_prime-z_0_prime)]
+    diff_x = x_prime - x_0_prime
+    diff_y = y_prime - y_0_prime
+    diff_z = z_prime - z_0_prime
+    theta_array = []
+    for i in range(len(x_prime)):
+        calc = np.arccos((diff_z[i])/np.sqrt((diff_x[i])**2 + (diff_y[i])**2 + (diff_z[i])**2))
+        theta_array.append([calc])
+    return theta_array
     
 def N(z):
     '''
@@ -77,6 +102,7 @@ def N(z):
     in the primed coordinate frame.
 
     '''
+    z = cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime)
     return [-z[1], z[0], 0]
 
 def phi_angle(N):
@@ -394,7 +420,9 @@ def binary_erode(image, iterations):
     eroded_image = ndimage.binary_erosion(image, iterations=iterations, border_value=0)
     eroded_image = np.array(eroded_image, dtype=float)
     return eroded_image
-    
+
+
+
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
 r3 = np.array([0.2, 0.3, 0.1])
