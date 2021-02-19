@@ -438,19 +438,11 @@ for angle in alpha_bounds:
 
 xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
-print(f'lengths (x, y) = {len(xs[2]), len(ys[2])}')
-heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175, erase=True)
-# plot_heatmap(xs, ys)
-H, xedge, yedge = np.histogram2d(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=50)
+
+heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175, erase=False)
 
 plot_heatmap(heatmap_combined, extent_combined)
 
-x = np.concatenate((xy1[0], xy2[0], xy3[0]))
-y = np.concatenate((xy1[1], xy2[1], xy3[1]))
-#plt.hist2d(x, y, bins=50)
-#plt.colorbar()
-#plt.show()
 
-#plot_heatmap(*calculate_heatmap(x, y))
 
 
