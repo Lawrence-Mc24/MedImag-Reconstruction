@@ -27,16 +27,19 @@ x_0_prime = dataframe['X_2 [cm]']
 y_0_prime = dataframe['Y_2 [cm]']
 z_0_prime = dataframe['Z_2 [cm]']
 
-def cone_vector_new(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
-    '''Takes positional data from table and returns list of direction vectors
-    every point pair'''
-    vector_array = []
-    diff_x = x_prime - x_0_prime
-    diff_y = y_prime - y_0_prime
-    diff_z = z_prime - z_0_prime
-    for i in range(len(x_prime)):
-        vector_array.append([diff_x[i], diff_y[i], diff_z[i]])
-    return vector_array
+r1 = np.array([x_prime, y_prime, z_prime]).T
+r2 = np.array([x_0_prime, y_0_prime, z_0_prime]).T
+
+# def cone_vector_new(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
+#     '''Takes positional data from table and returns list of direction vectors
+#     every point pair'''
+#     vector_array = []
+#     diff_x = x_prime - x_0_prime
+#     diff_y = y_prime - y_0_prime
+#     diff_z = z_prime - z_0_prime
+#     for i in range(len(x_prime)):
+#         vector_array.append([diff_x[i], diff_y[i], diff_z[i]])
+#     return vector_array
 
 def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
@@ -78,11 +81,8 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     diff_x = x_prime - x_0_prime
     diff_y = y_prime - y_0_prime
     diff_z = z_prime - z_0_prime
-    theta_array = []
-    for i in range(len(x_prime)):
-        calc = np.arccos((diff_z)/np.sqrt((diff_x)**2 + (diff_y)**2 + (diff_z)**2))
-        theta_array.append([calc])
-    return theta_array
+    theta = np.arccos((diff_z)/np.sqrt((diff_x)**2 + (diff_y)**2 + (diff_z)**2))
+    return theta
     
 def N(z):
     '''
@@ -502,16 +502,6 @@ plot_heatmap(im_diltot, extent)
 im_erotot = im_ero1 + im_ero2 + im_ero3
 plot_heatmap(im_erotot, extent)
 
-# im_med1 = ndimage.median_filter(heatmap1, 3)
-# im_med2 = ndimage.median_filter(heatmap2, 3)
-# im_med3 = ndimage.median_filter(heatmap3, 3)
-# im2_med1 = ndimage.median_filter(im_med1, 3)
-# im2_med2 = ndimage.median_filter(im_med2, 3)
-# im2_med3 = ndimage.median_filter(im_med3, 3)
-
-# im_medtot = im2_med1 + im2_med2 + im2_med3
-
-# plot_heatmap(im_medtot, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
 
 # plot_heatmap(heatmap_combined, extent_combined)
 
