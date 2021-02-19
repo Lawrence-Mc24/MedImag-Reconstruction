@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
 import sys
+from scipy import ndimage
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -380,7 +381,16 @@ def plot_heatmap(heatmap, extent):
     plt.colorbar()
     plt.show()
 
+def binary_dilate(image, iterations):
+    dilated_image = ndimage.binary_dilation(image, iterations=iterations)
+    dilated_image = np.array(dilated_image, dtype=float)
+    return dilated_image
 
+def binary_erode(image, iterations):
+    eroded_image = ndimage.binary_erosion(image, iterations=iterations, border_value=0)
+    eroded_image = np.array(eroded_image, dtype=float)
+    return eroded_image
+    
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
 r3 = np.array([0.2, 0.3, 0.1])
@@ -440,20 +450,49 @@ heatmap3, extent3 = calculate_heatmap(x3s, y3s, np.array([xedge, yedge]))
 heatmap1[heatmap1 != 0] = 1
 heatmap2[heatmap2 != 0] = 1
 heatmap3[heatmap3 != 0] = 1
+extent = [xedge[0], xedge[-1], yedge[0], yedge[-1]]
 
-plot_heatmap(heatmap1+heatmap2+heatmap3, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
+im_tot = heatmap1 + heatmap2 + heatmap3
+plot_heatmap(im_tot, extent)
+plt.ylim(yedge[0]-0.5, yedge[-1]+0.5)
+plt.xlim(xedge[0]-0.5, xedge[-1]+0.5)
 
-#plot_heatmap(heatmap_combined, extent_combined)
+im_dil1 = binary_dilate(heatmap1, 5)
+im_dil2 = binary_dilate(heatmap2, 5)
+im_dil3 = binary_dilate(heatmap3, 5)
 
-heatmap_combined[heatmap_combined != 0] = 1
-plot_heatmap(heatmap_combined, extent_combined)
+im_ero1 = binary_erode(im_dil1, 5)
+im_ero2 = binary_erode(im_dil2, 5)
+im_ero3 = binary_erode(im_dil3, 5)
 
-x = np.concatenate((xy1[0], xy2[0], xy3[0]))
-y = np.concatenate((xy1[1], xy2[1], xy3[1]))
-plt.hist2d(x, y, bins=50)
-plt.colorbar()
-plt.show()
+im_diltot = im_dil1 + im_dil2 + im_dil3
+plot_heatmap(im_diltot, extent)
 
-plot_heatmap(*calculate_heatmap(x, y))
+im_erotot = im_ero1 + im_ero2 + im_ero3
+plot_heatmap(im_erotot, extent)
+
+# im_med1 = ndimage.median_filter(heatmap1, 3)
+# im_med2 = ndimage.median_filter(heatmap2, 3)
+# im_med3 = ndimage.median_filter(heatmap3, 3)
+# im2_med1 = ndimage.median_filter(im_med1, 3)
+# im2_med2 = ndimage.median_filter(im_med2, 3)
+# im2_med3 = ndimage.median_filter(im_med3, 3)
+
+# im_medtot = im2_med1 + im2_med2 + im2_med3
+
+# plot_heatmap(im_medtot, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
+
+# plot_heatmap(heatmap_combined, extent_combined)
+
+# heatmap_combined[heatmap_combined != 0] = 1
+# plot_heatmap(heatmap_combined, extent_combined)
+
+# x = np.concatenate((xy1[0], xy2[0], xy3[0]))
+# y = np.concatenate((xy1[1], xy2[1], xy3[1]))
+# plt.hist2d(x, y, bins=50)
+# plt.colorbar()
+# plt.show()
+
+# plot_heatmap(*calculate_heatmap(x, y))
 
 
