@@ -1,44 +1,44 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Feb  5 15:09:55 2021
-
-@author: laurence
+@author: laure
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
+import sys
+from scipy import ndimage
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
-comp = m_e*(c**2)/(e*1000)
 
 def compton_angle(E_initial, E_final):
-    '''Function calculating Compton scatter angle (radians) from initial and final
-    energy (keV)'''
-    E_i = E_initial
-    E_f = E_final
-    angle = np.arccos(1 - (comp)*((1/E_f)-(1/E_i)))
+    '''Function calculating Compton scatter angle from initial and final
+    energy (Joules)'''
+    # May not need e factor depending on detector energy output
+    E_initial = E_initial*e
+    E_final = E_final*e
+    initial = h*c/E_initial
+    final = h*c/E_final
+    angle = np.arccos(1 - (m_e*c/h)*(final-initial))
     return angle
 
 def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
     Calculate the angle between the cone axial vector and the z_prime axis
-
     Parameters
     ----------
     x_prime, y_prime, z_prime : TYPE - float
         DESCRIPTION - x,y,z coordinate of the hit on the scattering detector in primed (global) coordinate system. z=0 by definition.
     x_0_prime, y_0_prime, z_0_prime : TYPE - float
         DESCRIPTION - x_0, y_0, z_0 coordinate of the hit on the absorbing detector in primed (global) coordinate system.
-
     Returns
     -------
     theta : float
         The angle between the cone axial vector and the z_prime axis (radians).
-
     '''
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
@@ -54,7 +54,6 @@ def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
 def N(z):
     '''
     Calculate vector for the line of nodes, N.
-
     Parameters
     ----------
     z : TYPE - array-like
@@ -62,29 +61,24 @@ def N(z):
     the cone axial vector in the primed coordinate system.
     z_prime : TYPE
         DESCRIPTION.
-
     Returns
     -------
     N vector of the form [i, j, k] where ijk are the components of the N vector
     in the primed coordinate frame.
-
     '''
     return [-z[1], z[0], 0]
 
 def phi_angle(N):
     '''
     Calculate the angle, phi, between N and the x_prime axis.
-
     Parameters
     ----------
     N : TYPE - array-like 
         DESCRIPTION - line of nodes of the form [a, b, c] where a,b,c are the components of
     the vector in the primed coordinate system.
-
     Returns
     -------
     phi
-
     '''
     if N[0] == 0:
         return 0
@@ -109,7 +103,52 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
-     
+
+def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
+    '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
+    h = dz(theta, phi, psi, z_prime, a)
+    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+    c11 = np.cos(phi)*np.cos(theta)
+    c12 = -np.sin(phi)
+    c13 = np.cos(phi)*np.sin(theta)
+    print(dx, theta, phi, psi, z_prime, a)
+    print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
+    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
+    print(f'dx_psi = {dx_psi}')
+    # sys.exit()
+    return dx/dx_psi
+
+def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
+    '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
+    h = dz(theta, phi, psi, z_prime, a)
+    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+    c21 = np.sin(phi)*np.cos(theta)
+    c22 = np.cos(phi)
+    c23 = np.sin(phi)*np.sin(theta)
+    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
+    print(dy, theta, phi, psi, z_prime, a)
+    print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
+    print(f'dy_psi = {dy_psi}')
+    # sys.exit()
+    return dy/dy_psi
+
+def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
+    '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
+    psi = 0
+    psi_list = [0]
+    while True:
+        d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
+        print(f'd = {d}')
+        psi += d
+        print(f'psi = {psi}')
+        if np.abs(psi) >= 2*np.pi:
+            break
+        else:
+            psi_list.append(psi)
+    
+    print(f'psi_list = {psi_list}')
+    return psi_list
+
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
     along the curve'''
@@ -124,11 +163,36 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             psi_list.append(psi)
     return psi_list
 
+def x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate):
+    a = np.tan(alpha)
+    
+    x_prime_vals = np.array([])
+    y_prime_vals = np.array([])
+    
+    z_prime = z_prime - r1[2]
+    dx = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    
+    for i in psi_calculator2(dx, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
+        
+        z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
+        
+        x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
+                     np.cos(phi)*np.sin(theta)) + r1[0]
+        
+        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
+        
+    return x_prime_vals, y_prime_vals
+
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
     
-    x_prime_vals = []
-    y_prime_vals = []
+    x_prime_vals = np.array([])
+    y_prime_vals = np.array([])
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
@@ -136,17 +200,28 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
         
-        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
         
-        y_prime_vals.append(y_prime)
-    
-        x_prime_vals.append(x_prime)
+        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
     
     return x_prime_vals, y_prime_vals
+
+    
+def binary_dilate(image, iterations):
+    dilated_image = ndimage.binary_dilation(image, iterations=iterations)
+    dilated_image = np.array(dilated_image, dtype=float)
+    return dilated_image
+
+def binary_erode(image, iterations):
+    eroded_image = ndimage.binary_erosion(image, iterations=iterations, border_value=0)
+    eroded_image = np.array(eroded_image, dtype=float)
+    return eroded_image
 
 def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
@@ -227,7 +302,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     # print(f'theta = {theta}, phi = {phi}')
     x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
     # print(x, y)
-    return np.array([x, y])
+    return x, y
 
 def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
@@ -263,7 +338,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
     for i, k in enumerate(r1s):
-        print(f'k = {k}')
         plt.plot(k[0], k[1], 'ro')
         plt.axhline(y=k[1], color='g')
         plt.axvline(x=k[0], color='g')
@@ -276,54 +350,121 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
+def calculate_heatmap_old(x, y, bins=50):
+    '''
+    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
+    number of bins.
+    Parameters
+    ----------
+    x : numpy_array
+        Must be a numpy array, not a list!
+    y : numpy_array
+        DESCRIPTION.
+    bins : TYPE, optional
+        DESCRIPTION. The default is 50.
+    Returns
+    -------
+    heatmap : numpy_array
+        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+    extent : TYPE
+        DESCRIPTION.
+    '''
+    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    return heatmap, extent
+
+def calculate_heatmap(x, y, bins=50, erase=False):
+    '''
+    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
+    number of bins.
+    Parameters
+    ----------
+    x : numpy_array containg arrays of x points for each cone
+        Must be a numpy array, not a list!
+    y : numpy_array containg arrays of x points for each cone
+        DESCRIPTION.
+    bins : TYPE, optional
+        DESCRIPTION. The default is 50.
+    Returns
+    -------
+    heatmap : numpy_array
+        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+    extent : TYPE
+        DESCRIPTION.d = 
+    '''
+    xtot = np.hstack(x)
+    ytot = np.hstack(y)
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    heatmaps = []
+    for i in range(len(x)):
+        hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
+        hist[hist != 0] = 1
+        # Here we would add the dilation and erosion code.
+        hist = binary_erode(binary_dilate(hist, 5), 5)
+        heatmaps.append(hist)
+    heatmap = np.sum(heatmaps, 0)
+    if erase is True:
+        heatmap[heatmap == 1] = 0
+    return heatmap, extent
+
+def plot_heatmap(heatmap, extent):
+    '''Plot a heatmap using plt.imshow().'''
+    plt.clf()
+    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    plt.colorbar()
+    plt.show()
+
+
 
 r1 = np.array([0, 0.1, 0])
 r2 = np.array([0, 0.1, -1])
-r3 = np.array([0, 0.3, 0.1])
+r3 = np.array([0.2, 0.3, 0.1])
 r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
+
+points = np.array([[r1, r2], [r3, r4], [r5, r6]])
+
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+
+# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
+# sizes in which case they cannot be broadcast into the same 3d np array.
+xys = [xy1, xy2, xy3]
+plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
+
 
 # Iterate through alpha
 # Arbitrarily choose alpha to be 45 degrees and its error to be 5%
 alpha = np.pi/4
 alpha_err = alpha*0.05
 # Plot for alpha and its min & max boundaries
-alpha_bounds = np.array([alpha-alpha_err, alpha, alpha+alpha_err])
-xy1s = []
-xy2s = []
-xy3s = []
-for angle in alpha_bounds:
-    xy1s.append(give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
-    xy2s.append(give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1))
-    xy3s.append(give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1))
-plot_it2(xy1s, np.array([r1, r1, r1]), individual_points=True)
-plot_it2(xy2s, np.array([r3, r3, r3]), individual_points=True)
-plot_it2(xy3s, np.array([r5, r5, r5]), individual_points=True)
+alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
+xy1s = np.array([])
+x1s = np.array([])
+x2s = np.array([])
+x3s = np.array([])
+y1s = np.array([])
+y2s = np.array([])
+y3s = np.array([])
 
+x_list = []
+y_list = []
 
-x = np.concatenate((xy1[0], xy2[0], xy3[0]))
-y = np.concatenate((xy1[1], xy2[1], xy3[1]))
-plt.hist2d(x, y, bins=50)
-plt.colorbar()
-plt.show()
+for point in points:
+    xs2 = np.array([])
+    ys2 = np.array([])
+    for angle in alpha_bounds:
+        x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
+        xs2 = np.append(xs2, x, axis=0)
+        ys2 = np.append(ys2, y, axis=0)
+    x_list.append(xs2)
+    y_list.append(ys2)
+    
+heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175)
+plot_heatmap(heatmap_combined, extent_combined)
 
-heatmap, xedges, yedges = np.histogram2d(x, y, bins=128)
-extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
-heatmap[heatmap != 0] = 1
-plt.clf()
-plt.imshow(heatmap.T, extent=extent, origin='lower')
-plt.colorbar()
-plt.show()
-
-
-# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
-# sizes in which case they cannot be broadcast into the same 3d array
-xys = [give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
-                give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1),
-                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)]
-plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
