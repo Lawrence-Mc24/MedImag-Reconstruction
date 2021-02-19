@@ -384,7 +384,7 @@ def calculate_heatmap_old(x, y, bins=50):
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     return heatmap, extent
 
-def calculate_heatmap(x, y, bins=50, erase=False):
+def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
     number of bins.
@@ -397,6 +397,7 @@ def calculate_heatmap(x, y, bins=50, erase=False):
         DESCRIPTION.
     bins : TYPE, optional
         DESCRIPTION. The default is 50.
+    dilate_erode_iterations : number of iterations that are carried out for the dilation and erodation
 
     Returns
     -------
@@ -409,14 +410,18 @@ def calculate_heatmap(x, y, bins=50, erase=False):
     '''
     xtot = np.hstack(x)
     ytot = np.hstack(y)
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins)
+    h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
+    pixel_size_x = abs(xedges_[0] - xedges_[1])
+    pixel_size_y = abs(yedges_[0] - yedges_[1])
+    extend_x = 2*dilate_erode_iterations*pixel_size_x
+    extend_y = 2*dilate_erode_iterations*pixel_size_y
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     heatmaps = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
-        # Here we would add the dilation and erosion code.
-        hist = binary_erode(binary_dilate(hist, 5), 5)
+        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
@@ -478,7 +483,7 @@ for point in points:
     x_list.append(xs2)
     y_list.append(ys2)
     
-heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175)
+heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175, dilate_erode_iterations = 5)
 plot_heatmap(heatmap_combined, extent_combined)
 
 
