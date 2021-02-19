@@ -427,11 +427,21 @@ xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
 heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=250)
 # plot_heatmap(xs, ys)
-heatmap1, extent1 = calculate_heatmap(x1s, y1s)
-heatmap2, extent2 = calculate_heatmap(x2s, y2s)
-heatmap3, extent3 = calculate_heatmap(x3s, y3s)
 
-plot_heatmap(heatmap_combined, extent_combined)
+
+H, xedge, yedge = np.histogram2d(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=50)
+
+heatmap1, extent1 = calculate_heatmap(x1s, y1s, np.array([xedge, yedge]))
+heatmap2, extent2 = calculate_heatmap(x2s, y2s, np.array([xedge, yedge]))
+heatmap3, extent3 = calculate_heatmap(x3s, y3s, np.array([xedge, yedge]))
+
+heatmap1[heatmap1 != 0] = 1
+heatmap2[heatmap2 != 0] = 1
+heatmap3[heatmap3 != 0] = 1
+
+plot_heatmap(heatmap1+heatmap2+heatmap3, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
+
+#plot_heatmap(heatmap_combined, extent_combined)
 
 heatmap_combined[heatmap_combined != 0] = 1
 plot_heatmap(heatmap_combined, extent_combined)
