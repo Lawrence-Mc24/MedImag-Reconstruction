@@ -80,7 +80,7 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     diff_z = z_prime - z_0_prime
     theta_array = []
     for i in range(len(x_prime)):
-        calc = np.arccos((diff_z[i])/np.sqrt((diff_x[i])**2 + (diff_y[i])**2 + (diff_z[i])**2))
+        calc = np.arccos((diff_z)/np.sqrt((diff_x)**2 + (diff_y)**2 + (diff_z)**2))
         theta_array.append([calc])
     return theta_array
     
@@ -102,7 +102,6 @@ def N(z):
     in the primed coordinate frame.
 
     '''
-    z = cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime)
     return [-z[1], z[0], 0]
 
 def phi_angle(N):
