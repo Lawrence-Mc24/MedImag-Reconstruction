@@ -348,6 +348,30 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
+def calculate_heatmap_old(x, y, bins=50):
+    '''
+    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
+    number of bins.
+    Parameters
+    ----------
+    x : numpy_array
+        Must be a numpy array, not a list!
+    y : numpy_array
+        DESCRIPTION.
+    bins : TYPE, optional
+        DESCRIPTION. The default is 50.
+    Returns
+    -------
+    heatmap : numpy_array
+        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+    extent : TYPE
+        DESCRIPTION.
+    '''
+    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
+    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    return heatmap, extent
+
 def calculate_heatmap(x, y, bins=50, erase=False):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
@@ -427,19 +451,19 @@ y1s = np.array([])
 y2s = np.array([])
 y3s = np.array([])
 
-# xs2 = np.array([])
-# ys2 = np.array([])
-# for point in points:
-#     for angle in alpha_bounds:
-#         x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
-#         print(f'type(x) = {type(x)}')
-#         xs2 = np.append(xs2, x, axis=0)
-#         ys2 = np.append(ys2, y, axis=0)
-#     sys.exit()
-# heatmap_combined, extent_combined = calculate_heatmap(xs2, ys2, bins=175, erase=False)
-# plot_heatmap(heatmap_combined, extent_combined)
+xs2 = np.array([])
+ys2 = np.array([])
+for point in points:
+    for angle in alpha_bounds:
+        x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
+        # print(f'type(x) = {type(x)}')
+        xs2 = np.append(xs2, x, axis=0)
+        ys2 = np.append(ys2, y, axis=0)
+    # sys.exit()
+heatmap_combined, extent_combined = calculate_heatmap_old(xs2, ys2, bins=175)
+plot_heatmap(heatmap_combined, extent_combined)
 
-# sys.exit()
+sys.exit()
         
 for angle in alpha_bounds:
     x1, y1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1) 
