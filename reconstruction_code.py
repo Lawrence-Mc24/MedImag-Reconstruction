@@ -468,6 +468,103 @@ y3s = np.array([])
 x_list = []
 y_list = []
 
+def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
+    '''
+    
+
+    Parameters
+    ----------
+    points : TYPE - array
+        DESCRIPTION - each item in the array is an array-like object consisting of [r1, r2, dE] where
+        r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
+    n : TYPE - integer
+        DESCRIPTION - number of angles to iterate through in alpha_bounds 
+    estimate : TYPE - float
+        DESCRIPTION - estimate of z distance of source from Compton detector
+    image_distance : TYPE - float
+        DESCRIPTION - distance of imaging plane from the Compton detector
+    source_energy : TYPE - float
+        DESCRIPTION - energy of the source in eV
+    bins : TYPE - integer
+        DESCRIPTION - number of bins to construct heatmap
+    R : TYPE - float
+        DESCRIPTION - resolution of the detector
+    steps : TYPE - integer
+        DESCRIPTION - approximate number of steps to take in psi to calculate cone projections 
+    plot : TYPE - boolean
+        DESCRIPTION - plots heatmap if set to True
+
+    Returns
+    -------
+    heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+
+    '''
+    
+    x_list = []
+    y_list = []
+    for point in points:
+        xs2 = np.array([])
+        ys2 = np.array([])
+        print(source_energy-point[2])
+        alpha = compton_angle(source_energy, source_energy-point[2])
+        alpha = np.pi/4
+        Ef = source_energy - point[2]
+        Ef = Ef*e
+        print(alpha)
+        alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
+        alpha_err = 0.05*alpha
+        print(f'alpha_err is {alpha_err}')
+        alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+        for angle in alpha_bounds:
+            x, y = give_x_y_for_two_points(point[0], point[1], z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
+            xs2 = np.append(xs2, x, axis=0)
+            ys2 = np.append(ys2, y, axis=0)
+        x_list.append(xs2)
+        y_list.append(ys2)
+    
+    heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins)
+    if plot is True:
+        plot_heatmap(heatmap_combined, extent_combined)
+    
+    return heatmap_combined
+
+r1 = np.array([0, 0.1, 0])
+r2 = np.array([0, 0.1, -1])
+r3 = np.array([0.2, 0.3, 0.1])
+r4 = np.array([0.5, 0.1, -1])
+r5 = np.array([0, 0.4, -0.1])
+r6 = np.array([0.5, 0.1, -1])
+
+points = np.array([[r1, r2, 181.73E3], [r3, r4, 181.73E3], [r4, r5, 181.73E3]])
+
+
+get_image(points, 50, 1, 1, 662E3, 175, 0.0843)
+
+r1 = np.array([0, 0.1, 0])
+r2 = np.array([0, 0.1, -1])
+r3 = np.array([0.2, 0.3, 0.1])
+r4 = np.array([0.5, 0.1, -1])
+r5 = np.array([0, 0.4, -0.1])
+r6 = np.array([0.5, 0.1, -1])
+
+points = np.array([[r1, r2], [r3, r4], [r5, r6]])
+
+alpha = np.pi/4
+alpha_err = alpha*0.05
+# Plot for alpha and its min & max boundaries
+alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
+xy1s = np.array([])
+x1s = np.array([])
+x2s = np.array([])
+x3s = np.array([])
+y1s = np.array([])
+y2s = np.array([])
+y3s = np.array([])
+
+x_list = []
+y_list = []
+
 for point in points:
     xs2 = np.array([])
     ys2 = np.array([])
@@ -480,8 +577,6 @@ for point in points:
     
 heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175)
 plot_heatmap(heatmap_combined, extent_combined)
-
-
 
 
 
