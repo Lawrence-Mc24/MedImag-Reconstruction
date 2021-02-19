@@ -346,7 +346,7 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
-def calculate_heatmap(x, y, bins=50):
+def calculate_heatmap(x, y, bins=50, erase=False):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
     number of bins.
@@ -379,6 +379,8 @@ def calculate_heatmap(x, y, bins=50):
         hist[hist != 0] = 1
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
+    if erase is True:
+        heatmap[heatmap == 1] = 0
     return heatmap, extent
 
 def plot_heatmap(heatmap, extent):
@@ -424,7 +426,6 @@ y2s = np.array([])
 y3s = np.array([])
 
 for angle in alpha_bounds:
-    xy1s = np.append(xy1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
     x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
     y1s = np.append(y1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
     x2s = np.append(x2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
@@ -438,7 +439,7 @@ for angle in alpha_bounds:
 xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
 print(f'lengths (x, y) = {len(xs[2]), len(ys[2])}')
-heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175)
+heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175, erase=True)
 # plot_heatmap(xs, ys)
 H, xedge, yedge = np.histogram2d(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=50)
 
