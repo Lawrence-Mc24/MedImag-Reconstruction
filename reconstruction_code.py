@@ -404,13 +404,13 @@ alpha = np.pi/4
 alpha_err = alpha*0.05
 # Plot for alpha and its min & max boundaries
 alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
-xy1s = np.array([])
-x1s = np.array([])
-x2s = np.array([])
-x3s = np.array([])
-y1s = np.array([])
-y2s = np.array([])
-y3s = np.array([])
+xy1s = np.array[]
+x1s = np.array[]
+x2s = np.array[]
+x3s = np.array[]
+y1s = np.array[]
+y2s = np.array[]
+y3s = np.array[]
 for angle in alpha_bounds:
     xy1s = np.append(xy1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
     x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
