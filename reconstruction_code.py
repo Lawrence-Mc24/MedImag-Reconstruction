@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import scipy.constants
 import sys
 from scipy import ndimage
+import pandas as pd
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -495,4 +496,7 @@ plot_heatmap(im_erotot, extent)
 
 # plot_heatmap(*calculate_heatmap(x, y))
 
-
+simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
+data = pd.read_csv(simdata_path, sep=";")
+simdata_array = np.array(data)
+simdata_array = simdata_array.T
