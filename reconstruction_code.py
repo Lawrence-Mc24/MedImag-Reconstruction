@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
 import sys
+from scipy import ndimage
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -221,6 +222,17 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     
     return x_prime_vals, y_prime_vals
 
+    
+def binary_dilate(image, iterations):
+    dilated_image = ndimage.binary_dilation(image, iterations=iterations)
+    dilated_image = np.array(dilated_image, dtype=float)
+    return dilated_image
+
+def binary_erode(image, iterations):
+    eroded_image = ndimage.binary_erosion(image, iterations=iterations, border_value=0)
+    eroded_image = np.array(eroded_image, dtype=float)
+    return eroded_image
+
 def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
     Plot many different ys versus the same x on the same axes, graph, and figure.
@@ -404,6 +416,7 @@ def calculate_heatmap(x, y, bins=50, erase=False):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
         # Here we would add the dilation and erosion code.
+        hist = binary_erode(binary_dilate(hist, 5), 5)
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
@@ -416,6 +429,7 @@ def plot_heatmap(heatmap, extent):
     plt.imshow(heatmap.T, extent=extent, origin='lower')
     plt.colorbar()
     plt.show()
+
 
 
 r1 = np.array([0, 0.1, 0])
@@ -451,39 +465,22 @@ y1s = np.array([])
 y2s = np.array([])
 y3s = np.array([])
 
-xs2 = np.array([])
-ys2 = np.array([])
+x_list = []
+y_list = []
+
 for point in points:
+    xs2 = np.array([])
+    ys2 = np.array([])
     for angle in alpha_bounds:
         x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
-        # print(f'type(x) = {type(x)}')
         xs2 = np.append(xs2, x, axis=0)
         ys2 = np.append(ys2, y, axis=0)
-    # sys.exit()
-heatmap_combined, extent_combined = calculate_heatmap_old(xs2, ys2, bins=175)
-plot_heatmap(heatmap_combined, extent_combined)
-
-sys.exit()
-        
-for angle in alpha_bounds:
-    x1, y1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1) 
-    x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
-    y1s = np.append(y1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
-    x2s = np.append(x2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
-    y2s = np.append(y2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
-    x3s = np.append(x3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
-    y3s = np.append(y3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
+    x_list.append(xs2)
+    y_list.append(ys2)
     
-# plot_it2(np.array([[x1s, y1s]]), np.array([r1]), individual_points=True)
-# plot_it2(np.array([[x2s, y2s]]), np.array([r3]), individual_points=True)
-# plot_it2(np.array([[x3s, y3s]]), np.array([r5]), individual_points=True)
-
-xs = np.array([x1s, x2s, x3s])
-ys = np.array([y1s, y2s, y3s])
-
-heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175, erase=False)
-
+heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175)
 plot_heatmap(heatmap_combined, extent_combined)
+
 
 
 
