@@ -175,31 +175,33 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 def x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
     
-    x_prime_vals = []
-    y_prime_vals = []
+    x_prime_vals = np.array([])
+    y_prime_vals = np.array([])
     
     z_prime = z_prime - r1[2]
     dx = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    
     for i in psi_calculator2(dx, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
         
-        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
         
-        y_prime_vals.append(y_prime)
-    
-        x_prime_vals.append(x_prime)
+        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
+        
     return x_prime_vals, y_prime_vals
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
     
-    x_prime_vals = []
-    y_prime_vals = []
+    x_prime_vals = np.array([])
+    y_prime_vals = np.array([])
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
@@ -207,15 +209,15 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
         
-        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
         
-        y_prime_vals.append(y_prime)
-    
-        x_prime_vals.append(x_prime)
+        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
     
     return x_prime_vals, y_prime_vals
 
@@ -377,6 +379,7 @@ def calculate_heatmap(x, y, bins=50, erase=False):
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
+        # Here we would add the dilation and erosion code.
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
@@ -408,7 +411,6 @@ xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estim
 # sizes in which case they cannot be broadcast into the same 3d np array.
 xys = [xy1, xy2, xy3]
 plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
 
 
 # Iterate through alpha
@@ -425,16 +427,32 @@ y1s = np.array([])
 y2s = np.array([])
 y3s = np.array([])
 
+# xs2 = np.array([])
+# ys2 = np.array([])
+# for point in points:
+#     for angle in alpha_bounds:
+#         x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
+#         print(f'type(x) = {type(x)}')
+#         xs2 = np.append(xs2, x, axis=0)
+#         ys2 = np.append(ys2, y, axis=0)
+#     sys.exit()
+# heatmap_combined, extent_combined = calculate_heatmap(xs2, ys2, bins=175, erase=False)
+# plot_heatmap(heatmap_combined, extent_combined)
+
+# sys.exit()
+        
 for angle in alpha_bounds:
+    x1, y1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1) 
     x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
     y1s = np.append(y1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
     x2s = np.append(x2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
     y2s = np.append(y2s, give_x_y_for_two_points(r3, r4, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
     x3s = np.append(x3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
     y3s = np.append(y3s, give_x_y_for_two_points(r5, r6, z_prime=1, alpha=angle, steps=180, estimate=1)[1])
-# plot_it2(np.array([x1s, y1s]), np.array([r1, r1, r1]), individual_points=True)
-# plot_it2(np.array([x2s, y2s]), np.array([r3, r3, r3]), individual_points=True)
-# plot_it2(np.array([x3s, y3s]), np.array([r5, r5, r5]), individual_points=True)
+    
+# plot_it2(np.array([[x1s, y1s]]), np.array([r1]), individual_points=True)
+# plot_it2(np.array([[x2s, y2s]]), np.array([r3]), individual_points=True)
+# plot_it2(np.array([[x3s, y3s]]), np.array([r5]), individual_points=True)
 
 xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
