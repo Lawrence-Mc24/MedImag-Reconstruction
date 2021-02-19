@@ -411,6 +411,7 @@ x3s = np.array([])
 y1s = np.array([])
 y2s = np.array([])
 y3s = np.array([])
+
 for angle in alpha_bounds:
     xy1s = np.append(xy1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1))
     x1s = np.append(x1s, give_x_y_for_two_points(r1, r2, z_prime=1, alpha=angle, steps=180, estimate=1)[0])
@@ -425,7 +426,7 @@ for angle in alpha_bounds:
 
 xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
-heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=250)
+heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=175)
 # plot_heatmap(xs, ys)
 heatmap1, extent1 = calculate_heatmap(x1s, y1s)
 heatmap2, extent2 = calculate_heatmap(x2s, y2s)
