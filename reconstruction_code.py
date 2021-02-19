@@ -298,7 +298,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     # print(f'theta = {theta}, phi = {phi}')
     x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
     # print(x, y)
-    return np.array([x, y])
+    return x, y
 
 def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
@@ -387,6 +387,9 @@ r3 = np.array([0.2, 0.3, 0.1])
 r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
+
+points = np.array([[r1, r2], [r3, r4], [r5, r6]])
+
 xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
@@ -428,9 +431,17 @@ xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
 heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=175)
 # plot_heatmap(xs, ys)
-heatmap1, extent1 = calculate_heatmap(x1s, y1s)
-heatmap2, extent2 = calculate_heatmap(x2s, y2s)
-heatmap3, extent3 = calculate_heatmap(x3s, y3s)
+H, xedge, yedge = np.histogram2d(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=50)
+
+heatmap1, extent1 = calculate_heatmap(x1s, y1s, np.array([xedge, yedge]))
+heatmap2, extent2 = calculate_heatmap(x2s, y2s, np.array([xedge, yedge]))
+heatmap3, extent3 = calculate_heatmap(x3s, y3s, np.array([xedge, yedge]))
+
+heatmap1[heatmap1 != 0] = 1
+heatmap2[heatmap2 != 0] = 1
+heatmap3[heatmap3 != 0] = 1
+
+plot_heatmap(heatmap1+heatmap2+heatmap3, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
 
 plot_heatmap(heatmap_combined, extent_combined)
 
