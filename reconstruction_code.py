@@ -353,9 +353,9 @@ def calculate_heatmap(x, y, bins=50):
 
     Parameters
     ----------
-    x : numpy_array
+    x : numpy_array containg arrays of x points for each cone
         Must be a numpy array, not a list!
-    y : numpy_array
+    y : numpy_array containg arrays of x points for each cone
         DESCRIPTION.
     bins : TYPE, optional
         DESCRIPTION. The default is 50.
@@ -366,11 +366,19 @@ def calculate_heatmap(x, y, bins=50):
         A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
         y along axis 1.
     extent : TYPE
-        DESCRIPTION.
+        DESCRIPTION.d = 
 
     '''
-    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
+    xtot = np.hstack(x)
+    ytot = np.hstack(y)
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins)
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    heatmaps = []
+    for i in range(len(x)):
+        hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
+        hist[hist != 0] = 1
+        heatmaps.append(hist)
+    heatmap = np.sum(heatmaps, 0)
     return heatmap, extent
 
 def plot_heatmap(heatmap, extent):
@@ -429,31 +437,19 @@ for angle in alpha_bounds:
 
 xs = np.array([x1s, x2s, x3s])
 ys = np.array([y1s, y2s, y3s])
-heatmap_combined, extent_combined = calculate_heatmap(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=175)
+print(f'lengths (x, y) = {len(xs[2]), len(ys[2])}')
+heatmap_combined, extent_combined = calculate_heatmap(xs, ys, bins=175)
 # plot_heatmap(xs, ys)
 H, xedge, yedge = np.histogram2d(np.concatenate((x1s, x2s, x3s)), np.concatenate((y1s, y2s, y3s)), bins=50)
 
-heatmap1, extent1 = calculate_heatmap(x1s, y1s, np.array([xedge, yedge]))
-heatmap2, extent2 = calculate_heatmap(x2s, y2s, np.array([xedge, yedge]))
-heatmap3, extent3 = calculate_heatmap(x3s, y3s, np.array([xedge, yedge]))
-
-heatmap1[heatmap1 != 0] = 1
-heatmap2[heatmap2 != 0] = 1
-heatmap3[heatmap3 != 0] = 1
-
-plot_heatmap(heatmap1+heatmap2+heatmap3, [xedge[0], xedge[-1], yedge[0], yedge[-1]])
-
-plot_heatmap(heatmap_combined, extent_combined)
-
-heatmap_combined[heatmap_combined != 0] = 1
 plot_heatmap(heatmap_combined, extent_combined)
 
 x = np.concatenate((xy1[0], xy2[0], xy3[0]))
 y = np.concatenate((xy1[1], xy2[1], xy3[1]))
-plt.hist2d(x, y, bins=50)
-plt.colorbar()
-plt.show()
+#plt.hist2d(x, y, bins=50)
+#plt.colorbar()
+#plt.show()
 
-plot_heatmap(*calculate_heatmap(x, y))
+#plot_heatmap(*calculate_heatmap(x, y))
 
 
