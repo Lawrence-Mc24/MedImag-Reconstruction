@@ -17,6 +17,9 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
+simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
+data = pd.read_csv(simdata_path, sep=";")
+
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
     energy (Joules)'''
@@ -495,8 +498,3 @@ plot_heatmap(im_erotot, extent)
 # plt.show()
 
 # plot_heatmap(*calculate_heatmap(x, y))
-
-simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
-data = pd.read_csv(simdata_path, sep=";")
-simdata_array = np.array(data)
-simdata_array = simdata_array.T
