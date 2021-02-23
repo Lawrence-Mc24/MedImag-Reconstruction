@@ -22,10 +22,10 @@ dataframe = pd.read_csv(simdata_path)
 
 x_prime = dataframe['X_1 [cm]']
 y_prime = dataframe['Y_1 [cm]']
-z_prime = dataframe['Z_1 [cm]']
+z_prime = dataframe['Z_1 [cm]']*-1
 x_0_prime = dataframe['X_2 [cm]']
 y_0_prime = dataframe['Y_2 [cm]']
-z_0_prime = dataframe['Z_2 [cm]']
+z_0_prime = dataframe['Z_2 [cm]']*-1
 E_loss = np.abs(dataframe['Energy Loss [MeV]'])
 
 r1 = np.array([x_prime, y_prime, z_prime])
@@ -128,8 +128,8 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-    print(f'dx_psi={dx_psi}')
-    print(f'dy_psi={dy_psi}')
+    # print(f'dx_psi={dx_psi}')
+    # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
 
 def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
@@ -424,81 +424,6 @@ def plot_heatmap(heatmap, extent):
     plt.colorbar()
     plt.show()
 
-
-
-# r1 = np.array([0, 0.1, 0])
-# r2 = np.array([0, 0.1, -1])
-# r3 = np.array([0.2, 0.3, 0.1])
-# r4 = np.array([0.5, 0.1, -1])
-# r5 = np.array([0, 0.4, -0.1])
-# r6 = np.array([0.5, 0.1, -1])
-
-# points = np.array([[r1, r2], [r3, r4], [r5, r6]])
-
-# xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-# xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-# xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-
-# NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
-# sizes in which case they cannot be broadcast into the same 3d np array.
-# xys = [xy1, xy2, xy3]
-# plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-
-
-# Iterate through alpha
-# Arbitrarily choose alpha to be 45 degrees and its error to be 5%
-# alpha = np.pi/4
-# alpha_err = alpha*0.05
-# Plot for alpha and its min & max boundaries
-# alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
-# xy1s = np.array([])
-# x1s = np.array([])
-# x2s = np.array([])
-# x3s = np.array([])
-# y1s = np.array([])
-# y2s = np.array([])
-# y3s = np.array([])
-
-# x_list = []
-# y_list = []
-
-# r1 = np.array([0, 0.1, 0])
-# r2 = np.array([0, 0.1, -1])
-# r3 = np.array([0.2, 0.3, 0.1])
-# r4 = np.array([0.5, 0.1, -1])
-# r5 = np.array([0, 0.4, -0.1])
-# r6 = np.array([0.5, 0.1, -1])
-
-# points = np.array([[r1, r2], [r3, r4], [r5, r6]])
-
-# alpha = np.pi/4
-# alpha_err = alpha*0.05
-# # Plot for alpha and its min & max boundaries
-# alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
-# print(f'pry {alpha_bounds[0], alpha_bounds[1]}')
-# xy1s = np.array([])
-# x1s = np.array([])
-# x2s = np.array([])
-# x3s = np.array([])
-# y1s = np.array([])
-# y2s = np.array([])
-# y3s = np.array([])
-
-# x_listps = []
-# y_listps = []
-
-# for point in points:
-#     xs2 = np.array([])
-#     ys2 = np.array([])
-#     for angle in alpha_bounds:
-#         x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
-#         xs2 = np.append(xs2, x, axis=0)
-#         ys2 = np.append(ys2, y, axis=0)
-#     x_listps.append(xs2)
-#     y_listps.append(ys2)
-    
-# heatmap_combinedps, extent_combinedps = calculate_heatmap(x_listps, y_listps, bins=175)
-# plot_heatmap(heatmap_combinedps, extent_combinedps)
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
     '''
