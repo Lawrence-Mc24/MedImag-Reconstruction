@@ -2,10 +2,11 @@
 """
 Created on Fri Feb  5 15:09:55 2021
 
-@author: laure
+@author: laurence
 """
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
 import sys
@@ -15,6 +16,22 @@ h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
+
+simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
+dataframe = pd.read_csv(simdata_path)
+
+x_prime = dataframe['X_1 [cm]']
+y_prime = dataframe['Y_1 [cm]']
+z_prime = dataframe['Z_1 [cm]']
+x_0_prime = dataframe['X_2 [cm]']
+y_0_prime = dataframe['Y_2 [cm]']
+z_0_prime = dataframe['Z_2 [cm]']
+E_loss = np.abs(dataframe['Energy Loss [MeV]'])
+
+r1 = np.array([x_prime, y_prime, z_prime])
+r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
+
+points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
@@ -107,11 +124,12 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c12 = -np.sin(phi)
     c13 = np.cos(phi)*np.sin(theta)
     dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
-    
     c21 = np.sin(phi)*np.cos(theta)
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
+    print(f'dx_psi={dx_psi}')
+    print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
 
 def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
@@ -173,30 +191,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             psi_list.append(psi)
     return psi_list
 
-def x_prime_y_prime_output2(z_prime, theta, phi, alpha, steps, r1, estimate):
-    a = np.tan(alpha)
-    
-    x_prime_vals = np.array([])
-    y_prime_vals = np.array([])
-    
-    z_prime = z_prime - r1[2]
-    dx = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
-    
-    for i in psi_calculator2(dx, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
-        
-        z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
-        
-        x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
-                     np.cos(phi)*np.sin(theta)) + r1[0]
-        
-        y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
-        
-        x_prime_vals = np.append(x_prime_vals, x_prime)
-        y_prime_vals = np.append(y_prime_vals, y_prime)
-        
-    return x_prime_vals, y_prime_vals
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
@@ -432,79 +426,79 @@ def plot_heatmap(heatmap, extent):
 
 
 
-r1 = np.array([0, 0.1, 0])
-r2 = np.array([0, 0.1, -1])
-r3 = np.array([0.2, 0.3, 0.1])
-r4 = np.array([0.5, 0.1, -1])
-r5 = np.array([0, 0.4, -0.1])
-r6 = np.array([0.5, 0.1, -1])
+# r1 = np.array([0, 0.1, 0])
+# r2 = np.array([0, 0.1, -1])
+# r3 = np.array([0.2, 0.3, 0.1])
+# r4 = np.array([0.5, 0.1, -1])
+# r5 = np.array([0, 0.4, -0.1])
+# r6 = np.array([0.5, 0.1, -1])
 
-points = np.array([[r1, r2], [r3, r4], [r5, r6]])
+# points = np.array([[r1, r2], [r3, r4], [r5, r6]])
 
-xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
-xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+# xy1 = give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+# xy2 = give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
+# xy3 = give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180, estimate=1)
 
 # NB: We must make xys a list rather than a numpy array because the 2d arrays can be of different
 # sizes in which case they cannot be broadcast into the same 3d np array.
-xys = [xy1, xy2, xy3]
-plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
+# xys = [xy1, xy2, xy3]
+# plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
 
 
 # Iterate through alpha
 # Arbitrarily choose alpha to be 45 degrees and its error to be 5%
-alpha = np.pi/4
-alpha_err = alpha*0.05
+# alpha = np.pi/4
+# alpha_err = alpha*0.05
 # Plot for alpha and its min & max boundaries
-alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
-xy1s = np.array([])
-x1s = np.array([])
-x2s = np.array([])
-x3s = np.array([])
-y1s = np.array([])
-y2s = np.array([])
-y3s = np.array([])
+# alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
+# xy1s = np.array([])
+# x1s = np.array([])
+# x2s = np.array([])
+# x3s = np.array([])
+# y1s = np.array([])
+# y2s = np.array([])
+# y3s = np.array([])
 
-x_list = []
-y_list = []
+# x_list = []
+# y_list = []
 
-r1 = np.array([0, 0.1, 0])
-r2 = np.array([0, 0.1, -1])
-r3 = np.array([0.2, 0.3, 0.1])
-r4 = np.array([0.5, 0.1, -1])
-r5 = np.array([0, 0.4, -0.1])
-r6 = np.array([0.5, 0.1, -1])
+# r1 = np.array([0, 0.1, 0])
+# r2 = np.array([0, 0.1, -1])
+# r3 = np.array([0.2, 0.3, 0.1])
+# r4 = np.array([0.5, 0.1, -1])
+# r5 = np.array([0, 0.4, -0.1])
+# r6 = np.array([0.5, 0.1, -1])
 
-points = np.array([[r1, r2], [r3, r4], [r5, r6]])
+# points = np.array([[r1, r2], [r3, r4], [r5, r6]])
 
-alpha = np.pi/4
-alpha_err = alpha*0.05
-# Plot for alpha and its min & max boundaries
-alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
-print(f'pry {alpha_bounds[0], alpha_bounds[1]}')
-xy1s = np.array([])
-x1s = np.array([])
-x2s = np.array([])
-x3s = np.array([])
-y1s = np.array([])
-y2s = np.array([])
-y3s = np.array([])
+# alpha = np.pi/4
+# alpha_err = alpha*0.05
+# # Plot for alpha and its min & max boundaries
+# alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=50)
+# print(f'pry {alpha_bounds[0], alpha_bounds[1]}')
+# xy1s = np.array([])
+# x1s = np.array([])
+# x2s = np.array([])
+# x3s = np.array([])
+# y1s = np.array([])
+# y2s = np.array([])
+# y3s = np.array([])
 
-x_listps = []
-y_listps = []
+# x_listps = []
+# y_listps = []
 
-for point in points:
-    xs2 = np.array([])
-    ys2 = np.array([])
-    for angle in alpha_bounds:
-        x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
-        xs2 = np.append(xs2, x, axis=0)
-        ys2 = np.append(ys2, y, axis=0)
-    x_listps.append(xs2)
-    y_listps.append(ys2)
+# for point in points:
+#     xs2 = np.array([])
+#     ys2 = np.array([])
+#     for angle in alpha_bounds:
+#         x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
+#         xs2 = np.append(xs2, x, axis=0)
+#         ys2 = np.append(ys2, y, axis=0)
+#     x_listps.append(xs2)
+#     y_listps.append(ys2)
     
-heatmap_combinedps, extent_combinedps = calculate_heatmap(x_listps, y_listps, bins=175)
-plot_heatmap(heatmap_combinedps, extent_combinedps)
+# heatmap_combinedps, extent_combinedps = calculate_heatmap(x_listps, y_listps, bins=175)
+# plot_heatmap(heatmap_combinedps, extent_combinedps)
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
     '''
@@ -544,17 +538,21 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     for point in points:
         xs2 = np.array([])
         ys2 = np.array([])
-        print(source_energy-point[2])
-        alpha = compton_angle(source_energy, source_energy-point[2])
-        Ef = source_energy - point[2]
+        print(source_energy-point[6])
+        alpha = compton_angle(source_energy, source_energy-point[6])
+        Ef = source_energy - point[6]
         Ef = Ef*e
-        print(alpha)
+        print(f'alpha={alpha}')
         alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
         print(f'alpha_err is {alpha_err}')
         alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-
+    
         for angle in alpha_bounds:
-            x, y = give_x_y_for_two_points(point[0], point[1], z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
+            r1 = np.array([point[0], point[1], point[2]])
+            print(f'r1={r1}')
+            r2 = np.array([point[3], point[4], point[5]])
+            print(f'r2={r2}')
+            x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
         x_list.append(xs2)
@@ -569,19 +567,14 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined
 
-r1 = np.array([0, 0.1, 0])
-r2 = np.array([0, 0.1, -1])
-r3 = np.array([0.2, 0.3, 0.1])
-r4 = np.array([0.5, 0.1, -1])
-r5 = np.array([0, 0.4, -0.1])
-r6 = np.array([0.5, 0.1, -1])
+# r1 = np.array([0, 0.1, 0])
+# r2 = np.array([0, 0.1, -1])
+# r3 = np.array([0.2, 0.3, 0.1])
+# r4 = np.array([0.5, 0.1, -1])
+# r5 = np.array([0, 0.4, -0.1])
+# r6 = np.array([0.5, 0.1, -1])
 
-points = np.array([[r1, r2, 181.73E3], [r3, r4, 181.73E3], [r5, r6, 181.73E3]])
-
-
-get_image(points, 50, 1, 1, 662E3, 175, 0.0843, steps=180)
+# points = np.array([[r1, r2, 181.73E3], [r3, r4, 181.73E3], [r5, r6, 181.73E3]])
 
 
-
-
-
+get_image(points, 50, 1, 1, 662E3, 175, R=0.0843,steps=50)
