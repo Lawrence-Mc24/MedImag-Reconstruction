@@ -26,9 +26,11 @@ z_prime = dataframe['Z_1 [cm]']
 x_0_prime = dataframe['X_2 [cm]']
 y_0_prime = dataframe['Y_2 [cm]']
 z_0_prime = dataframe['Z_2 [cm]']
+E_loss = dataframe['Energy Loss [MeV]']
 
 r1 = np.array([x_prime, y_prime, z_prime]).T
 r2 = np.array([x_0_prime, y_0_prime, z_0_prime]).T
+
 
 # def cone_vector_new(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
 #     '''Takes positional data from table and returns list of direction vectors
