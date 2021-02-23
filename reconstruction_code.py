@@ -26,7 +26,7 @@ z_prime = dataframe['Z_1 [cm]']*-1
 x_0_prime = dataframe['X_2 [cm]']
 y_0_prime = dataframe['Y_2 [cm]']
 z_0_prime = dataframe['Z_2 [cm]']*-1
-E_loss = np.abs(dataframe['Energy Loss [MeV]'])
+E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
 
 r1 = np.array([x_prime, y_prime, z_prime])
 r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
@@ -160,22 +160,22 @@ def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
     # sys.exit()
     return dy/dy_psi
 
-def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
-    '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
-    psi = 0
-    psi_list = [0]
-    while True:
-        d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
-        print(f'd = {d}')
-        psi += d
-        print(f'psi = {psi}')
-        if np.abs(psi) >= 2*np.pi:
-            break
-        else:
-            psi_list.append(psi)
+# def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
+#     '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
+#     psi = 0
+#     psi_list = [0]
+#     while True:
+#         d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
+#         print(f'd = {d}')
+#         psi += d
+#         print(f'psi = {psi}')
+#         if np.abs(psi) >= 2*np.pi:
+#             break
+#         else:
+#             psi_list.append(psi)
     
-    print(f'psi_list = {psi_list}')
-    return psi_list
+#     print(f'psi_list = {psi_list}')
+#     return psi_list
 
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
@@ -185,7 +185,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     while True:
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
-        if psi >= 2*np.pi:
+        if np.abs(psi) >= 2*np.pi:
             break
         else:
             psi_list.append(psi)
@@ -200,6 +200,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -491,15 +492,5 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         plot_heatmap(heatmap_combined, extent_combined)
     
     return heatmap_combined
-
-# r1 = np.array([0, 0.1, 0])
-# r2 = np.array([0, 0.1, -1])
-# r3 = np.array([0.2, 0.3, 0.1])
-# r4 = np.array([0.5, 0.1, -1])
-# r5 = np.array([0, 0.4, -0.1])
-# r6 = np.array([0.5, 0.1, -1])
-
-# points = np.array([[r1, r2, 181.73E3], [r3, r4, 181.73E3], [r5, r6, 181.73E3]])
-
 
 get_image(points, 50, 1, 1, 662E3, 175, R=0.0843,steps=50)
