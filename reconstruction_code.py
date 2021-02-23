@@ -200,7 +200,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
-    print(ds)
+    # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -461,23 +461,29 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     x_list = []
     y_list = []
-    for point in points:
+    for point in points[:2000]:
         xs2 = np.array([])
         ys2 = np.array([])
-        print(source_energy-point[6])
+        # print(source_energy-point[6])
         alpha = compton_angle(source_energy, source_energy-point[6])
         Ef = source_energy - point[6]
         Ef = Ef*e
-        print(f'alpha={alpha}')
+        # print(f'alpha={alpha}')
         alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-        print(f'alpha_err is {alpha_err}')
+        # print(f'alpha_err is {alpha_err}')
+        alpha_min = alpha-alpha_err
+        alpha_max = alpha+alpha_err
+        if alpha_min < 0:
+            alpha_min = 0
+        if alpha_max >= np.pi/2:
+            alpha_max = (np.pi/2)-0.01
         alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
     
         for angle in alpha_bounds:
             r1 = np.array([point[0], point[1], point[2]])
-            print(f'r1={r1}')
+            # print(f'r1={r1}')
             r2 = np.array([point[3], point[4], point[5]])
-            print(f'r2={r2}')
+            # print(f'r2={r2}')
             x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
@@ -485,7 +491,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         y_list.append(ys2)
     
 
-    heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins)
+    heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
     #print(extent_combined==extent_combinedps)
     
     if plot is True:
@@ -493,4 +499,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined
 
-get_image(points, 50, 1, 1, 662E3, 175, R=0.0843,steps=50)
+get_image(points, 50, 4, 4, 662E3, 175, R=0.00843,steps=50)
