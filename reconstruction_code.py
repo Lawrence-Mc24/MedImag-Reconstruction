@@ -17,15 +17,15 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_.csv"
+simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_45_degrees.csv"
 dataframe = pd.read_csv(simdata_path)
 
 x_prime = dataframe['X_1 [cm]']
 y_prime = dataframe['Y_1 [cm]']
-z_prime = dataframe['Z_1 [cm]']*-1
+z_prime = dataframe['Z_1 [cm]']
 x_0_prime = dataframe['X_2 [cm]']
 y_0_prime = dataframe['Y_2 [cm]']
-z_0_prime = dataframe['Z_2 [cm]']*-1
+z_0_prime = dataframe['Z_2 [cm]']
 E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
 
 r1 = np.array([x_prime, y_prime, z_prime])
@@ -35,7 +35,7 @@ points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
-    energy (Joules)'''
+    energy (eV)'''
     # May not need e factor depending on detector energy output
     E_initial = E_initial*e
     E_final = E_final*e
@@ -113,12 +113,16 @@ def phi_angle(N):
         return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
 
 def dz(theta, phi, psi, z_prime, a):
-    '''Calculate dz_prime/dpsi'''
+    '''Calculate dz/dpsi'''
+    # print(f'denom is {(np.cos(theta) - a*np.cos(psi)*np.sin(theta))}')
+    # print(f'theta is {theta}')
+    # print(f'psi is {psi}')
     return - z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
 
 def dpsi(ds, theta, phi, psi, z_prime, a):
     '''Calculate the dpsi increment for a given ds at a given psi for given angles.'''
     h = dz(theta, phi, psi, z_prime, a)
+    # print(f'dz={h}')
     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
@@ -132,33 +136,33 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
 
-def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
-    '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
-    h = dz(theta, phi, psi, z_prime, a)
-    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-    c11 = np.cos(phi)*np.cos(theta)
-    c12 = -np.sin(phi)
-    c13 = np.cos(phi)*np.sin(theta)
-    print(dx, theta, phi, psi, z_prime, a)
-    print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
-    dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
-    print(f'dx_psi = {dx_psi}')
-    # sys.exit()
-    return dx/dx_psi
+# def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
+#     '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
+#     h = dz(theta, phi, psi, z_prime, a)
+#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+#     c11 = np.cos(phi)*np.cos(theta)
+#     c12 = -np.sin(phi)
+#     c13 = np.cos(phi)*np.sin(theta)
+#     print(dx, theta, phi, psi, z_prime, a)
+#     print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
+#     dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
+#     print(f'dx_psi = {dx_psi}')
+#     # sys.exit()
+#     return dx/dx_psi
 
-def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
-    '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
-    h = dz(theta, phi, psi, z_prime, a)
-    z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-    c21 = np.sin(phi)*np.cos(theta)
-    c22 = np.cos(phi)
-    c23 = np.sin(phi)*np.sin(theta)
-    dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-    print(dy, theta, phi, psi, z_prime, a)
-    print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
-    print(f'dy_psi = {dy_psi}')
-    # sys.exit()
-    return dy/dy_psi
+# def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
+#     '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
+#     h = dz(theta, phi, psi, z_prime, a)
+#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+#     c21 = np.sin(phi)*np.cos(theta)
+#     c22 = np.cos(phi)
+#     c23 = np.sin(phi)*np.sin(theta)
+#     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
+#     print(dy, theta, phi, psi, z_prime, a)
+#     print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
+#     print(f'dy_psi = {dy_psi}')
+#     # sys.exit()
+#     return dy/dy_psi
 
 # def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
 #     '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
@@ -182,9 +186,15 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
+    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
+        if (theta+np.arctan(a)) > np.pi/2:
+            break
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
+        # print(f'psi is {psi}')
+        # print(f'd is {d}')
+        # print(psi)
         if np.abs(psi) >= 2*np.pi:
             break
         else:
@@ -194,12 +204,14 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
+    # print(f'a is {a}')
     
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    # print(ds)
     # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
@@ -461,35 +473,48 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     x_list = []
     y_list = []
-    for point in points[:2000]:
+    i = 0
+    for point in points[:500]:
+        # print(i)
+        i += 1
         xs2 = np.array([])
         ys2 = np.array([])
         # print(source_energy-point[6])
         alpha = compton_angle(source_energy, source_energy-point[6])
+        # print(alpha)
         Ef = source_energy - point[6]
         Ef = Ef*e
         # print(f'alpha={alpha}')
-        alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-        # print(f'alpha_err is {alpha_err}')
-        alpha_min = alpha-alpha_err
-        alpha_max = alpha+alpha_err
-        if alpha_min < 0:
-            alpha_min = 0
-        if alpha_max >= np.pi/2:
-            alpha_max = (np.pi/2)-0.01
-        alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-    
-        for angle in alpha_bounds:
+        if R>0:
+            alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
+            # print(f'alpha_err is {alpha_err}')
+            alpha_min = alpha-alpha_err
+            alpha_max = alpha+alpha_err
+            if alpha_min < 0:
+                alpha_min = 0
+            if alpha_max >= np.pi/2:
+                alpha_max = (np.pi/2)-0.01
+            alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+            for angle in alpha_bounds:
+                r1 = np.array([point[0], point[1], point[2]])
+                # print(f'r1={r1}')
+                r2 = np.array([point[3], point[4], point[5]])
+                # print(f'r2={r2}')
+                x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
+                xs2 = np.append(xs2, x, axis=0)
+                ys2 = np.append(ys2, y, axis=0)
+                x_list.append(xs2)
+                y_list.append(ys2)
+        else:
             r1 = np.array([point[0], point[1], point[2]])
             # print(f'r1={r1}')
             r2 = np.array([point[3], point[4], point[5]])
             # print(f'r2={r2}')
-            x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
+            x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
-        x_list.append(xs2)
-        y_list.append(ys2)
-    
+            x_list.append(xs2)
+            y_list.append(ys2)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
     #print(extent_combined==extent_combinedps)
@@ -499,4 +524,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined
 
-get_image(points, 50, 4, 4, 662E3, 175, R=0.00843,steps=50)
+get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
