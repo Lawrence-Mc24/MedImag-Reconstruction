@@ -17,7 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_45_degrees.csv"
+path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -594,33 +594,23 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             y_list.append(ys2)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
-<<<<<<< HEAD
     heatmap_new = calculate_heatmap2(x_list, y_list, bins=100, extent=extent_combined)
     #print(extent_combined==extent_combinedps)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
         plot_heatmap(heatmap_new, extent_combined)
-=======
-    # print(extent_combined==extent_combinedps)
-    x_scale, y_scale = image_scaling_factor(heatmap_combined, extent_combined)
-    # extent_scaled = np.array([*extent_combined[:2]*x_scale, *extent_combined[2:]*y_scale])/bins
-    # if plot is True:
-        # plot_heatmap(heatmap_combined, extent_scaled)
->>>>>>> 7446c510dd69b9692894b1af9a4d172b0ab44046
     
     return heatmap_combined, heatmap_new
 
-<<<<<<< HEAD
 heatmap, heatmap2 = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
-=======
-def stacked_heatmaps(max_depth):
-    tup_i = ()
-    for i in range(max_depth):
-        tup_i += (get_image(points, 50, i+1, i+1, 662E3, 175, R=0,steps=50),)
-    print(f'there are {len(tup_i)} tuple elements')
-    stack = np.dstack(tup_i)
-    return stack
 
-# heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
-stack = stacked_heatmaps(30)
->>>>>>> 7446c510dd69b9692894b1af9a4d172b0ab44046
+# def stacked_heatmaps(max_depth):
+#     tup_i = ()
+#     for i in range(max_depth):
+#         tup_i += (get_image(points, 50, i+1, i+1, 662E3, 175, R=0,steps=50),)
+#     print(f'there are {len(tup_i)} tuple elements')
+#     stack = np.dstack(tup_i)
+#     return stack
+
+# # heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
+# stack = stacked_heatmaps(30)
