@@ -17,8 +17,8 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-simdata_path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees.csv"
-dataframe = pd.read_csv(simdata_path)
+path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_45_degrees.csv"
+dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
 y_prime = dataframe['Y_1 [cm]']
@@ -176,8 +176,7 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
 #         if np.abs(psi) >= 2*np.pi:
 #             break
 #         else:
-#             psi_list.append(psi)
-    
+#             psi_list.append(psi)    
 #     print(f'psi_list = {psi_list}')
 #     return psi_list
 
@@ -451,8 +450,6 @@ def image_scaling_factor(heatmap, extent):
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
     '''
-    
-
     Parameters
     ----------
     points : TYPE - array
@@ -531,12 +528,21 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             y_list.append(ys2)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
-    #print(extent_combined==extent_combinedps)
+    # print(extent_combined==extent_combinedps)
     x_scale, y_scale = image_scaling_factor(heatmap_combined, extent_combined)
-    extent_scaled = np.array([*extent_combined[:2]*x_scale, *extent_combined[2:]*y_scale])/bins
-    if plot is True:
-        plot_heatmap(heatmap_combined, extent_scaled)
+    # extent_scaled = np.array([*extent_combined[:2]*x_scale, *extent_combined[2:]*y_scale])/bins
+    # if plot is True:
+        # plot_heatmap(heatmap_combined, extent_scaled)
     
     return heatmap_combined
 
-heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
+def stacked_heatmaps(max_depth):
+    tup_i = ()
+    for i in range(max_depth):
+        tup_i += (get_image(points, 50, i+1, i+1, 662E3, 175, R=0,steps=50),)
+    print(f'there are {len(tup_i)} tuple elements')
+    stack = np.dstack(tup_i)
+    return stack
+
+# heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
+stack = stacked_heatmaps(30)
