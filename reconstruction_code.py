@@ -17,7 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-simdata_path = "D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_45_degrees.csv"
+simdata_path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees.csv"
 dataframe = pd.read_csv(simdata_path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -391,11 +391,10 @@ def calculate_heatmap_old(x, y, bins=50):
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     return heatmap, extent
 
-def calculate_heatmap(x, y, bins=50, erase=False):
+def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
     number of bins.
-
     Parameters
     ----------
     x : numpy_array containg arrays of x points for each cone
@@ -404,7 +403,7 @@ def calculate_heatmap(x, y, bins=50, erase=False):
         DESCRIPTION.
     bins : TYPE, optional
         DESCRIPTION. The default is 50.
-
+    dilate_erode_iterations : number of iterations that are carried out for the dilation and erodation
     Returns
     -------
     heatmap : numpy_array
@@ -412,18 +411,21 @@ def calculate_heatmap(x, y, bins=50, erase=False):
         y along axis 1.
     extent : TYPE
         DESCRIPTION.d = 
-
     '''
     xtot = np.hstack(x)
     ytot = np.hstack(y)
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins)
-    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+    h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
+    pixel_size_x = abs(xedges_[0] - xedges_[1])
+    pixel_size_y = abs(yedges_[0] - yedges_[1])
+    extend_x = 2*dilate_erode_iterations*pixel_size_x
+    extend_y = 2*dilate_erode_iterations*pixel_size_y
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+    extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
     heatmaps = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
-        # Here we would add the dilation and erosion code.
-        hist = binary_erode(binary_dilate(hist, 5), 5)
+        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
@@ -475,7 +477,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     i = 0
     parabolas = []
-    for point in points[:500]:
+    for point in points[:20]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -523,7 +525,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     #print(extent_combined==extent_combinedps)
     
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined)
+        plot_heatmap(heatmap_combined, extent_combined/1000)
     
     return heatmap_combined
 
