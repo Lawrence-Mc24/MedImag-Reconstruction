@@ -420,10 +420,11 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     print(pixel_size_x==pixel_size_y)
     print(f'pixel_size_x = {pixel_size_x})')
     print(f'pixel_size_y = {pixel_size_y})')
-    extend_x = 2*dilate_erode_iterations*pixel_size_x
-    extend_y = 2*dilate_erode_iterations*pixel_size_y
+    extend_x = 5*dilate_erode_iterations*pixel_size_x
+    extend_y = 5*dilate_erode_iterations*pixel_size_y
     h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     extent = np.array([xedges[0]/pixel_size_x, xedges[-1]/pixel_size_x, yedges[0]/pixel_size_y, yedges[-1]/pixel_size_y])
+    # extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
     heatmaps = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
@@ -442,6 +443,11 @@ def plot_heatmap(heatmap, extent):
     plt.colorbar()
     plt.show()
 
+def image_scaling_factor(heatmap, extent):
+    ind = np.unravel_index(np.argmax(heatmap, axis=None), heatmap.shape)
+    x_dist = 2*np.amax([np.argmin(heatmap[ind[0]][ind[1]:]), np.argmin(np.flip(heatmap[ind[0]][:ind[1]+1]))])
+    y_dist = 2*np.amax([np.argmin(heatmap.T[ind[1]][ind[0]:]), np.argmin(np.flip(heatmap.T[ind[1]][:ind[0]+1]))])
+    return x_dist, y_dist
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
     '''
@@ -480,7 +486,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     i = 0
     parabolas = []
-    for point in points[:20]:
+    for point in points[:100]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -494,7 +500,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         r2 = np.array([point[3], point[4], point[5]])
         # print(f'alpha={alpha}')
         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-        if theta + alpha >= np.pi/2:
+        if theta + alpha >= np.pi/2-0.001:
             parabolas.append(point)
             continue
         if R>0:
@@ -526,10 +532,11 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
     #print(extent_combined==extent_combinedps)
-    
+    x_scale, y_scale = image_scaling_factor(heatmap_combined, extent_combined)
+    extent_scaled = np.array([*extent_combined[:2]*x_scale, *extent_combined[2:]*y_scale])/bins
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined/1000)
+        plot_heatmap(heatmap_combined, extent_scaled)
     
     return heatmap_combined
 
-get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
+heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
