@@ -474,6 +474,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     x_list = []
     y_list = []
     i = 0
+    parabolas = []
     for point in points[:500]:
         # print(i)
         i += 1
@@ -487,6 +488,10 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         r1 = np.array([point[0], point[1], point[2]])
         r2 = np.array([point[3], point[4], point[5]])
         # print(f'alpha={alpha}')
+        theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+        if theta + alpha >= np.pi/2:
+            parabolas.append(point)
+            continue
         if R>0:
             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
             # print(f'alpha_err is {alpha_err}')
@@ -499,7 +504,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
             for angle in alpha_bounds:
                 # print(f'r1={r1}')
-                theta = theta_angle()
                 # print(f'r2={r2}')
                 x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
                 xs2 = np.append(xs2, x, axis=0)
