@@ -17,7 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees.csv"
+path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -416,10 +416,16 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
+    print(f'pixel_size_x = {pixel_size_x}')
+    print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 5*dilate_erode_iterations*pixel_size_x
     extend_y = 5*dilate_erode_iterations*pixel_size_y
     h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
-      
+    
+    pixel_size_x = abs(xedges[0] - xedges[1])
+    pixel_size_y = abs(yedges[0] - yedges[1])
+    print(f'pixel_size_x = {pixel_size_x}')
+    print(f'pixel_size_y = {pixel_size_y}')
     # np.where(xtot<extent[0], 0, xtot)
     # np.where(xtot>extent[1], 0, xtot)
     # np.where(ytot<extent[2], 0, ytot)
@@ -434,8 +440,9 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     heatmap = np.sum(heatmaps, 0)
     
     chop_indices = image_slicer(heatmap, ZoomOut)
-    extent = np.array([xedges[chop_indices[0]], xedges[chop_indices[1]], yedges[chop_indices[2]], yedges[chop_indices[3]]])
-    heatmap = heatmap[chop_indices[0]:chop_indices[1], chop_indices[2]:chop_indices[3]]
+    print(f'chop_indices = {chop_indices}')
+    extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
+    heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
     return heatmap, extent
 
 
@@ -552,9 +559,9 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
     
-    return heatmap_combined
+    return heatmap_combined, extent_combined
 
-heatmap = get_image(points, 50, 30, 30, 662E3, 500, R=0, steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
 
 # def stacked_heatmaps(max_depth):
 #     tup_i = ()
