@@ -484,6 +484,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         # print(alpha)
         Ef = source_energy - point[6]
         Ef = Ef*e
+        r1 = np.array([point[0], point[1], point[2]])
+        r2 = np.array([point[3], point[4], point[5]])
         # print(f'alpha={alpha}')
         if R>0:
             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
@@ -496,9 +498,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 alpha_max = (np.pi/2)-0.01
             alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
             for angle in alpha_bounds:
-                r1 = np.array([point[0], point[1], point[2]])
                 # print(f'r1={r1}')
-                r2 = np.array([point[3], point[4], point[5]])
+                theta = theta_angle()
                 # print(f'r2={r2}')
                 x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
                 xs2 = np.append(xs2, x, axis=0)
@@ -506,9 +507,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 x_list.append(xs2)
                 y_list.append(ys2)
         else:
-            r1 = np.array([point[0], point[1], point[2]])
             # print(f'r1={r1}')
-            r2 = np.array([point[3], point[4], point[5]])
             # print(f'r2={r2}')
             x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate)
             xs2 = np.append(xs2, x, axis=0)
