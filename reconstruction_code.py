@@ -417,10 +417,13 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
+    print(pixel_size_x==pixel_size_y)
+    print(f'pixel_size_x = {pixel_size_x})')
+    print(f'pixel_size_y = {pixel_size_y})')
     extend_x = 2*dilate_erode_iterations*pixel_size_x
     extend_y = 2*dilate_erode_iterations*pixel_size_y
     h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
-    extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    extent = np.array([xedges[0]/pixel_size_x, xedges[-1]/pixel_size_x, yedges[0]/pixel_size_y, yedges[-1]/pixel_size_y])
     heatmaps = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
