@@ -417,14 +417,15 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
-    print(pixel_size_x==pixel_size_y)
-    print(f'pixel_size_x = {pixel_size_x})')
-    print(f'pixel_size_y = {pixel_size_y})')
     extend_x = 5*dilate_erode_iterations*pixel_size_x
     extend_y = 5*dilate_erode_iterations*pixel_size_y
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
-    extent = np.array([xedges[0]/pixel_size_x, xedges[-1]/pixel_size_x, yedges[0]/pixel_size_y, yedges[-1]/pixel_size_y])
-    # extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+      
+    # np.where(xtot<extent[0], 0, xtot)
+    # np.where(xtot>extent[1], 0, xtot)
+    # np.where(ytot<extent[2], 0, ytot)
+    # np.where(ytot>extent[3], 0, ytot)
+
     heatmaps = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
@@ -434,7 +435,55 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
         heatmap[heatmap == 1] = 0
+    
+    chop_indices = image_slicer(heatmap)
+    extent = np.array([xedges[chop_indices[0]], xedges[chop_indices[1]], yedges[chop_indices[2]], yedges[chop_indices[3]]])
+    heatmap = heatmap[chop_indices[0]:chop_indices[1], chop_indices[2]:chop_indices[3]]
     return heatmap, extent
+
+def calculate_heatmap2(x, y, bins, extent, dilate_erode_iterations=5):
+    '''
+    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
+    number of bins.
+    Parameters
+    ----------
+    x : numpy_array containg arrays of x points for each cone
+        Must be a numpy array, not a list!
+    y : numpy_array containg arrays of x points for each cone
+        DESCRIPTION.
+    bins : TYPE, optional
+        DESCRIPTION. The default is 50.
+    dilate_erode_iterations : number of iterations that are carried out for the dilation and erodation
+    Returns
+    -------
+    heatmap : numpy_array
+        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+        y along axis 1.
+    extent : TYPE
+        DESCRIPTION.d = 
+    '''
+    xtot = np.hstack(x)
+    ytot = np.hstack(y)
+    h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins, range=[extent[:2], extent[2:]])
+    pixel_size_x = abs(xedges_[0] - xedges_[1])
+    pixel_size_y = abs(yedges_[0] - yedges_[1])
+    extend_x = 5*dilate_erode_iterations*pixel_size_x
+    extend_y = 5*dilate_erode_iterations*pixel_size_y
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+
+    heatmaps = []
+    for i in range(len(x)):
+        hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
+        hist[hist != 0] = 1
+        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        heatmaps.append(hist)
+    heatmap = np.sum(heatmaps, 0)
+    
+    # chop_indices = image_slicer(heatmap)
+    # extent = np.array([xedges[chop_indices[0]], xedges[chop_indices[1]], yedges[chop_indices[2]], yedges[chop_indices[3]]])
+    # heatmap = heatmap[chop_indices[0]:chop_indices[1], chop_indices[2]:chop_indices[3]]
+    return heatmap
+
 
 def plot_heatmap(heatmap, extent):
     '''Plot a heatmap using plt.imshow().'''
@@ -443,11 +492,28 @@ def plot_heatmap(heatmap, extent):
     plt.colorbar()
     plt.show()
 
-def image_scaling_factor(heatmap, extent):
-    ind = np.unravel_index(np.argmax(heatmap, axis=None), heatmap.shape)
-    x_dist = 2*np.amax([np.argmin(heatmap[ind[0]][ind[1]:]), np.argmin(np.flip(heatmap[ind[0]][:ind[1]+1]))])
-    y_dist = 2*np.amax([np.argmin(heatmap.T[ind[1]][ind[0]:]), np.argmin(np.flip(heatmap.T[ind[1]][:ind[0]+1]))])
-    return x_dist, y_dist
+def image_slicer(h):
+    ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
+    h[h < 0.05*np.amax(h)] = 0
+    chop_indices = np.arange(4)
+    for i in range(np.shape(h)[0]):
+        if np.sum(h[ind[0]-i]) == 0:
+            chop_indices[0] = ind[0] - i
+            break
+    for i in range(np.shape(h)[0]):
+        if np.sum(h[ind[0]+i]) == 0:
+            chop_indices[1] = ind[0] + i
+            break
+    for i in range(np.shape(h)[0]):
+        if np.sum(h.T[ind[1]-i]) == 0:
+            chop_indices[2] = ind[1] - i
+            break
+    for i in range(np.shape(h)[0]):
+        if np.sum(h.T[ind[1]+i]) == 0:
+            chop_indices[3] = ind[1] + i
+            break
+        
+    return chop_indices
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True):
     '''
@@ -486,7 +552,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     i = 0
     parabolas = []
-    for point in points[:100]:
+    for point in points[:500]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -531,12 +597,12 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             y_list.append(ys2)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, erase=True)
+    heatmap_new = calculate_heatmap2(x_list, y_list, bins=100, extent=extent_combined)
     #print(extent_combined==extent_combinedps)
-    x_scale, y_scale = image_scaling_factor(heatmap_combined, extent_combined)
-    extent_scaled = np.array([*extent_combined[:2]*x_scale, *extent_combined[2:]*y_scale])/bins
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_scaled)
+        plot_heatmap(heatmap_combined, extent_combined)
+        plot_heatmap(heatmap_new, extent_combined)
     
-    return heatmap_combined
+    return heatmap_combined, heatmap_new
 
-heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
+heatmap, heatmap2 = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
