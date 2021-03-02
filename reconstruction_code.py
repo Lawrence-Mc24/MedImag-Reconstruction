@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
-import sys
 from scipy import ndimage
 
 h = scipy.constants.h
@@ -17,9 +16,9 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-# path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\compt_photo_chain_data_.csv"
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
-dataframe = pd.read_csv(path)
+Laurence_path = 'C:/Users/laure/Documents/Physics/Year 3/Group Study/compt_photo_chain_data_.csv'
+Adam_path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+dataframe = pd.read_csv(Adam_path)
 
 x_prime = dataframe['X_1 [cm]']
 y_prime = dataframe['Y_1 [cm]']
