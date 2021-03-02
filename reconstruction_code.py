@@ -16,8 +16,9 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = 'C:/Users/laure/Documents/Physics/Year 3/Group Study/compt_photo_chain_data_.csv'
+# path = 'C:/Users/laure/Documents/Physics/Year 3/Group Study/compt_photo_chain_data_.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -444,10 +445,11 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     heatmap = np.sum(heatmaps, 0)
     
     chop_indices, ind = image_slicer(heatmap, ZoomOut)
-    print(chop_indices)
+    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    print(f'chop_indices = {chop_indices}')
     print(chop_indices[0])
-    x_chop = [xedges[chop_indices[0]+1], xedges[chop_indices[1]]]
-    y_chop = [yedges[chop_indices[2]+1], yedges[chop_indices[3]]]
+    x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
+    y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     heatmaps2 = []
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([x_chop, y_chop]))[0]
@@ -457,9 +459,11 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
     
-    extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
-    #heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
-    return heatmap, extent, bins, y_bins
+    # extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
+    # heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    
+    extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    return heatmap2, extent, bins, y_bins
 
 
 def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
