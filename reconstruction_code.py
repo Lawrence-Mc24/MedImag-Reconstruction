@@ -17,7 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\compt_photo_chain_data_.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -420,7 +420,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 5*dilate_erode_iterations*pixel_size_x
     extend_y = 5*dilate_erode_iterations*pixel_size_y
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+    y_bins = round((pixel_size_y/pixel_size_x)*bins)
+    h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
@@ -455,7 +456,7 @@ def plot_heatmap(heatmap, extent):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.95*np.amax(h)] = 0
+    h[h < 0.85*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -511,7 +512,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     i = 0
     parabolas = []
-    for point in points[:2000]:
+    for point in points[:1000]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -561,7 +562,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
+heatmap, extent = get_image(points, 50, 15, 15, 662E3, 200, R=0, steps=50, ZoomOut=2)
 
 # def stacked_heatmaps(max_depth):
 #     tup_i = ()
