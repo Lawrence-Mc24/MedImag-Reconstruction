@@ -17,7 +17,8 @@ c = scipy.constants.c
 e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
-path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
+# path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
+path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
