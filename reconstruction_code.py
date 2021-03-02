@@ -241,8 +241,14 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
     
     #ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     psi = 0
+    anticlockwise = True
     while True:
+        
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+        
+        if z<0:
+            psi+=np.pi
+            continue
         
         x_prime = z*(a*np.cos(psi)*np.cos(phi)*np.cos(theta) - a*np.sin(psi)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
@@ -258,36 +264,19 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         if alpha + theta > np.pi/2:
             #print(d)
             pass
-        psi += d
-        if d < np.pi/steps*10**-5:
+        if anticlockwise==True:            
+            psi += d
+        else:
+            psi-=d
+        if d < np.pi/steps*10**-5 and anticlockwise:
+            anticlockwise=False
+            psi=0
+        if d < np.pi/steps*10**-5 and not anticlockwise:
             break
         if np.abs(psi) > 2*np.pi:
             return x_prime_vals, y_prime_vals, ds
             
     
-    psi = 2*np.pi
-    while True:
-        z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-        
-        x_prime = z*(a*np.cos(psi)*np.cos(phi)*np.cos(theta) - a*np.sin(psi)*np.sin(phi) + 
-                     np.cos(phi)*np.sin(theta)) + r1[0]
-        
-        y_prime = z*(a*np.cos(psi)*np.cos(theta)*np.sin(phi)
-            + a*np.sin(psi)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
-        
-        x_prime_vals = np.append(x_prime_vals, x_prime)
-        y_prime_vals = np.append(y_prime_vals, y_prime)
-        
-        d = dpsi(ds, theta, phi, psi, z_prime, a)
-        if alpha + theta > np.pi/2:
-            #print(d)
-            pass
-        psi -= d
-        if d < np.pi/steps*10**-5:
-            break
-        if np.abs(psi) < 0:
-            break
         
     return x_prime_vals, y_prime_vals, ds
     
