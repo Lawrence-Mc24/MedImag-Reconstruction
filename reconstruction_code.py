@@ -17,6 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
+# path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\compt_photo_chain_data_.csv"
 path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 dataframe = pd.read_csv(path)
 
@@ -418,9 +419,12 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges_[0] - yedges_[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    extend_x = 2*dilate_erode_iterations*pixel_size_x
-    extend_y = 2*dilate_erode_iterations*pixel_size_y
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+    extend_x = 5*dilate_erode_iterations*pixel_size_x
+    extend_y = 5*dilate_erode_iterations*pixel_size_y
+    y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
+    print(f'y_bins = {y_bins}')
+    print(f'type(y_bins) = {type(y_bins)}')
+    h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
@@ -436,10 +440,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
-            print('Performing dilation and erosion.')
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
-        else:
-            print('Omitting dilation and erosion.')
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     
