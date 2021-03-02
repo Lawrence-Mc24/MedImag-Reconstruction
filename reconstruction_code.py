@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
-import sys
 from scipy import ndimage
 
 h = scipy.constants.h
@@ -17,7 +16,8 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\compt_photo_chain_data_.csv"
+path = 'C:/Users/laure/Documents/Physics/Year 3/Group Study/compt_photo_chain_data_.csv'
+#path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -420,7 +420,9 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 5*dilate_erode_iterations*pixel_size_x
     extend_y = 5*dilate_erode_iterations*pixel_size_y
-    y_bins = round((pixel_size_y/pixel_size_x)*bins)
+    y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
+    print(f'y_bins = {y_bins}')
+    print(f'type(y_bins) = {type(y_bins)}')
     h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
@@ -436,11 +438,14 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
-        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        if dilate_erode_iterations>0:
+            hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     
-    chop_indices = image_slicer(heatmap, ZoomOut)
+    chop_indices, ind = image_slicer(heatmap, ZoomOut)
+    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    print(f'[xedges[ind[1]], yedges[ind[0]]] = {[xedges[ind[1]], yedges[ind[0]]]}')
     print(f'chop_indices = {chop_indices}')
     extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
     heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
@@ -476,7 +481,7 @@ def image_slicer(h, ZoomOut=0):
             chop_indices[3] = ind[1] + (i+ZoomOut)
             break
         
-    return chop_indices
+    return chop_indices, ind
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True, ZoomOut=0):
     '''
@@ -548,6 +553,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
                 y_list.append(ys2)
+            
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
@@ -556,14 +562,21 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
             y_list.append(ys2)
+ 
+    if R>0:
+        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+    else:
+        # Need to not dilate for zero error (perfect resolution: R=0)
+        print('R=0')
+        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
-    heatmap_combined, extent_combined, bins, y_bins = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points)
     
     return heatmap_combined, extent_combined
 
 heatmap, extent = get_image(points, 50, 15, 15, 662E3, 300, R=0, steps=50, ZoomOut=2)
+
 
 # def stacked_heatmaps(max_depth):
 #     tup_i = ()
