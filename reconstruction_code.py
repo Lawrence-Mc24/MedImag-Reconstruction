@@ -444,11 +444,21 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     heatmap = np.sum(heatmaps, 0)
     
     chop_indices, ind = image_slicer(heatmap, ZoomOut)
-    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
-    print(f'[xedges[ind[1]], yedges[ind[0]]] = {[xedges[ind[1]], yedges[ind[0]]]}')
-    print(f'chop_indices = {chop_indices}')
+    print(chop_indices)
+    print(chop_indices[0])
+    x_chop = [xedges[chop_indices[0]+1], xedges[chop_indices[1]]]
+    y_chop = [yedges[chop_indices[2]+1], yedges[chop_indices[3]]]
+    heatmaps2 = []
+    for i in range(len(x)):
+        hist = np.histogram2d(x[i], y[i], np.array([x_chop, y_chop]))[0]
+        hist[hist != 0] = 1
+        if dilate_erode_iterations>0:
+            hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        heatmaps2.append(hist)
+    heatmap2 = np.sum(heatmaps2, 0)
+    
     extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
-    heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    #heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
     return heatmap, extent, bins, y_bins
 
 
@@ -575,7 +585,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 15, 15, 662E3, 300, R=0, steps=50, ZoomOut=2)
+heatmap, extent = get_image(points, 50, 30, 30, 662E3, 175, R=0, steps=50, ZoomOut=0)
 
 
 # def stacked_heatmaps(max_depth):
