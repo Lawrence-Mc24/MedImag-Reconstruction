@@ -17,7 +17,7 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -185,7 +185,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    #print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
         if (theta+np.arctan(a)) > np.pi/2:
             break
@@ -201,15 +201,18 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     return psi_list
 
 
-def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
+def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0, ):
     a = np.tan(alpha)
     # print(f'a is {a}')
-    
+    if alpha + theta > np.pi/2:
+        return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
-    
+    ds=ds
+    print(ds)
     z_prime = z_prime - r1[2]
-    ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    if ds == 0:
+        ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     # print(ds)
     # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
@@ -225,9 +228,68 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
         
         x_prime_vals = np.append(x_prime_vals, x_prime)
         y_prime_vals = np.append(y_prime_vals, y_prime)
-    
-    return x_prime_vals, y_prime_vals
 
+    return x_prime_vals, y_prime_vals, ds
+
+def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds):
+    a = np.tan(alpha)
+    
+    x_prime_vals = np.array([])
+    y_prime_vals = np.array([])
+   ## 
+    z_prime = z_prime - r1[2]
+    
+    #ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    psi = 0
+    while True:
+        z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+        
+        x_prime = z*(a*np.cos(psi)*np.cos(phi)*np.cos(theta) - a*np.sin(psi)*np.sin(phi) + 
+                     np.cos(phi)*np.sin(theta)) + r1[0]
+        
+        y_prime = z*(a*np.cos(psi)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(psi)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
+        
+        d = dpsi(ds, theta, phi, psi, z_prime, a)
+        if alpha + theta > np.pi/2:
+            #print(d)
+            pass
+        psi += d
+        if d < np.pi/steps*10**-5:
+            break
+        if np.abs(psi) > 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
+            
+    
+    psi = 2*np.pi
+    while True:
+        z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+        
+        x_prime = z*(a*np.cos(psi)*np.cos(phi)*np.cos(theta) - a*np.sin(psi)*np.sin(phi) + 
+                     np.cos(phi)*np.sin(theta)) + r1[0]
+        
+        y_prime = z*(a*np.cos(psi)*np.cos(theta)*np.sin(phi)
+            + a*np.sin(psi)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
+        
+        x_prime_vals = np.append(x_prime_vals, x_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
+        
+        d = dpsi(ds, theta, phi, psi, z_prime, a)
+        if alpha + theta > np.pi/2:
+            #print(d)
+            pass
+        psi -= d
+        if d < np.pi/steps*10**-5:
+            break
+        if np.abs(psi) < 0:
+            break
+        
+    return x_prime_vals, y_prime_vals, ds
     
 def binary_dilate(image, iterations):
     dilated_image = ndimage.binary_dilation(image, iterations=iterations)
@@ -294,7 +356,7 @@ def plot_it(x, ys, r1, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
-def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
+def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ds=0):
     '''
     Computes an array of (x, y) points on the imaging plane a distance z_prime from the scatter detector
     for an event at points r1, r2.
@@ -316,9 +378,9 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
     # print(f'theta = {theta}, phi = {phi}')
-    x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
+    x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     # print(x, y)
-    return x, y
+    return x, y, ds
 
 def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
@@ -416,16 +478,16 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    #print(f'pixel_size_x = {pixel_size_x}')
+    #print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 5*dilate_erode_iterations*pixel_size_x
     extend_y = 5*dilate_erode_iterations*pixel_size_y
     h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    #print(f'pixel_size_x = {pixel_size_x}')
+    #print(f'pixel_size_y = {pixel_size_y}')
     # np.where(xtot<extent[0], 0, xtot)
     # np.where(xtot>extent[1], 0, xtot)
     # np.where(ytot<extent[2], 0, ytot)
@@ -439,10 +501,11 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     
-    chop_indices = image_slicer(heatmap, ZoomOut)
-    print(f'chop_indices = {chop_indices}')
-    extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
-    heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    ##chop_indices = image_slicer(heatmap, ZoomOut)
+    #print(f'chop_indices = {chop_indices}')
+    #extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
+    #heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
     return heatmap, extent
 
 
@@ -510,8 +573,10 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     x_list = []
     y_list = []
     i = 0
+    j = 0
     parabolas = []
-    for point in points[:2000]:
+    ds=0
+    for point in points[:100]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -525,9 +590,14 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         r2 = np.array([point[3], point[4], point[5]])
         # print(f'alpha={alpha}')
         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+        if theta+alpha < np.pi/2:
+            j+=1
         if theta + alpha >= np.pi/2-0.001:
             parabolas.append(point)
-            continue
+            if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+                continue
+            else:
+                pass
         if R>0:
             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
             # print(f'alpha_err is {alpha_err}')
@@ -541,7 +611,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
+                x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
@@ -549,7 +619,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
-            x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate)
+            print('--------------')
+            x, y, ds = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate, ds=ds)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
@@ -558,7 +629,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
-    
+    print(len(parabolas))
     return heatmap_combined, extent_combined
 
 heatmap, extent = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
