@@ -418,9 +418,9 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges_[0] - yedges_[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    extend_x = 5*dilate_erode_iterations*pixel_size_x
-    extend_y = 5*dilate_erode_iterations*pixel_size_y
-    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
+    extend_x = 2*dilate_erode_iterations*pixel_size_x
+    extend_y = 2*dilate_erode_iterations*pixel_size_y
+    h, xedges, yedges = np.histogram2d(xtot, ytot, bins, range = [[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
@@ -435,11 +435,17 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
-        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        if dilate_erode_iterations>0:
+            print('Performing dilation and erosion.')
+            hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        else:
+            print('Omitting dilation and erosion.')
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     
-    chop_indices = image_slicer(heatmap, ZoomOut)
+    chop_indices, ind = image_slicer(heatmap, ZoomOut)
+    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    print(f'[xedges[ind[1]], yedges[ind[0]]] = {[xedges[ind[1]], yedges[ind[0]]]}')
     print(f'chop_indices = {chop_indices}')
     extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
     heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
@@ -455,7 +461,7 @@ def plot_heatmap(heatmap, extent):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.95*np.amax(h)] = 0
+    h[h < 0.05*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -474,7 +480,7 @@ def image_slicer(h, ZoomOut=0):
             chop_indices[3] = ind[1] + (i+ZoomOut)
             break
         
-    return chop_indices
+    return chop_indices, ind
 
 def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps=180, plot=True, ZoomOut=0):
     '''
@@ -511,7 +517,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     i = 0
     parabolas = []
-    for point in points[:2000]:
+    for point in points[:500]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -546,6 +552,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
                 y_list.append(ys2)
+            
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
@@ -554,14 +561,20 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
             y_list.append(ys2)
-
-    heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+            
+    if R>0:
+        heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+    else:
+        # Need to not dilate for zero error (perfect resolution: R=0)
+        print('R=0')
+        heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
+heatmap, extent = get_image(points, 50, 30, 30, 662E3, 175, R=0, steps=50, ZoomOut=0)
 
 # def stacked_heatmaps(max_depth):
 #     tup_i = ()
