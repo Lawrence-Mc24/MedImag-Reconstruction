@@ -17,7 +17,9 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+# path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -371,7 +373,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ds=0):
     # print(x, y)
     return x, y, ds
 
-def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+def plot_it2(xys, r1s=np.array([np.array([0,0,0])]), x_name='x', y_name='y', plot_title='Plot', individual_points=False):
     '''
     Plot many different sets of (x, y) arrays on the same axes, graph, and figure.
     Parameters
@@ -409,11 +411,57 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
         plt.axhline(y=k[1], color='g')
         plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
+        print(f'x = k[0] = {k[0]}')
+        print(f'y = k[1] = {k[1]}')
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
         if individual_points:
             plt.plot(k[0], k[1], 'r.')
     plt.grid(True)
+    plt.show()
+    return figure
+
+def plot_it3(xs, ys, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
+    '''
+    Plot many different sets of (x, y) arrays on the same axes, graph, and figure.
+    Parameters
+    ----------
+    xs : array_like
+        Array where each item is an array of x-values to be plotted with the corresponding index of
+        the ys array.
+    ys : array_like
+        Array where each item is an array of y-values to be plotted with the corresponding index of
+        the xs array.
+    x_name : string
+        The name on the x-axis.
+    y_name : string
+        The name on the y-axis.
+    plot_title : string
+        The title on the graph.
+    individual_points : Boolean, optional
+        If True, will plot individual points as 'r.'. The default is False.
+    Returns
+    -------
+    figure : matplotlib.figure.Figure
+        The plot.
+    '''
+    
+    # Plot
+    figure = plt.figure(figsize=(10,6))
+    plt.axis('equal')
+    plt.axhline(y=0, color='k')
+    plt.axvline(x=0, color='k')
+    plt.title(plot_title, fontsize=16)
+    plt.xlabel(x_name, fontsize=16)
+    plt.ylabel(y_name, fontsize=16)
+    for i, k in enumerate(xs):
+        plt.plot(k, ys[i])
+        # Useful to plot individual points for mean duration against square.
+        if individual_points:
+            plt.plot(k, ys[i], 'r.')
+    plt.grid(True)
+    plt.xlim([-5, 10])
+    plt.ylim([-5, 10])
     plt.show()
     return figure
 
@@ -564,6 +612,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     i = 0
     j = 0
     parabolas = []
+    parabola_indices = []
     ds=0
     for point in points[:100]:
         # print(i)
@@ -583,6 +632,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             j+=1
         if theta + alpha >= np.pi/2-0.001:
             parabolas.append(point)
+            parabola_indices.append(i-1)
             if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
                 continue
             else:
@@ -614,14 +664,30 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
             y_list.append(ys2)
+    
+    # Plot parabolas
+    print(f'np.array([x_list[parabola_indices[0]], y_list[parabola_indices[0]]]), np.array([r1[parabola_indices[0]]]) = {np.array([x_list[parabola_indices[0]], y_list[parabola_indices[0]]]), np.array([r1[parabola_indices[0]]])}')
+    print(f'np.shape(r1) = {np.shape(r1)}')
+    xs = []
+    ys = []
+    for i in parabola_indices:
+        xs.append(x_list[i])
+        ys.append(y_list[i])
+        
+    plot_it3(xs, ys, individual_points=False)
+    plot_it3(x_list, y_list, individual_points=True)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
     print(len(parabolas))
-    return heatmap_combined, extent_combined
+    return heatmap_combined, extent_combined, parabolas
 
-heatmap, extent = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
+heatmap, extent, parabolas = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
+
+for point in parabolas:
+    r1 = np.array([point[0], point[1], point[2]])
+    r2 = np.array([point[3], point[4], point[5]])
 
 # def stacked_heatmaps(max_depth):
 #     tup_i = ()
