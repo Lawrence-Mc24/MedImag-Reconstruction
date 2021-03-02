@@ -16,9 +16,11 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-# path = 'C:/Users/laure/Documents/Physics/Year 3/Group Study/compt_photo_chain_data_.csv'
+#path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
+path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
+#path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+#path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 dataframe = pd.read_csv(path)
 
 x_prime = dataframe['X_1 [cm]']
@@ -186,6 +188,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
+    print(f'a value = {a}')
     print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
         if (theta+np.arctan(a)) > np.pi/2:
@@ -204,6 +207,7 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
+    print(alpha)
     # print(f'a is {a}')
     
     x_prime_vals = np.array([])
@@ -419,7 +423,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges_[0] - yedges_[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    extend_x = 5*dilate_erode_iterations*pixel_size_x
+    extend_x = 5*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
     extend_y = 5*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
     print(f'y_bins = {y_bins}')
@@ -452,13 +456,14 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
+    
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
-
-    
+    bins2 = 40
+    print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     heatmaps2 = []
     for i in range(len(x)):
-        hist = np.histogram2d(x[i], y[i], [bins, y_bins], range=np.array([x_chop, y_chop]))[0]
+        hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
@@ -484,7 +489,7 @@ def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.85*np.amax(h)] = 0
+    h[h < 0.99*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -599,7 +604,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 30, 30, 662E3, 50, R=0, steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 50, 30, 30, 662E3, 10, R=0, steps=50, ZoomOut=0)
 
 
 # def stacked_heatmaps(max_depth):
