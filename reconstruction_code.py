@@ -211,7 +211,6 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
     ds=ds
-    print(ds)
     z_prime = z_prime - r1[2]
     if ds == 0:
         ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
@@ -244,6 +243,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
     #ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     psi = 0
     anticlockwise = True
+    iteration = 'first'
     while True:
         
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
@@ -263,23 +263,26 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         y_prime_vals = np.append(y_prime_vals, y_prime)
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
-        if alpha + theta > np.pi/2:
-            #print(d)
-            pass
-        if anticlockwise==True:            
+        if anticlockwise:            
             psi += d
         else:
             psi-=d
         if d < np.pi/steps*10**-5 and anticlockwise:
             anticlockwise=False
-            psi=0
+            if iteration=='first':
+                psi=0
+                continue
+            elif iteration=='second':
+                psi=np.pi
+                iteration='stop'
+                continue
         if d < np.pi/steps*10**-5 and not anticlockwise:
-            break
-        if np.abs(psi) > 2*np.pi:
-            return x_prime_vals, y_prime_vals, ds
-            
-    
-        
+            if iteration=='stop':
+                break
+            iteration = 'second'
+            anticlockwise=True
+            psi=np.pi
+            continue        
     return x_prime_vals, y_prime_vals, ds
     
 def binary_dilate(image, iterations):
@@ -411,8 +414,8 @@ def plot_it2(xys, r1s=np.array([np.array([0,0,0])]), x_name='x', y_name='y', plo
         plt.axhline(y=k[1], color='g')
         plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
-        print(f'x = k[0] = {k[0]}')
-        print(f'y = k[1] = {k[1]}')
+        # print(f'x = k[0] = {k[0]}')
+        # print(f'y = k[1] = {k[1]}')
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
         if individual_points:
@@ -460,8 +463,8 @@ def plot_it3(xs, ys, x_name='x', y_name='y', plot_title='Plot', individual_point
         if individual_points:
             plt.plot(k, ys[i], 'r.')
     plt.grid(True)
-    plt.xlim([-5, 10])
-    plt.ylim([-5, 10])
+    # plt.xlim([-5, 10])
+    # plt.ylim([-5, 10])
     plt.show()
     return figure
 
@@ -658,7 +661,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
-            print('--------------')
             x, y, ds = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate, ds=ds)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
@@ -666,8 +668,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             y_list.append(ys2)
     
     # Plot parabolas
-    print(f'np.array([x_list[parabola_indices[0]], y_list[parabola_indices[0]]]), np.array([r1[parabola_indices[0]]]) = {np.array([x_list[parabola_indices[0]], y_list[parabola_indices[0]]]), np.array([r1[parabola_indices[0]]])}')
-    print(f'np.shape(r1) = {np.shape(r1)}')
     xs = []
     ys = []
     for i in parabola_indices:
@@ -680,7 +680,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
-    print(len(parabolas))
     return heatmap_combined, extent_combined, parabolas
 
 heatmap, extent, parabolas = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
