@@ -70,8 +70,6 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
 
-
-
 def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
     Returns cone axis vector as a list in primed axes.
@@ -120,15 +118,11 @@ def phi_angle(N):
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
-    # print(f'denom is {(np.cos(theta) - a*np.cos(psi)*np.sin(theta))}')
-    # print(f'theta is {theta}')
-    # print(f'psi is {psi}')
     return - z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
 
 def dpsi(ds, theta, phi, psi, z_prime, a):
     '''Calculate the dpsi increment for a given ds at a given psi for given angles.'''
     h = dz(theta, phi, psi, z_prime, a)
-    # print(f'dz={h}')
     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
@@ -138,53 +132,7 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-    # print(f'dx_psi={dx_psi}')
-    # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
-
-# def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c11 = np.cos(phi)*np.cos(theta)
-#     c12 = -np.sin(phi)
-#     c13 = np.cos(phi)*np.sin(theta)
-#     print(dx, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
-#     dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
-#     print(f'dx_psi = {dx_psi}')
-#     # sys.exit()
-#     return dx/dx_psi
-
-# def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c21 = np.sin(phi)*np.cos(theta)
-#     c22 = np.cos(phi)
-#     c23 = np.sin(phi)*np.sin(theta)
-#     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-#     print(dy, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
-#     print(f'dy_psi = {dy_psi}')
-#     # sys.exit()
-#     return dy/dy_psi
-
-# def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
-#     '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
-#     psi = 0
-#     psi_list = [0]
-#     while True:
-#         d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
-#         print(f'd = {d}')
-#         psi += d
-#         print(f'psi = {psi}')
-#         if np.abs(psi) >= 2*np.pi:
-#             break
-#         else:
-#             psi_list.append(psi)    
-#     print(f'psi_list = {psi_list}')
-#     return psi_list
 
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
@@ -198,9 +146,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             break
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
-        # print(f'psi is {psi}')
-        # print(f'd is {d}')
-        # print(psi)
         if np.abs(psi) >= 2*np.pi:
             break
         else:
@@ -211,15 +156,12 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate):
     a = np.tan(alpha)
     print(alpha)
-    # print(f'a is {a}')
     
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
     
     z_prime = z_prime - r1[2]
     ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
-    # print(ds)
-    # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -323,9 +265,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate):
     '''
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
-    # print(f'theta = {theta}, phi = {phi}')
     x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
-    # print(x, y)
     return x, y
 
 def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_points=False):
@@ -373,30 +313,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.grid(True)
     plt.show()
     return figure
-
-def calculate_heatmap_old(x, y, bins=50):
-    '''
-    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
-    number of bins.
-    Parameters
-    ----------
-    x : numpy_array
-        Must be a numpy array, not a list!
-    y : numpy_array
-        DESCRIPTION.
-    bins : TYPE, optional
-        DESCRIPTION. The default is 50.
-    Returns
-    -------
-    heatmap : numpy_array
-        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
-        y along axis 1.
-    extent : TYPE
-        DESCRIPTION.
-    '''
-    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
-    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
-    return heatmap, extent
 
 def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     '''
@@ -459,15 +375,12 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
-    
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 40
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     heatmaps2 = []
     for i in range(len(x)):
-        # X = scipy.ndimage.filters.gaussian_filter(x[i], sigma = 2, order = 0)
-        # Y = scipy.ndimage.filters.gaussian_filter(y[i], sigma = 2, order = 0)
         hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
@@ -478,6 +391,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
     # heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
     
+    # extent = np.array([-40, 40, -40, 40])
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     # plot_heatmap(heatmap, extent, bins, y_bins, n_points='no chop')
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
@@ -550,28 +464,21 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         n_points = np.shape(points)[0]
     x_list = []
     y_list = []
-    i = 0
     parabolas = []
     for point in points[:n_points]:
-        # print(i)
-        i += 1
         xs2 = np.array([])
         ys2 = np.array([])
-        # print(source_energy-point[6])
         alpha = compton_angle(source_energy, source_energy-point[6])
-        # print(alpha)
         Ef = source_energy - point[6]
         Ef = Ef*e
         r1 = np.array([point[0], point[1], point[2]])
         r2 = np.array([point[3], point[4], point[5]])
-        # print(f'alpha={alpha}')
         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
         if theta + alpha >= np.pi/2-0.001:
             parabolas.append(point)
             continue
         if R>0:
             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-            # print(f'alpha_err is {alpha_err}')
             alpha_min = alpha-alpha_err
             alpha_max = alpha+alpha_err
             if alpha_min < 0:
@@ -580,8 +487,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 alpha_max = (np.pi/2)-0.01
             alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
             for angle in alpha_bounds:
-                # print(f'r1={r1}')
-                # print(f'r2={r2}')
                 x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
@@ -589,8 +494,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 y_list.append(ys2)
             
         else:
-            # print(f'r1={r1}')
-            # print(f'r2={r2}')
             x, y = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=alpha, steps=steps, estimate=estimate)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
@@ -600,7 +503,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     if R>0:
         heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     else:
-        # Need to not dilate for zero error (perfect resolution: R=0)
+        # Don't need to dilate for zero error (perfect resolution: R=0)
         print('R=0')
         heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
