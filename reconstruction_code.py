@@ -244,10 +244,17 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
     psi = 0
     anticlockwise = True
     iteration = 'first'
+    counter = 0
     while True:
-        
+        counter += 1
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
         
+        if counter > 5000:
+            if psi == 0 or psi == np.pi or psi == 2*np.pi:
+                print(f'psi = {psi}')
+                print(f'iteration = {iteration}')
+                print(f'anticlockwise = {anticlockwise}')
+                print(f'z= {z}')
         if z<0:
             iteration = 'second'
             psi+=np.pi
@@ -263,11 +270,14 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         y_prime_vals = np.append(y_prime_vals, y_prime)
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
+        if counter > 5000:
+            if d < np.pi/steps*10**-3*1.01:
+                print(f'd = {d}')
         if anticlockwise:            
             psi += d
         else:
             psi-=d
-        if d < np.pi/steps*10**-5 and anticlockwise:
+        if d < np.pi/steps*10**-3 and anticlockwise:
             anticlockwise=False
             if iteration=='first':
                 psi=0
@@ -276,13 +286,17 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
                 psi=np.pi
                 iteration='stop'
                 continue
-        if d < np.pi/steps*10**-5 and not anticlockwise:
+        if d < np.pi/steps*10**-3 and not anticlockwise:
             if iteration=='stop':
                 break
             iteration = 'second'
             anticlockwise=True
             psi=np.pi
-            continue        
+            continue
+        
+        if np.abs(psi) > 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
+    # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
     
 def binary_dilate(image, iterations):
@@ -617,7 +631,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     parabolas = []
     parabola_indices = []
     ds=0
-    for point in points[:100]:
+    for point in points[:2000]:
         # print(i)
         i += 1
         xs2 = np.array([])
@@ -633,7 +647,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
         if theta+alpha < np.pi/2:
             j+=1
-        if theta + alpha >= np.pi/2-0.001:
+        if theta + alpha >= np.pi/2-0.01:
             parabolas.append(point)
             parabola_indices.append(i-1)
             if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
@@ -675,14 +689,17 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         ys.append(y_list[i])
         
     plot_it3(xs, ys, individual_points=False)
-    plot_it3(x_list, y_list, individual_points=True)
+    # plot_it3(x_list, y_list, individual_points=True)
 
     heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined)
+        
+    print(f'len(parabolas) = {len(parabolas)}')
+    
     return heatmap_combined, extent_combined, parabolas
 
-heatmap, extent, parabolas = get_image(points, 50, 15, 15, 662E3, 700, R=0, steps=50, ZoomOut=2)
+heatmap, extent, parabolas = get_image(points, 50, 30, 30, 662E3, 100, R=0, steps=50, ZoomOut=0)
 
 for point in parabolas:
     r1 = np.array([point[0], point[1], point[2]])
