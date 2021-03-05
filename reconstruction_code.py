@@ -20,7 +20,7 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_45_degrees.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
@@ -353,10 +353,6 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges[0] - yedges[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    # np.where(xtot<extent[0], 0, xtot)
-    # np.where(xtot>extent[1], 0, xtot)
-    # np.where(ytot<extent[2], 0, ytot)
-    # np.where(ytot>extent[3], 0, ytot)
 
     heatmaps = []
     for i in range(len(x)):
@@ -372,12 +368,10 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
     print(f'chop_indices = {chop_indices}')
     print(chop_indices[0])
-    # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
-    # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
-    
+
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
-    bins2 = 40
+    bins2 = 80
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     heatmaps2 = []
     for i in range(len(x)):
@@ -388,12 +382,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
 
-    # extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
-    # heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
-    
-    # extent = np.array([-40, 40, -40, 40])
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
-    # plot_heatmap(heatmap, extent, bins, y_bins, n_points='no chop')
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
     return heatmap2, extent, bins, y_bins
 
@@ -403,9 +392,10 @@ def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     plt.clf()
     plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, y_bins, points, smoothing = {bins, y_bins, n_points}, True')
+    plt.title(f'Heatmap Generated Using Consecutive "Bin" values of {bins, 40, 10}')
+    # plt.title(f'bins, y_bins, points, bins2,  smoothing = {bins, y_bins, n_points, 80}, True')
     plt.show()
-    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
@@ -466,7 +456,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     x_list = []
     y_list = []
     parabolas = []
-    for point in points:
+    for point in points[:n_points]:
         xs2 = np.array([])
         ys2 = np.array([])
         alpha = compton_angle(source_energy, source_energy-point[6])
@@ -513,4 +503,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 30, 30, 662E3, 10, R=0, steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 50, 30, 30, 662E3, 20, R=0, steps=50, ZoomOut=0)
