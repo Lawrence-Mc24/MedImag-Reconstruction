@@ -10,6 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
 from scipy import ndimage
+from astropy.convolution.kernels import Gaussian2DKernel
+from astropy.convolution import convolve
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -408,7 +410,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         DESCRIPTION.
     bins : TYPE, optional
         DESCRIPTION. The default is 50.
-    dilate_erode_iterations : number of iterations that are carried out for the dilation and erodation
+    dilate_erode_iterations : number of iterations that are carried out for the dilation and erosion
     Returns
     -------
     heatmap : numpy_array
@@ -464,13 +466,15 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     heatmaps2 = []
     for i in range(len(x)):
+        # X = scipy.ndimage.filters.gaussian_filter(x[i], sigma = 2, order = 0)
+        # Y = scipy.ndimage.filters.gaussian_filter(y[i], sigma = 2, order = 0)
         hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
-    
+
     # extent = np.array([xedges[chop_indices[0]+1], xedges[chop_indices[1]], yedges[chop_indices[2]+1], yedges[chop_indices[3]]])
     # heatmap = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
     
@@ -483,9 +487,9 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
 def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
-    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, y_bins, points = {bins, y_bins, n_points}')
+    plt.title(f'bins, y_bins, points, smoothing = {bins, y_bins, n_points}, True')
     plt.show()
 
 def image_slicer(h, ZoomOut=0):
@@ -541,7 +545,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         y along axis 1.
 
     '''
-    n_points = 2000
+    n_points = 150
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
     x_list = []
