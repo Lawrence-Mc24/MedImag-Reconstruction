@@ -249,6 +249,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
         
         if z<0:
+            iteration = 'second'
             psi+=np.pi
             continue
         
@@ -258,7 +259,6 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         y_prime = z*(a*np.cos(psi)*np.cos(theta)*np.sin(phi)
             + a*np.sin(psi)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
 
-        
         x_prime_vals = np.append(x_prime_vals, x_prime)
         y_prime_vals = np.append(y_prime_vals, y_prime)
         
