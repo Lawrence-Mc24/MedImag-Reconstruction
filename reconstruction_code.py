@@ -342,7 +342,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges_[0] - yedges_[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    extend_x = 5*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
+    extend_x = 5*dilate_erode_iterations*pixel_size_x #may need to replace 5* with less, eg 2
     extend_y = 5*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
     print(f'y_bins = {y_bins}')
@@ -405,6 +405,7 @@ def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     plt.colorbar()
     plt.title(f'bins, y_bins, points, smoothing = {bins, y_bins, n_points}, True')
     plt.show()
+    plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
@@ -459,13 +460,13 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         y along axis 1.
 
     '''
-    n_points = 150
+    n_points = 5000
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
     x_list = []
     y_list = []
     parabolas = []
-    for point in points[:n_points]:
+    for point in points:
         xs2 = np.array([])
         ys2 = np.array([])
         alpha = compton_angle(source_energy, source_energy-point[6])
