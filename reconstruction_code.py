@@ -606,15 +606,3 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     return heatmap_combined, extent_combined
 
 heatmap, extent = get_image(points, 50, 30, 30, 662E3, 10, R=0, steps=50, ZoomOut=0)
-
-
-# def stacked_heatmaps(max_depth):
-#     tup_i = ()
-#     for i in range(max_depth):
-#         tup_i += (get_image(points, 50, i+1, i+1, 662E3, 175, R=0,steps=50),)
-#     print(f'there are {len(tup_i)} tuple elements')
-#     stack = np.dstack(tup_i)
-#     return stack
-
-# # heatmap = get_image(points, 50, 30, 30, 662E3, 175, R=0,steps=50)
-# stack = stacked_heatmaps(30)
