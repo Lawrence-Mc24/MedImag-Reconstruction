@@ -208,13 +208,16 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0, ):
     a = np.tan(alpha)
     # print(f'a is {a}')
-    if alpha + theta > np.pi/2-0.01:
+    if alpha + theta > np.pi/2:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
+    ds=ds
     z_prime = z_prime - r1[2]
     if ds == 0:
         ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    # print(ds)
+    # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -243,10 +246,17 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
     psi = 0
     anticlockwise = True
     iteration = 'first'
+    counter = 0
     while True:
-        
+        counter += 1
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
         
+        if counter > 5000:
+            if psi == 0 or psi == np.pi or psi == 2*np.pi:
+                print(f'psi = {psi}')
+                print(f'iteration = {iteration}')
+                print(f'anticlockwise = {anticlockwise}')
+                print(f'z= {z}')
         if z<0:
             iteration = 'second'
             psi+=np.pi
@@ -262,11 +272,14 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         y_prime_vals = np.append(y_prime_vals, y_prime)
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
+        if counter > 5000:
+            if d < np.pi/steps*10**-3*1.01:
+                print(f'd = {d}')
         if anticlockwise:            
             psi += d
         else:
             psi-=d
-        if d < np.pi/steps*10**-5 and anticlockwise:
+        if d < np.pi/steps*10**-3 and anticlockwise:
             anticlockwise=False
             if iteration=='first':
                 psi=0
@@ -275,13 +288,17 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
                 psi=np.pi
                 iteration='stop'
                 continue
-        if d < np.pi/steps*10**-5 and not anticlockwise:
+        if d < np.pi/steps*10**-3 and not anticlockwise:
             if iteration=='stop':
                 break
             iteration = 'second'
             anticlockwise=True
             psi=np.pi
-            continue        
+            continue
+        
+        if np.abs(psi) > 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
+    # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
 
     
@@ -372,7 +389,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ds):
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
     # print(f'theta = {theta}, phi = {phi}')
-    x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate)
+    x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     # print(x, y)
     return x, y, ds
 
@@ -587,7 +604,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         y along axis 1.
 
     '''
-    n_points = 2000
+    n_points = 390
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -595,7 +612,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     y_list = []
     j = 0
     ds=0
-    for point in points[:100]:
+    for point in points[:n_points]:
         xs2 = np.array([])
         ys2 = np.array([])
         # print(source_energy-point[6])
