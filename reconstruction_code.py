@@ -456,7 +456,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
     x_list = []
     y_list = []
     parabolas = []
-    for point in points[:n_points]:
+    for point in points:
         xs2 = np.array([])
         ys2 = np.array([])
         alpha = compton_angle(source_energy, source_energy-point[6])
