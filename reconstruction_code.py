@@ -189,8 +189,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
-    print(f'a value = {a}')
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
         if (theta+np.arctan(a)) > np.pi/2:
             break
@@ -207,8 +205,9 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0, ):
     a = np.tan(alpha)
-    # print(f'a is {a}')
-    if alpha + theta > np.pi/2:
+    print(f'a value = {a}')
+    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    if alpha + theta > np.pi/2-0.01:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
@@ -508,11 +507,13 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # np.where(ytot>extent[3], 0, ytot)
 
     heatmaps = []
+    print(f'len(x) = {len(x)}')
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+            hist[hist != 0] = 1
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop')
@@ -527,7 +528,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
-    bins2 = 100
+    bins2 = 50
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     heatmaps2 = []
     for i in range(len(x)):
@@ -535,20 +536,25 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+            hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
+    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    # x/y_centre are actually the edges of the first maximum bin so not really the centre
+    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/50
+    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/50
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, y_bins
+    return heatmap2, extent, bins, bins2, x_centre, y_centre
 
 
-def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
+def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
     plt.imshow(heatmap.T, extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, y_bins, points = {bins, y_bins, n_points}')
+    plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
     plt.show()
 
 def image_slicer(h, ZoomOut=0):
@@ -604,7 +610,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         y along axis 1.
 
     '''
-    n_points = 390
+    n_points = 200
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -627,6 +633,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
         if theta+alpha < np.pi/2:
             j+=1
         if theta + alpha >= np.pi/2-0.001:
+            # continue # This continue skips parabolas
             if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
                 continue
             else:
@@ -647,8 +654,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
                 x, y, ds = give_x_y_for_two_points(r1, r2 , z_prime=image_distance, alpha=angle, steps=steps, estimate=estimate, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
-                x_list.append(xs2)
-                y_list.append(ys2)
+            x_list.append(xs2)
+            y_list.append(ys2)
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
@@ -659,15 +666,15 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, steps
             y_list.append(ys2)
  
     if R>0:
-        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points)
+        plot_heatmap(heatmap_combined, extent_combined, bins, bins2, n_points, (x_centre, y_centre))
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 50, 30, 30, 662E3, 25, R=0, steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0.03, steps=50, ZoomOut=0)
