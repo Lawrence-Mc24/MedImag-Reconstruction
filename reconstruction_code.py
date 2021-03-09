@@ -376,10 +376,10 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    for i, k in enumerate(r1s):
-        plt.plot(k[0], k[1], 'ro')
-        plt.axhline(y=k[1], color='g')
-        plt.axvline(x=k[0], color='g')
+    # for i, k in enumerate(r1s):
+    #     plt.plot(k[0], k[1], 'ro')
+    #     plt.axhline(y=k[1], color='g')
+    #     plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
@@ -500,98 +500,138 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
-def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, steps=180, plot=True, ZoomOut=0):
+def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False):
     '''
     Parameters
     ----------
-    points : TYPE - array
-        DESCRIPTION - each item in the array is an array-like object consisting of [r1, r2, dE] where
-        r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
+    sides : TYPE - array
+        DESCRIPTION - 2 objects containing items from different sides of the source, 
+        where each item in the array is an array-like object consisting of [r1, r2, dE] 
+        where r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
     n : TYPE - integer
         DESCRIPTION - number of angles to iterate through in alpha_bounds 
-    estimate : TYPE - float
-        DESCRIPTION - estimate of z distance of source from Compton detector
-    image_distance : TYPE - float
-        DESCRIPTION - distance of imaging plane from the Compton detector
+    image_distance : TYPE - array
+        DESCRIPTION - [z'1, z'2] distance of imaging plane from the Compton detector for sides 1 and 2
     source_energy : TYPE - float
         DESCRIPTION - energy of the source in eV
     bins : TYPE - integer
         DESCRIPTION - number of bins to construct heatmap
-    R : TYPE - float
-        DESCRIPTION - resolution of the detector
+    R : TYPE - array
+        DESCRIPTION - [R1, R2] resolution of the detector for side 1 and 2
     ROI : TYPE - array
         DESCRIPTION - region of interest to image of the form [xmin, xmax, ymin, ymax]
-    steps : TYPE - integer
-        DESCRIPTION - approximate number of steps to take in psi to calculate cone projections 
+    steps : TYPE - array
+        DESCRIPTION - [steps1, steps2] approximate number of steps to take in psi to calculate cone projections for each side
     plot : TYPE - boolean
         DESCRIPTION - plots heatmap if set to True
-
+    estimate : TYPE - array, boolean
+        DESCRIPTION - estimate of z distance of source from Compton detector for each side of form [estimate1, estimate2],
+        if False then sets estimates as imaging distances.
     Returns
     -------
     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
         y along axis 1.
 
     '''
+    if estimate == False:
+        estimate = [image_distance[0], image_distance[1]]
     n_points = 2000
-    if n_points > np.shape(points)[0]:
-        n_points = np.shape(points)[0]
+    if n_points > np.shape(sides[0])[0]:
+        n_points = np.shape(sides[0])[0]
             
     x_list = []
     y_list = []
     j = 0
     ds=0
-    for point in points[:n_points]:
-        xs2 = np.array([])
-        ys2 = np.array([])
-        # print(source_energy-point[6])
-        alpha = compton_angle(source_energy, source_energy-point[6])
-        # print(alpha)
-        Ef = source_energy - point[6]
-        Ef = Ef*e
-        r1 = np.array([point[0], point[1], point[2]])
-        r2 = np.array([point[3], point[4], point[5]])
-        # print(f'alpha={alpha}')
-        theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-        if theta+alpha < np.pi/2:
-            j+=1
-        if theta + alpha >= np.pi/2-0.001:
-            if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
-                continue
+    side=0
+    for points in sides:
+        side+=1
+        x_list = []
+        y_list = []
+        if side == 1:
+            image_distance = image_distance[0]
+            R = R[0]
+            steps = steps[0]
+            estimate = estimate[0]
+        if side == 2:
+            image_distance = image_distance[1]
+            R  = R[1]
+            steps = steps[1]
+            estimate = estimate[1]
+        if points == 0:
+            continue
+        for point in points[:n_points]:
+            xs2 = np.array([])
+            ys2 = np.array([])
+            # print(source_energy-point[6])
+            alpha = compton_angle(source_energy, source_energy-point[6])
+            # print(alpha)
+            Ef = source_energy - point[6]
+            Ef = Ef*e
+            r1 = np.array([point[0], point[1], point[2]])
+            r2 = np.array([point[3], point[4], point[5]])
+            # print(f'alpha={alpha}')
+            theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+            if theta+alpha < np.pi/2:
+                j+=1
+            if theta + alpha >= np.pi/2-0.001:
+                if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+                    continue
+                else:
+                    pass
+            if R>0:
+                alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
+                # print(f'alpha_err is {alpha_err}')
+                alpha_min = alpha-alpha_err
+                alpha_max = alpha+alpha_err
+                if alpha_min < 0:
+                    alpha_min = 0
+                if alpha_max >= np.pi/2:
+                    alpha_max = (np.pi/2)-0.01
+                alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+                for angle in alpha_bounds:
+                    # print(f'r1={r1}')
+                    # print(f'r2={r2}')
+                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, angle, steps, estimate, ROI, ds=ds)
+                    xs2 = np.append(xs2, x, axis=0)
+                    ys2 = np.append(ys2, y, axis=0)
+                    x_list.append(xs2)
+                    y_list.append(ys2)
             else:
-                pass
-        if R>0:
-            alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-            # print(f'alpha_err is {alpha_err}')
-            alpha_min = alpha-alpha_err
-            alpha_max = alpha+alpha_err
-            if alpha_min < 0:
-                alpha_min = 0
-            if alpha_max >= np.pi/2:
-                alpha_max = (np.pi/2)-0.01
-            alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-            for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, angle, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, alpha, steps, estimate, ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
                 y_list.append(ys2)
-        else:
-            # print(f'r1={r1}')
-            # print(f'r2={r2}')
-            x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, alpha, steps, estimate, ROI, ds=ds)
-            xs2 = np.append(xs2, x, axis=0)
-            ys2 = np.append(ys2, y, axis=0)
-            x_list.append(xs2)
-            y_list.append(ys2)
- 
+        
+        if side == 1:
+            x_list1 = x_list
+            y_list1 = y_list
+        if side == 2:
+            x_list2 = x_list
+            y_list2 = y_list
+    
+    #assume side 1 is the side you're 'looking' from in the final image. 
+    #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped
+    plot_it2(np.array([x_list1, y_list1]), 0, plot_title='Side 1')
+    plot_it2(np.array([x_list2, y_list2]), 0, plot_title='Side 2')
+    
+    x_list2_ = []
+    for xs in x_list2:
+        xs = np.array(xs)*-1
+        x_list2_.append(xs)
+        
+    x_list_tot = np.concatenate([x_list1, x_list2_])
+    y_list_tot = np.concatenate([x_list2, y_list2])
+    
     if R>0:
-        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points)
