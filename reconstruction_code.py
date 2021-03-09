@@ -20,7 +20,7 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 # path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
@@ -171,7 +171,8 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0
     ds=ds
     z_prime = z_prime - r1[2]
     if ds == 0:
-        ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+        # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+        ds= 0.1
     # print(ds)
     # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
@@ -477,7 +478,7 @@ def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     plt.clf()
     plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'Heatmap Generated Using Consecutive "Bin" values of {bins, 40, 10}')
+    plt.title(f'Heatmap Generated Using Consecutive "Bin" \n values of {bins, 25, 100}')
     # plt.title(f'bins, y_bins, points, bins2,  smoothing = {bins, y_bins, n_points, 80}, True')
     plt.show()
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
