@@ -392,30 +392,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
-def calculate_heatmap_old(x, y, bins=50):
-    '''
-    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
-    number of bins.
-    Parameters
-    ----------
-    x : numpy_array
-        Must be a numpy array, not a list!
-    y : numpy_array
-        DESCRIPTION.
-    bins : TYPE, optional
-        DESCRIPTION. The default is 50.
-    Returns
-    -------
-    heatmap : numpy_array
-        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
-        y along axis 1.
-    extent : TYPE
-        DESCRIPTION.
-    '''
-    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
-    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
-    return heatmap, extent
-
 def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
