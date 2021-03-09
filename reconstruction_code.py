@@ -10,6 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
 from scipy import ndimage
+from astropy.convolution.kernels import Gaussian2DKernel
+from astropy.convolution import convolve
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -473,10 +475,12 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
 def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
-    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, y_bins, points = {bins, y_bins, n_points}')
+    plt.title(f'Heatmap Generated Using Consecutive "Bin" values of {bins, 40, 10}')
+    # plt.title(f'bins, y_bins, points, bins2,  smoothing = {bins, y_bins, n_points, 80}, True')
     plt.show()
+    # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
