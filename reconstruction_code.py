@@ -538,9 +538,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     n_points = 2000
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
-            
-    x_list = []
-    y_list = []
+
     j = 0
     ds=0
     side=0
@@ -595,8 +593,9 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
                     x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, angle, steps, estimate, ROI, ds=ds)
                     xs2 = np.append(xs2, x, axis=0)
                     ys2 = np.append(ys2, y, axis=0)
-                    x_list.append(xs2)
-                    y_list.append(ys2)
+                    
+                x_list.append(xs2)
+                y_list.append(ys2)
             else:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
