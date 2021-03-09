@@ -10,6 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.constants
 from scipy import ndimage
+from astropy.convolution.kernels import Gaussian2DKernel
+from astropy.convolution import convolve
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -18,11 +20,12 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-# path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
-path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+#path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+# path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 
 dataframe = pd.read_csv(path)
 
@@ -69,8 +72,6 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
-
-
 
 def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     '''
@@ -120,15 +121,11 @@ def phi_angle(N):
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
-    # print(f'denom is {(np.cos(theta) - a*np.cos(psi)*np.sin(theta))}')
-    # print(f'theta is {theta}')
-    # print(f'psi is {psi}')
     return - z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
 
 def dpsi(ds, theta, phi, psi, z_prime, a):
     '''Calculate the dpsi increment for a given ds at a given psi for given angles.'''
     h = dz(theta, phi, psi, z_prime, a)
-    # print(f'dz={h}')
     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
@@ -138,53 +135,7 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-    # print(f'dx_psi={dx_psi}')
-    # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
-
-# def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c11 = np.cos(phi)*np.cos(theta)
-#     c12 = -np.sin(phi)
-#     c13 = np.cos(phi)*np.sin(theta)
-#     print(dx, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
-#     dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
-#     print(f'dx_psi = {dx_psi}')
-#     # sys.exit()
-#     return dx/dx_psi
-
-# def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c21 = np.sin(phi)*np.cos(theta)
-#     c22 = np.cos(phi)
-#     c23 = np.sin(phi)*np.sin(theta)
-#     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-#     print(dy, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
-#     print(f'dy_psi = {dy_psi}')
-#     # sys.exit()
-#     return dy/dy_psi
-
-# def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
-#     '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
-#     psi = 0
-#     psi_list = [0]
-#     while True:
-#         d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
-#         print(f'd = {d}')
-#         psi += d
-#         print(f'psi = {psi}')
-#         if np.abs(psi) >= 2*np.pi:
-#             break
-#         else:
-#             psi_list.append(psi)    
-#     print(f'psi_list = {psi_list}')
-#     return psi_list
 
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
@@ -198,9 +149,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             break
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
-        # print(f'psi is {psi}')
-        # print(f'd is {d}')
-        # print(psi)
         if np.abs(psi) >= 2*np.pi:
             break
         else:
@@ -209,7 +157,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0,):
     a = np.tan(alpha)
-    # print(f'a is {a}')
     if alpha + theta > np.pi/2:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)
     x_prime_vals = np.array([])
@@ -217,9 +164,8 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI,
     ds=ds
     z_prime = z_prime - r1[2]
     if ds == 0:
-        ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
-    # print(ds)
-    # print(ds)
+        # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+        ds= 0.1
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -229,6 +175,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI,
         
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
+
 
         if ROI[0] < x_prime < ROI[1] and ROI[2] < y_prime < ROI[3]: 
             x_prime_vals = np.append(x_prime_vals, x_prime)
@@ -241,10 +188,10 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
     
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
-   ## 
+
     z_prime = z_prime - r1[2]
     
-    #ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     psi = 0
     anticlockwise = True
     iteration = 'first'
@@ -304,7 +251,6 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
             return x_prime_vals, y_prime_vals, ds
     # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
-
     
 def binary_dilate(image, iterations):
     dilated_image = ndimage.binary_dilation(image, iterations=iterations)
@@ -443,30 +389,6 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
-def calculate_heatmap_old(x, y, bins=50):
-    '''
-    Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
-    number of bins.
-    Parameters
-    ----------
-    x : numpy_array
-        Must be a numpy array, not a list!
-    y : numpy_array
-        DESCRIPTION.
-    bins : TYPE, optional
-        DESCRIPTION. The default is 50.
-    Returns
-    -------
-    heatmap : numpy_array
-        A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
-        y along axis 1.
-    extent : TYPE
-        DESCRIPTION.
-    '''
-    heatmap, xedges, yedges = np.histogram2d(x, y, bins)
-    extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
-    return heatmap, extent
-
 def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
@@ -528,7 +450,6 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
-    
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 50
@@ -546,14 +467,15 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
     return heatmap2, extent, bins, y_bins
 
-
 def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
-    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, y_bins, points = {bins, y_bins, n_points}')
+    plt.title(f'Heatmap Generated Using Consecutive "Bin" \n values of {bins, 25, 100}')
+    # plt.title(f'bins, y_bins, points, bins2,  smoothing = {bins, y_bins, n_points, 80}, True')
     plt.show()
+    # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
