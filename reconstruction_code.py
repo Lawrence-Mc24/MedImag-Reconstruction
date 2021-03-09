@@ -41,6 +41,37 @@ r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
 
 points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
+#new code for seperate detector files
+#Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_David_data.csv")
+#David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_Garry_data.csv")
+David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_David_data.csv")
+Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_Garry_data.csv")
+
+def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
+
+    merged = pd.concat([scatterer, absorber], axis=1, join="inner")
+    
+    merged.columns = ["X_1", "Y_1", "Z_1", "Energy Loss", "Compton Scatters in f'scatterer'", "X_2", "Y_2", "Z_2", "Energy Loss 2", "Compton Scatters in f'absorber'"]
+    
+    merged.loc[merged["Compton Scatters in f'scatterer'"] != 1, "Compton Scatters in f'absorber'"] = np.nan
+    #merged.loc[merged["Compton Scatters in David"] != 1, "Compton Scatters in David"] = np.nan
+    
+    dropnan = merged.dropna(axis = 'rows')
+    
+    
+    G_coords = [0,0,0]
+    dropnan["X_1"] = G_coords[0]
+    dropnan["Y_1"] = G_coords[1]
+    dropnan["Z_1"] = G_coords[2]
+    
+    D_coords = [absorber_distance*np.cos(absorber_angle*np.pi/180),0,absorber_distance*np.sin(absorber_angle*np.pi/180)]
+    dropnan["X_2"] = D_coords[0]
+    dropnan["Y_2"] = D_coords[1]
+    dropnan["Z_2"] = D_coords[2]
+    return dropnan
+
+output = data_merger(Garry, David, 25, 40)
+
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
     energy (eV)'''
