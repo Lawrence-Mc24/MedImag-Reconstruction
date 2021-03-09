@@ -118,15 +118,11 @@ def phi_angle(N):
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
-    # print(f'denom is {(np.cos(theta) - a*np.cos(psi)*np.sin(theta))}')
-    # print(f'theta is {theta}')
-    # print(f'psi is {psi}')
     return - z_prime*np.sin(psi)*np.sin(theta)*a/((np.cos(theta) - a*np.cos(psi)*np.sin(theta)))**2
 
 def dpsi(ds, theta, phi, psi, z_prime, a):
     '''Calculate the dpsi increment for a given ds at a given psi for given angles.'''
     h = dz(theta, phi, psi, z_prime, a)
-    # print(f'dz={h}')
     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
     c11 = np.cos(phi)*np.cos(theta)
     c12 = -np.sin(phi)
@@ -136,8 +132,6 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     c22 = np.cos(phi)
     c23 = np.sin(phi)*np.sin(theta)
     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-    # print(f'dx_psi={dx_psi}')
-    # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
 
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
@@ -152,9 +146,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             break
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         psi += d
-        # print(f'psi is {psi}')
-        # print(f'd is {d}')
-        # print(psi)
         if np.abs(psi) >= 2*np.pi:
             break
         else:
@@ -163,7 +154,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0, ):
     a = np.tan(alpha)
-    # print(f'a is {a}')
     if alpha + theta > np.pi/2:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds)
     x_prime_vals = np.array([])
@@ -173,8 +163,6 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0
     if ds == 0:
         # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
         ds= 0.1
-    # print(ds)
-    # print(ds)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -184,7 +172,6 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ds=0
         
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
         
         x_prime_vals = np.append(x_prime_vals, x_prime)
         y_prime_vals = np.append(y_prime_vals, y_prime)
@@ -196,10 +183,10 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
     
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
-   ## 
+
     z_prime = z_prime - r1[2]
     
-    #ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+    # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     psi = 0
     anticlockwise = True
     iteration = 'first'
