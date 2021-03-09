@@ -140,50 +140,6 @@ def dpsi(ds, theta, phi, psi, z_prime, a):
     # print(f'dy_psi={dy_psi}')
     return ds/np.sqrt(dx_psi**2 + dy_psi**2)
 
-# def dpsi_for_equal_dx(dx, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dx at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c11 = np.cos(phi)*np.cos(theta)
-#     c12 = -np.sin(phi)
-#     c13 = np.cos(phi)*np.sin(theta)
-#     print(dx, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c11 = {c11}, c12 = {c12}, c13 = {c13}')
-#     dx_psi = a*h*(c11*np.cos(psi) + c12*np.sin(psi) + c13/a) + a*z*(-c11*np.sin(psi) + c12*np.cos(psi))
-#     print(f'dx_psi = {dx_psi}')
-#     # sys.exit()
-#     return dx/dx_psi
-
-# def dpsi_for_equal_dy(dy, theta, phi, psi, z_prime, a):
-#     '''Calculate the dpsi increment for a given dy at a given psi for given angles.'''
-#     h = dz(theta, phi, psi, z_prime, a)
-#     z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-#     c21 = np.sin(phi)*np.cos(theta)
-#     c22 = np.cos(phi)
-#     c23 = np.sin(phi)*np.sin(theta)
-#     dy_psi = a*h*(c21*np.cos(psi) + c22*np.sin(psi) + c23/a) + a*z*(-c21*np.sin(psi) + c22*np.cos(psi))
-#     print(dy, theta, phi, psi, z_prime, a)
-#     print(f'a = {a}, h = {h}, z = {z}, c21 = {c21}, c22 = {c22}, c23 = {c23}')
-#     print(f'dy_psi = {dy_psi}')
-#     # sys.exit()
-#     return dy/dy_psi
-
-# def psi_calculator2(dx, theta, phi, z_prime, a, n, alpha):
-#     '''Calculate list of psi values required to keep the point spacing at a fixed dx'''
-#     psi = 0
-#     psi_list = [0]
-#     while True:
-#         d = dpsi_for_equal_dy(dx, theta, phi, psi, z_prime, a)
-#         print(f'd = {d}')
-#         psi += d
-#         print(f'psi = {psi}')
-#         if np.abs(psi) >= 2*np.pi:
-#             break
-#         else:
-#             psi_list.append(psi)    
-#     print(f'psi_list = {psi_list}')
-#     return psi_list
-
 def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     '''calculate list of psi values required to keep the point spacing at a fixed length, ds, 
     along the curve'''
@@ -523,7 +479,6 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     print(chop_indices[0])
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
-    
     
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
