@@ -20,11 +20,11 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
+#path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
-#path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
 # path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 
 dataframe = pd.read_csv(path)
@@ -70,6 +70,9 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
         The angle between the cone axial vector and the z_prime axis (radians).
 
     '''
+    print(z_prime, z_0_prime, x_prime, x_0_prime, y_prime, y_0_prime)
+    print(z_prime - z_0_prime)
+    print((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
 
@@ -142,8 +145,8 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
-    print(f'a value = {a}')
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    #print(f'a value = {a}')
+    #print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
         if (theta+np.arctan(a)) > np.pi/2:
             break
@@ -164,8 +167,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI,
     ds=ds
     z_prime = z_prime - r1[2]
     if ds == 0:
-        # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
-        ds= 0.1
+        ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -376,10 +378,10 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    # for i, k in enumerate(r1s):
-    #     plt.plot(k[0], k[1], 'ro')
-    #     plt.axhline(y=k[1], color='g')
-    #     plt.axvline(x=k[0], color='g')
+    for i, k in enumerate(r1s):
+        plt.plot(k[0], k[1], 'ro')
+        plt.axhline(y=k[1], color='g')
+        plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
@@ -535,30 +537,30 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     '''
     if estimate == False:
         estimate = [image_distance[0], image_distance[1]]
-    n_points = 2000
+    n_points = 600
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
 
     j = 0
     ds=0
     side=0
-    for points in sides:
+    for i in range(len(sides)):
         side+=1
         x_list = []
         y_list = []
-        if side == 1:
-            image_distance = image_distance[0]
-            R = R[0]
-            steps = steps[0]
-            estimate = estimate[0]
-        if side == 2:
-            image_distance = image_distance[1]
-            R  = R[1]
-            steps = steps[1]
-            estimate = estimate[1]
-        if points == 0:
-            continue
-        for point in points[:n_points]:
+        if side>2:
+            raise Exception('too many sides')
+        # if side == 1:
+        #     image_distance = image_distance[0]
+        #     R = R[0]
+        #     steps = steps[0]
+        #     estimate = estimate[0]
+        # if side == 2:
+        #     image_distance = image_distance[1]
+        #     R  = R[1]
+        #     steps = steps[1]
+        #     estimate = estimate[1]
+        for point in sides[i][:n_points]:
             xs2 = np.array([])
             ys2 = np.array([])
             # print(source_energy-point[6])
@@ -577,8 +579,8 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
                     continue
                 else:
                     pass
-            if R>0:
-                alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
+            if R[i]>0:
+                alpha_err = (R[i]*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
                 # print(f'alpha_err is {alpha_err}')
                 alpha_min = alpha-alpha_err
                 alpha_max = alpha+alpha_err
@@ -590,7 +592,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
                 for angle in alpha_bounds:
                     # print(f'r1={r1}')
                     # print(f'r2={r2}')
-                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, angle, steps, estimate, ROI, ds=ds)
+                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance[i], angle, steps[i], estimate[i], ROI, ds=ds)
                     xs2 = np.append(xs2, x, axis=0)
                     ys2 = np.append(ys2, y, axis=0)
                     
@@ -599,7 +601,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
             else:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance, alpha, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance[i], alpha, steps[i], estimate[i], ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
@@ -614,6 +616,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     
     #assume side 1 is the side you're 'looking' from in the final image. 
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped
+    
     plot_it2(np.array([x_list1, y_list1]), 0, plot_title='Side 1')
     plot_it2(np.array([x_list2, y_list2]), 0, plot_title='Side 2')
     
@@ -637,24 +640,30 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     print(j)
     return heatmap_combined, extent_combined
 
-# r1 = np.array([-0.4, 0.5, 0])
-# r2 = np.array([0.05, 0.1, -1])
-# r3 = np.array([0, 0, 0])
-# r4 = np.array([0.05, 0.1, -1])
-# r5 = np.array([-0.3, 0.4, 0])
-# r6 = np.array([0.05, 0.1, -1])
-# xys = []
-# points = np.array([[r1, r2], [r3, r4], [r5, r6]])
-# for point in points:
-#     r1 = point[0]
-#     r2 = point[1]
-#     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-#     phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
-#     x, y, ds = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1, estimate=1)
-#     xys.append([x, y])
+r1 = np.array([0, -0.4, 0])
+r2 = np.array([0, 0, -1])
+
+
+r3 = np.array([0, 0.4, 0])
+r4 = np.array([0.0, 0, -1])
+
+
+r5 = np.array([-0.3, -0.4, 0])
+r6 = np.array([0.05, 0.1, -1])
+
+xys = []
+points = np.array([[r1, r2], [r3, r4]])
+for point in points:
+    r1 = point[0]
+    r2 = point[1]
+    theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+    print(f'theta is {theta*180/np.pi}')
+    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    x, y, ds = x_prime_y_prime_output(1, theta, phi, np.pi/4, 180, r1, 1, [-20, 20, -20, 20])
+    xys.append([x, y])
     
 
-# plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
+plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
 
 
 
@@ -667,4 +676,6 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
 # print(x, y)
 #plot_it(x, ys=np.array([y]), r1=r1, individual_points=True)
 
-heatmap, extent = get_image(points, 50, 30, 30, 662E3, 50, 0, np.array([-100, 100, -100, 100]), steps=50, ZoomOut=0)
+#def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False):
+
+#heatmap, extent = get_image([points, points], 50, [30, 30], 662E3, 50, [0, 0], np.array([-50, 50, -50, 50]), [50,50], ZoomOut=0)
