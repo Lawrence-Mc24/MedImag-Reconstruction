@@ -251,8 +251,8 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     return figure
 
 r1 = np.array([0, 0.1, 0])
-r2 = np.array([0, 0.1, -1])
-r3 = np.array([0, 0.3, 0.1])
+r2 = np.array([0, -0.1, -1])
+r3 = np.array([0, -0.3, 0.1])
 r4 = np.array([0.5, 0.1, -1])
 r5 = np.array([0, 0.4, -0.1])
 r6 = np.array([0.5, 0.1, -1])
