@@ -23,8 +23,8 @@ e = scipy.constants.e
 # path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
-#path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
+#path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 
 dataframe = pd.read_csv(path)
 
@@ -44,8 +44,8 @@ points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E
 #new code for seperate detector files
 #Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_David_data.csv")
 #David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_Garry_data.csv")
-David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_David_data.csv")
-Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_Garry_data.csv")
+#David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_David_data.csv")
+#Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_Garry_data.csv")
 
 def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
 
@@ -70,7 +70,7 @@ def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
     dropnan["Z_2"] = D_coords[2]
     return dropnan
 
-output = data_merger(Garry, David, 25, 40)
+#output = data_merger(Garry, David, 25, 40)
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
@@ -127,9 +127,9 @@ def N(z):
     in the primed coordinate frame.
 
     '''
-    return [-z[1], z[0], 0]
+    return -np.array([-z[1], z[0], 0])
 
-def phi_angle(N):
+def phi_angle(N, z):
     '''
     Calculate the angle, phi, between N and the x_prime axis.
 
@@ -144,10 +144,16 @@ def phi_angle(N):
     phi
 
     '''
+    print(z)
+    print(f'N.z = {np.sum(N*z)}')
     if N[0] == 0:
         return 0
     else:
-        return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+        phi = np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+        if z[0]<0:
+            phi = 2*np.pi - phi
+        print(f'phi is {phi}')    
+        return phi
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
@@ -184,9 +190,10 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     return psi_list
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0):
+    print(f'theta {theta}')
     a = np.tan(alpha)
-    print(f'a value = {a}')
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    #print(f'a value = {a}')
+    #print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     if alpha + theta > np.pi/2-0.01:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)
     x_prime_vals = np.array([])
@@ -202,14 +209,15 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI,
         
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
-        
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
 
+        x_prime_vals = np.append(x_prime_vals, x_prime)
 
-        if ROI[0] < x_prime < ROI[1] and ROI[2] < y_prime < ROI[3]: 
-            x_prime_vals = np.append(x_prime_vals, x_prime)
-            y_prime_vals = np.append(y_prime_vals, y_prime)
+        y_prime_vals = np.append(y_prime_vals, y_prime)
+        # if ROI[0] < x_prime < ROI[1] and ROI[2] < y_prime < ROI[3]: 
+        #     x_prime_vals = np.append(x_prime_vals, x_prime)
+        #     y_prime_vals = np.append(y_prime_vals, y_prime)
 
     return x_prime_vals, y_prime_vals, ds
 
@@ -367,7 +375,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ROI, ds):
         Numpy array of the form np.array([x, y]) of the (x, y) values imaged on the imaging plane.
     '''
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])), r1-r2)
     # print(f'theta = {theta}, phi = {phi}')
     x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)    
     # print(x, y)
@@ -406,10 +414,10 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    for i, k in enumerate(r1s):
-        plt.plot(k[0], k[1], 'ro')
-        plt.axhline(y=k[1], color='g')
-        plt.axvline(x=k[0], color='g')
+    # for i, k in enumerate(r1s):
+    #     plt.plot(k[0], k[1], 'ro')
+    #     plt.axhline(y=k[1], color='g')
+    #     plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
@@ -635,5 +643,25 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0.03, ROI=[-30, 20, -10, 50], steps=50, ZoomOut=0)
+#heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0.03, ROI=[-30, 20, -10, 50], steps=50, ZoomOut=0)
 
+r1 = 1*np.array([-0.61, 0.6, 0])
+r2 = np.array([0, 0, -1])
+
+r3 = 1*np.array([-0.5, 0.5, 0])
+r4 = np.array([0, 0, -1])
+xys = []
+points = [[r1, r2], [r3, r4]]
+for point in np.array([[r1, r2], [r3,r4]]):
+    r1 = point[0]
+    r2 = point[1]
+    z = r1-r2
+    theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])), z)
+    # print(f'theta = {theta}, phi = {phi}')
+    x, y, ds = x_prime_y_prime_output(1, theta, phi, np.pi/4, 180, r1, 1, [-50, 50, -50, 50])
+    #print(len(x))
+    xys.append(np.array([x, y]))
+
+    
+plot_it2(xys, 0)
