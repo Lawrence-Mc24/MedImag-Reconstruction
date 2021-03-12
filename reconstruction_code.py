@@ -52,6 +52,7 @@ x_0_prime = -dropnan['X_2']
 y_0_prime = dropnan['Y_2']
 z_0_prime = dropnan['Z_2']
 E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
+E_loss_error = dropnan['Energy Error_1']*10**3
 
 
 r1 = np.array([x_prime, y_prime, z_prime])
@@ -508,7 +509,7 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.5*np.amax(h)] = 0
+    h[h < 0.9*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -529,7 +530,7 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
-def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, steps=180, plot=True, ZoomOut=0):
+def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_error, ROI, steps=180, plot=True, ZoomOut=0):
     '''
     Parameters
     ----------
@@ -569,54 +570,56 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     y_list = []
     j = 0
     ds=0
-    for point in points[:n_points]:
-        xs2 = np.array([])
-        ys2 = np.array([])
-        # print(source_energy-point[6])
-        alpha = compton_angle(source_energy, source_energy-point[6])
-        # print(alpha)
-        Ef = source_energy - point[6]
-        Ef = Ef*e
-        r1 = np.array([point[0], point[1], point[2]])
-        r2 = np.array([point[3], point[4], point[5]])
-        # print(f'alpha={alpha}')
-        theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-        if theta+alpha < np.pi/2:
-            j+=1
-        if theta + alpha >= np.pi/2-0.001:
-            # continue # This continue skips parabolas
-            if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
-                continue
+
+    for index, point in enumerate([points[0:10], points[5000:5010], points[12000:12010], points[21000:21010]]):
+        for p in point:
+            xs2 = np.array([])
+            ys2 = np.array([])
+            # print(source_energy-point[6])
+            alpha = compton_angle(source_energy, source_energy-p[6])
+            # print(alpha)
+            Ef = source_energy - p[6]
+            Ef = Ef*e
+            r1 = np.array([p[0], p[1], p[2]])
+            r2 = np.array([p[3], p[4], p[5]])
+            # print(f'alpha={alpha}'
+            theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+            if theta+alpha < np.pi/2:
+                j+=1
+            if theta + alpha >= np.pi/2-0.001:
+                # continue # This continue skips parabolas
+                if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+                    continue
+                else:
+                    pass
+            if E_loss_error.any()>0:
+                alpha_err = ((((m_e*c**2/(source_energy**2))*1/(1 - (1 - m_e*c**2*((1/(Ef))-(1/source_energy)))**2)**0.5)*E_loss_error[index])**2)**0.5
+                print(f'alpha_err is {alpha_err}')
+                alpha_min = alpha-alpha_err
+                alpha_max = alpha+alpha_err
+                if alpha_min < 0:
+                    alpha_min = 0
+                if alpha_max >= np.pi/2:
+                    alpha_max = (np.pi/2)-0.01
+                alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+                for angle in alpha_bounds:
+                    # print(f'r1={r1}')
+                    # print(f'r2={r2}')
+                    x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
+                    xs2 = np.append(xs2, x, axis=0)
+                    ys2 = np.append(ys2, y, axis=0)
+                x_list.append(xs2)
+                y_list.append(ys2)
             else:
-                pass
-        if R>0:
-            alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-            # print(f'alpha_err is {alpha_err}')
-            alpha_min = alpha-alpha_err
-            alpha_max = alpha+alpha_err
-            if alpha_min < 0:
-                alpha_min = 0
-            if alpha_max >= np.pi/2:
-                alpha_max = (np.pi/2)-0.01
-            alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-            for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
-            x_list.append(xs2)
-            y_list.append(ys2)
-        else:
-            # print(f'r1={r1}')
-            # print(f'r2={r2}')
-            x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
-            xs2 = np.append(xs2, x, axis=0)
-            ys2 = np.append(ys2, y, axis=0)
-            x_list.append(xs2)
-            y_list.append(ys2)
+                x_list.append(xs2)
+                y_list.append(ys2)
  
-    if R>0:
+    if E_loss_error>0:
         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
@@ -628,4 +631,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, R=0, ROI=[-300, 300, -300, 300], steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, E_loss_error = E_loss_error , ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
