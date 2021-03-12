@@ -18,34 +18,47 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-#path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
-# path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-# path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
-#path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
-#path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
-#path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
-path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
-
+path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
 dataframe = pd.read_csv(path)
 
-x_prime = -dataframe['X_1 [cm]']
-y_prime = dataframe['Y_1 [cm]']
-z_prime = dataframe['Z_1 [cm]']
-x_0_prime = -dataframe['X_2 [cm]']
-y_0_prime = dataframe['Y_2 [cm]']
-z_0_prime = dataframe['Z_2 [cm]']
-E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
+#dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
+
+scatterer_0 = [-7.5, 0, 0]
+dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
+dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
+dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
+
+scatterer_1 = [7.5, 0, 0]
+dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
+dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
+dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+
+absorber_0 = [7.5, 0, -50]
+dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
+dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
+dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
+
+absorber_1 = [-7.5, 0, -50]
+dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
+dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
+dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
+
+#dropnan = dataframe.dropna(axis = 'rows')
+dropnan = dataframe
+x_prime = -dropnan['X_1']
+y_prime = dropnan['Y_1']
+z_prime = dropnan['Z_1']
+x_0_prime = -dropnan['X_2']
+y_0_prime = dropnan['Y_2']
+z_0_prime = dropnan['Z_2']
+E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
+
 
 r1 = np.array([x_prime, y_prime, z_prime])
 r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
 
 points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
-#new code for seperate detector files
-#Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_David_data.csv")
-#David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_Garry_data.csv")
-# David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_David_data.csv")
-# Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_Garry_data.csv")
 
 def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
 
@@ -548,7 +561,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
         y along axis 1.
 
     '''
-    n_points = 100
+    n_points = 10
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -615,4 +628,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0, ROI=[-100, 100, -100, 100], steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, R=0, ROI=[-300, 300, -300, 300], steps=50, ZoomOut=0)
