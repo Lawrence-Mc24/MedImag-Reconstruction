@@ -28,11 +28,11 @@ path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degre
 
 dataframe = pd.read_csv(path)
 
-x_prime = dataframe['Y_1 [cm]']
-y_prime = dataframe['X_1 [cm]']
+x_prime = -dataframe['X_1 [cm]']
+y_prime = dataframe['Y_1 [cm]']
 z_prime = dataframe['Z_1 [cm]']
-x_0_prime = dataframe['Y_2 [cm]']
-y_0_prime = dataframe['X_2 [cm]']
+x_0_prime = -dataframe['X_2 [cm]']
+y_0_prime = dataframe['Y_2 [cm]']
 z_0_prime = dataframe['Z_2 [cm]']
 E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
 
