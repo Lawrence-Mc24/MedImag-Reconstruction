@@ -20,12 +20,12 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-#path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
+# path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
+path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\updated_truth2_4detector.csv"
 #path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
-path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
-# path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+
 
 dataframe = pd.read_csv(path)
 
@@ -39,8 +39,53 @@ E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
 
 r1 = np.array([x_prime, y_prime, z_prime])
 r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
+points1 = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
-points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
+x_prime = -dataframe['X_1 [cm]']
+y_prime = dataframe['Y_1 [cm]']
+z_prime = -dataframe['Z_1 [cm]']
+x_0_prime = -dataframe['X_2 [cm]']
+y_0_prime = dataframe['Y_2 [cm]']
+z_0_prime = -dataframe['Z_2 [cm]']
+E_loss = np.abs(dataframe['Energy Loss [MeV]'])*10**6
+
+r3 = np.array([x_prime, y_prime, z_prime])
+r4 = np.array([x_0_prime, y_0_prime, z_0_prime])
+
+points2 = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
+
+sides = [points1, points2]
+
+#new code for seperate detector files
+#Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_David_data.csv")
+#David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\coincidence_Detector_Garry_data.csv")
+# David = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_David_data.csv")
+# Garry = pd.read_csv(r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\MC sim for run 4\Detector_Garry_data.csv")
+
+def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
+
+    merged = pd.concat([scatterer, absorber], axis=1, join="inner")
+    
+    merged.columns = ["X_1", "Y_1", "Z_1", "Energy Loss", "Compton Scatters in f'scatterer'", "X_2", "Y_2", "Z_2", "Energy Loss 2", "Compton Scatters in f'absorber'"]
+    
+    merged.loc[merged["Compton Scatters in f'scatterer'"] != 1, "Compton Scatters in f'absorber'"] = np.nan
+    #merged.loc[merged["Compton Scatters in David"] != 1, "Compton Scatters in David"] = np.nan
+    
+    dropnan = merged.dropna(axis = 'rows')
+    
+    
+    G_coords = [0,0,0]
+    dropnan["X_1"] = G_coords[0]
+    dropnan["Y_1"] = G_coords[1]
+    dropnan["Z_1"] = G_coords[2]
+    
+    D_coords = [absorber_distance*np.cos(absorber_angle*np.pi/180),0,absorber_distance*np.sin(absorber_angle*np.pi/180)]
+    dropnan["X_2"] = D_coords[0]
+    dropnan["Y_2"] = D_coords[1]
+    dropnan["Z_2"] = D_coords[2]
+    return dropnan
+
+# output = data_merger(Garry, David, 25, 40)
 
 def compton_angle(E_initial, E_final):
     '''Function calculating Compton scatter angle from initial and final
@@ -70,39 +115,10 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
         The angle between the cone axial vector and the z_prime axis (radians).
 
     '''
-    print(z_prime, z_0_prime, x_prime, x_0_prime, y_prime, y_0_prime)
-    print(z_prime - z_0_prime)
-    print((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
 
-def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
-    '''
-    Returns cone axis vector as a list in primed axes.
-    '''
-    return [(x_prime-x_0_prime), (y_prime-y_0_prime), (z_prime-z_0_prime)]
-    
-def N(z):
-    '''
-    Calculate vector for the line of nodes, N.
-
-    Parameters
-    ----------
-    z : TYPE - array-like
-        DESCRIPTION - of the form [a, b, c] where a,b,c are the components of
-    the cone axial vector in the primed coordinate system.
-    z_prime : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    N vector of the form [i, j, k] where ijk are the components of the N vector
-    in the primed coordinate frame.
-
-    '''
-    return [-z[1], z[0], 0]
-
-def phi_angle(N):
+def phi_angle(z):
     '''
     Calculate the angle, phi, between N and the x_prime axis.
 
@@ -117,10 +133,15 @@ def phi_angle(N):
     phi
 
     '''
-    if N[0] == 0:
+    if z[0] == 0 and z[1] == 0:
+        print(f'phi = 0')
         return 0
-    else:
-        return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    
+    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
+    if z[1]<0:
+        phi = 2*np.pi - phi
+    #print(f'phi is {phi}')    
+    return phi
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
@@ -145,8 +166,6 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
     along the curve'''
     psi = 0
     psi_list = [0]
-    #print(f'a value = {a}')
-    #print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     while True:
         if (theta+np.arctan(a)) > np.pi/2:
             break
@@ -158,26 +177,30 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
             psi_list.append(psi)
     return psi_list
 
-def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0,):
+def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0):
     a = np.tan(alpha)
-    if alpha + theta > np.pi/2:
+    #print(f'a value = {a}')
+    #print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    if alpha + theta > np.pi/2-0.01:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)
     x_prime_vals = np.array([])
     y_prime_vals = np.array([])
     ds=ds
     z_prime = z_prime - r1[2]
     if ds == 0:
-        ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+        # ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
+        ds = 0.1
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
         
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
+        #print(x_prime)
         
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
-
+        #print(y_prime)
 
         if ROI[0] < x_prime < ROI[1] and ROI[2] < y_prime < ROI[3]: 
             x_prime_vals = np.append(x_prime_vals, x_prime)
@@ -222,12 +245,11 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
         if ROI[0] < x_prime < ROI[1] and ROI[2] < y_prime < ROI[3]: 
             x_prime_vals = np.append(x_prime_vals, x_prime)
             y_prime_vals = np.append(y_prime_vals, y_prime)
-
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
-        if counter > 5000:
-            if d < np.pi/steps*10**-3*1.01:
-                print(f'd = {d}')
+        #if counter > 5000:
+         #   if d < np.pi/steps*10**-3*1.01:
+                #print(f'd = {d}')
         if anticlockwise:            
             psi += d
         else:
@@ -249,7 +271,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
             psi=np.pi
             continue
         
-        if np.abs(psi) > 2*np.pi:
+        if np.abs(psi) >= 2*np.pi:
             return x_prime_vals, y_prime_vals, ds
     # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
@@ -339,7 +361,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ROI, ds):
         Numpy array of the form np.array([x, y]) of the (x, y) values imaged on the imaging plane.
     '''
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    phi = phi_angle(r1-r2)
     # print(f'theta = {theta}, phi = {phi}')
     x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)    
     # print(x, y)
@@ -378,10 +400,10 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    for i, k in enumerate(r1s):
-        plt.plot(k[0], k[1], 'ro')
-        plt.axhline(y=k[1], color='g')
-        plt.axvline(x=k[0], color='g')
+    # for i, k in enumerate(r1s):
+    #     plt.plot(k[0], k[1], 'ro')
+    #     plt.axhline(y=k[1], color='g')
+    #     plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
         plt.plot(k[0], k[1])
         # Useful to plot individual points for mean duration against square.
@@ -391,7 +413,7 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
-def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
+def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
     number of bins.
@@ -419,8 +441,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     pixel_size_y = abs(yedges_[0] - yedges_[1])
     print(f'pixel_size_x = {pixel_size_x}')
     print(f'pixel_size_y = {pixel_size_y}')
-    extend_x = 5*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
-    extend_y = 5*dilate_erode_iterations*pixel_size_y
+    extend_x = 2*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
+    extend_y = 2*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
     print(f'y_bins = {y_bins}')
     print(f'type(y_bins) = {type(y_bins)}')
@@ -436,11 +458,13 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
     # np.where(ytot>extent[3], 0, ytot)
 
     heatmaps = []
+    print(f'len(x) = {len(x)}')
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+            hist[hist != 0] = 1
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop')
@@ -462,20 +486,25 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=5, ZoomOut=0):
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+            hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
+    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    # x/y_centre are actually the edges of the first maximum bin so not really the centre
+    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/50
+    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/50
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, y_bins
+    return heatmap2, extent, bins, bins2, x_centre, y_centre
 
-def plot_heatmap(heatmap, extent, bins, y_bins, n_points):
+def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
+    # plt.imshow(heatmap.T, extent=extent, origin='lower')
     plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'Heatmap Generated Using Consecutive "Bin" \n values of {bins, 25, 100}')
-    # plt.title(f'bins, y_bins, points, bins2,  smoothing = {bins, y_bins, n_points, 80}, True')
+    plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
     plt.show()
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
@@ -502,6 +531,105 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
+# def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, steps=180, plot=True, ZoomOut=0):
+#     '''
+#     Parameters
+#     ----------
+#     points : TYPE - array
+#         DESCRIPTION - each item in the array is an array-like object consisting of [r1, r2, dE] where
+#         r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
+#     n : TYPE - integer
+#         DESCRIPTION - number of angles to iterate through in alpha_bounds 
+#     estimate : TYPE - float
+#         DESCRIPTION - estimate of z distance of source from Compton detector
+#     image_distance : TYPE - float
+#         DESCRIPTION - distance of imaging plane from the Compton detector
+#     source_energy : TYPE - float
+#         DESCRIPTION - energy of the source in eV
+#     bins : TYPE - integer
+#         DESCRIPTION - number of bins to construct heatmap
+#     R : TYPE - float
+#         DESCRIPTION - resolution of the detector
+#     ROI : TYPE - array
+#         DESCRIPTION - region of interest to image of the form [xmin, xmax, ymin, ymax]
+#     steps : TYPE - integer
+#         DESCRIPTION - approximate number of steps to take in psi to calculate cone projections 
+#     plot : TYPE - boolean
+#         DESCRIPTION - plots heatmap if set to True
+
+#     Returns
+#     -------
+#     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
+#         y along axis 1.
+
+#     '''
+#     n_points = 100
+#     if n_points > np.shape(points)[0]:
+#         n_points = np.shape(points)[0]
+            
+#     x_list = []
+#     y_list = []
+#     j = 0
+#     ds=0
+#     for point in points[:n_points]:
+#         xs2 = np.array([])
+#         ys2 = np.array([])
+#         # print(source_energy-point[6])
+#         alpha = compton_angle(source_energy, source_energy-point[6])
+#         # print(alpha)
+#         Ef = source_energy - point[6]
+#         Ef = Ef*e
+#         r1 = np.array([point[0], point[1], point[2]])
+#         r2 = np.array([point[3], point[4], point[5]])
+#         # print(f'alpha={alpha}')
+#         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+#         if theta+alpha < np.pi/2:
+#             j+=1
+#         if theta + alpha >= np.pi/2-0.001:
+#             # continue # This continue skips parabolas
+#             if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+#                 continue
+#             else:
+#                 pass
+#         if R>0:
+#             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
+#             # print(f'alpha_err is {alpha_err}')
+#             alpha_min = alpha-alpha_err
+#             alpha_max = alpha+alpha_err
+#             if alpha_min < 0:
+#                 alpha_min = 0
+#             if alpha_max >= np.pi/2:
+#                 alpha_max = (np.pi/2)-0.01
+#             alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+#             for angle in alpha_bounds:
+#                 # print(f'r1={r1}')
+#                 # print(f'r2={r2}')
+#                 x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
+#                 xs2 = np.append(xs2, x, axis=0)
+#                 ys2 = np.append(ys2, y, axis=0)
+#             x_list.append(xs2)
+#             y_list.append(ys2)
+#         else:
+#             # print(f'r1={r1}')
+#             # print(f'r2={r2}')
+#             x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
+#             xs2 = np.append(xs2, x, axis=0)
+#             ys2 = np.append(ys2, y, axis=0)
+#             x_list.append(xs2)
+#             y_list.append(ys2)
+ 
+#     if R>0:
+#         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+#     else:
+#         # Need to not dilate for zero error (perfect resolution: R=0)
+#         print('R=0')
+#         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+
+#     if plot is True:
+#         plot_heatmap(heatmap_combined, extent_combined, bins, bins2, n_points, (x_centre, y_centre))
+    
+#     return heatmap_combined, extent_combined
+
 def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False):
     '''
     Parameters
@@ -513,7 +641,8 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     n : TYPE - integer
         DESCRIPTION - number of angles to iterate through in alpha_bounds 
     image_distance : TYPE - array
-        DESCRIPTION - [z'1, z'2] distance of imaging plane from the Compton detector for sides 1 and 2
+        DESCRIPTION - [z'1, z'2] distance of imaging plane from the Compton detector for sides 1 and 2,
+        z'1 +z'2 should equal the distance between the Compton detectors of each side
     source_energy : TYPE - float
         DESCRIPTION - energy of the source in eV
     bins : TYPE - integer
@@ -533,11 +662,10 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     -------
     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
         y along axis 1.
-
     '''
     if estimate == False:
         estimate = [image_distance[0], image_distance[1]]
-    n_points = 600
+    n_points = 100
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
 
@@ -609,73 +737,36 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
         
         if side == 1:
             x_list1 = x_list
+            
             y_list1 = y_list
+            
         if side == 2:
             x_list2 = x_list
             y_list2 = y_list
     
     #assume side 1 is the side you're 'looking' from in the final image. 
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped
-    
-    plot_it2(np.array([x_list1, y_list1]), 0, plot_title='Side 1')
-    plot_it2(np.array([x_list2, y_list2]), 0, plot_title='Side 2')
-    
+
+
     x_list2_ = []
     for xs in x_list2:
         xs = np.array(xs)*-1
         x_list2_.append(xs)
         
     x_list_tot = np.concatenate([x_list1, x_list2_])
-    y_list_tot = np.concatenate([x_list2, y_list2])
+    y_list_tot = np.concatenate([y_list1, y_list2])
     
-    if R>0:
+    if R[0]>0:
         heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, y_bins, x_centre, y_centre  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points)
+        plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points, centre=(x_centre, y_centre))
     print(j)
+    
     return heatmap_combined, extent_combined
 
-r1 = np.array([0, -0.4, 0])
-r2 = np.array([0, 0, -1])
-
-
-r3 = np.array([0, 0.4, 0])
-r4 = np.array([0.0, 0, -1])
-
-
-r5 = np.array([-0.3, -0.4, 0])
-r6 = np.array([0.05, 0.1, -1])
-
-xys = []
-points = np.array([[r1, r2], [r3, r4]])
-for point in points:
-    r1 = point[0]
-    r2 = point[1]
-    theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-    print(f'theta is {theta*180/np.pi}')
-    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
-    x, y, ds = x_prime_y_prime_output(1, theta, phi, np.pi/4, 180, r1, 1, [-20, 20, -20, 20])
-    xys.append([x, y])
-    
-
-plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-
-
-
-# r1 = np.array([-0.5, 0.9, 0])
-# r2 = np.array([0.05, 0.1, -1])
-# theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-# phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
-# # print(f'theta = {theta}, phi = {phi}')
-# x, y, ds = x_prime_y_prime_output(1, theta, phi, alpha=np.pi/4, steps=180, r1=r1, estimate=1)
-# print(x, y)
-#plot_it(x, ys=np.array([y]), r1=r1, individual_points=True)
-
-#def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False):
-
-#heatmap, extent = get_image([points, points], 50, [30, 30], 662E3, 50, [0, 0], np.array([-50, 50, -50, 50]), [50,50], ZoomOut=0)
+heatmap, extent = get_image(sides, 10, [30, 30], 662E3, 100, R=[0,0], ROI=[-100, 100, -100, 100], steps=[50,50], ZoomOut=0)
