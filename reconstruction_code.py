@@ -147,14 +147,14 @@ def phi_angle(N, z):
     print(z)
     print(f'N.z = {np.sum(N*z)}')
     
-    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2 + z[2]**2))
+    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
     # if N[0] == 0:
     #     return 0
     # else:
     #     phi = np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
     #     if z[0]<0:
     #         phi = 2*np.pi - phi
-    #     print(f'phi is {phi}')
+    print(f'phi is {phi}')
     if z[1]<0:
         phi = 2*np.pi - phi
         return phi
@@ -655,7 +655,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
 
 #heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0.03, ROI=[-30, 20, -10, 50], steps=50, ZoomOut=0)
 
-r1 = 1*np.array([-0.6, 0.6, 0])
+r1 = 1*np.array([0.5, 0.5, 0])
 r2 = np.array([0, 0, -1])
 
 r3 = -1*np.array([0.5, 0.5, 0])
@@ -672,6 +672,7 @@ for point in np.array([[r1, r2], [r3,r4]]):
     x, y, ds = x_prime_y_prime_output(1, theta, phi, np.pi/4, 180, r1, 1, [-50, 50, -50, 50])
     #print(len(x))
     xys.append(np.array([x, y]))
+    break
 
     
 plot_it2(xys, 0)
