@@ -146,13 +146,19 @@ def phi_angle(N, z):
     '''
     print(z)
     print(f'N.z = {np.sum(N*z)}')
-    if N[0] == 0:
-        return 0
+    
+    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2 + z[2]**2))
+    # if N[0] == 0:
+    #     return 0
+    # else:
+    #     phi = np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    #     if z[0]<0:
+    #         phi = 2*np.pi - phi
+    #     print(f'phi is {phi}')
+    if z[1]<0:
+        phi = 2*np.pi - phi
+        return phi
     else:
-        phi = np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
-        if z[0]<0:
-            phi = 2*np.pi - phi
-        print(f'phi is {phi}')    
         return phi
 
 def dz(theta, phi, psi, z_prime, a):
@@ -203,12 +209,16 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI,
     if ds == 0:
         ds = 2*np.pi*estimate*np.tan(alpha)/(steps-1)
         # ds= 0.1
+    #print(psi_calculator(ds, theta, phi, z_prime, a, steps, alpha))
     for i in psi_calculator(ds, theta, phi, z_prime, a, steps, alpha): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
-        
+        if z< 0:
+            print('z<0')
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
                      np.cos(phi)*np.sin(theta)) + r1[0]
+        #print(f'x\' is {x_prime}')
+        #print(f'without displacement is {x_prime-r1[0]}')
         y_prime = z*(a*np.cos(i)*np.cos(theta)*np.sin(phi)
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
 
@@ -645,10 +655,10 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
 
 #heatmap, extent = get_image(points, 10, 30, 30, 662E3, 100, R=0.03, ROI=[-30, 20, -10, 50], steps=50, ZoomOut=0)
 
-r1 = 1*np.array([-0.61, 0.6, 0])
+r1 = 1*np.array([-0.6, 0.6, 0])
 r2 = np.array([0, 0, -1])
 
-r3 = 1*np.array([-0.5, 0.5, 0])
+r3 = -1*np.array([0.5, 0.5, 0])
 r4 = np.array([0, 0, -1])
 xys = []
 points = [[r1, r2], [r3, r4]]
