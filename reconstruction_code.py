@@ -127,7 +127,7 @@ def N(z):
     in the primed coordinate frame.
 
     '''
-    return -np.array([-z[1], z[0], 0])
+    return np.array([-z[1], z[0], 0])
 
 def phi_angle(N, z):
     '''
