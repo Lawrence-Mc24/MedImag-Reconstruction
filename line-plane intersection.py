@@ -275,8 +275,8 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
         # plt.axhline(y=k[1], color='g')
         # plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
-        plt.plot(k[0], k[1], label=r1s[i])
         print(f'r1s[i] = {r1s[i]}')
+        plt.plot(k[0], k[1], label=r1s[i])
         plt.plot(r1s[i][0], r1s[i][1], 'ro')
         # Useful to plot individual points for mean duration against square.
         if individual_points:
@@ -320,7 +320,11 @@ xys = []
 points = [r1, r3, r5, r7, r9, r11, r13, r15, r17, r19]
 for point in points:
     xys.append(give_x_y_for_two_points(point, r2, z_prime=1, alpha=np.pi/4, steps=180))
-    
+theta = np.linspace(0, 2*np.pi, 360)
+r = np.amax(xys[-3][0])
+print(f'r = {r}')
+xys.append(np.array([r*np.cos(theta), r*np.sin(theta)]))
+points.append(np.array([0, 0, 0]))
 plot_it2(xys, points)
 # plot_it2([give_x_y_for_two_points(r19, r2, z_prime=1, alpha=np.pi/4, steps=180)], [r2])
 
