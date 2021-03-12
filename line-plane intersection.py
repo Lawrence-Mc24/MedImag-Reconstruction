@@ -43,6 +43,7 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
 
     '''
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
+    print(f'theta = {theta}')
     return theta
 
 def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
@@ -71,7 +72,7 @@ def N(z):
     '''
     return [-z[1], z[0], 0]
 
-def phi_angle(N):
+def phi_angle(N, z):
     '''
     Calculate the angle, phi, between N and the x_prime axis.
 
@@ -86,18 +87,50 @@ def phi_angle(N):
     phi
 
     '''
-    if N[0] == 0:
+    if z[0] == 0 and z[1] == 0:
+        print(f'phi = 0')
         return 0
-    else:
-        return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    
+    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
+    if z[1]<0:
+        phi = 2*np.pi - phi
+    print(f'phi is {phi}')    
+    return phi
+    
+    # if N[0] == 0:
+    #     return 0
+    
+    # else:
+    #     phi = np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    #     if z[0]<0:
+    #         phi = 2*np.pi - phi
+    #     print(f'phi is {phi}')    
+    #     return phi
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1):
     a = np.tan(alpha)
+    print(f'alpha = {alpha}')
     
     x_prime_vals = []
     y_prime_vals = []
     
     z_prime = z_prime - r1[2]
+    
+    # M = np.array([[np.cos(theta), 0, np.sin(theta)], [0, 1, 0], [-np.sin(theta), 0, np.cos(theta)]])
+    # N = np.array([[np.cos(phi), -np.sin(phi), 0], [np.sin(phi), np.cos(phi), 0], [0, 0, 1]])
+    # NM = np.matmul(N, M)
+    # MN = np.matmul(M, N)
+    # for psi in np.linspace(0, 2*np.pi, steps):
+    #     z = 1
+    #     base_vector = np.array([z*a*np.cos(psi), z*a*np.sin(psi), z])
+    #     prime_vector = np.matmul(MN, base_vector)
+    #     z = z_prime/prime_vector[2]
+        
+    #     base_vector = np.array([z*a*np.cos(psi), z*a*np.sin(psi), z])
+    #     prime_vector = np.matmul(NM, base_vector)
+    #     x_prime_vals.append(prime_vector[0])
+    #     y_prime_vals.append(prime_vector[1])
+        
     for i in np.linspace(0, 2*np.pi, steps): #i is our psi variable
         
         z = z_prime/(-a*np.cos(i)*np.sin(theta) + np.cos(theta))
@@ -106,7 +139,7 @@ def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1):
             + a*np.sin(i)*np.cos(phi) + np.sin(theta)*np.sin(phi)) + r1[1]
 
         x_prime = z*(a*np.cos(i)*np.cos(phi)*np.cos(theta) - a*np.sin(i)*np.sin(phi) + 
-                     np.cos(phi)*np.sin(theta)) + r1[0]
+                      np.cos(phi)*np.sin(theta)) + r1[0]
         
         y_prime_vals.append(y_prime)
     
@@ -194,7 +227,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps):
 
     '''
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])), r1-r2)
     # print(f'theta = {theta}, phi = {phi}')
     x, y = x_prime_y_prime_output(z_prime, theta, phi, alpha=np.pi/4, steps=180, r1=r1)
     # print(x, y)
@@ -236,30 +269,65 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.title(plot_title, fontsize=16)
     plt.xlabel(x_name, fontsize=16)
     plt.ylabel(y_name, fontsize=16)
-    for i, k in enumerate(r1s):
-        print(f'k = {k}')
-        plt.plot(k[0], k[1], 'ro')
-        plt.axhline(y=k[1], color='g')
-        plt.axvline(x=k[0], color='g')
+    # for i, k in enumerate(r1s):
+    #     print(f'k = {k}')
+    #     plt.plot(k[0], k[1], 'ro')
+        # plt.axhline(y=k[1], color='g')
+        # plt.axvline(x=k[0], color='g')
     for i, k in enumerate(xys):
-        plt.plot(k[0], k[1])
+        plt.plot(k[0], k[1], label=r1s[i])
+        print(f'r1s[i] = {r1s[i]}')
+        plt.plot(r1s[i][0], r1s[i][1], 'ro')
         # Useful to plot individual points for mean duration against square.
         if individual_points:
             plt.plot(k[0], k[1], 'r.')
+    plt.legend(fontsize='x-large')
     plt.grid(True)
     plt.show()
     return figure
 
-r1 = np.array([0, 0.1, 0])
-r2 = np.array([0, -0.1, -1])
-r3 = np.array([0, -0.3, 0.1])
-r4 = np.array([0.5, 0.1, -1])
-r5 = np.array([0, 0.4, -0.1])
-r6 = np.array([0.5, 0.1, -1])
+r1 = 1*np.array([0.3, 0.4, 0])
+r2 = np.array([0, 0, -1])
+r3 = np.array([0.3, -0.4, 0])
+r4 = np.array([0, 0, -1])
+r5 = np.array([-0.5, 0, -0])
+r6 = np.array([0, 0, -1])
+r7 = np.array([-0.3, -0.4, -0])
+r8 = np.array([0, 0, -1])
+r9 = np.array([-0.3, -0.4, -0])
+r10 = np.array([0, 0, -1])
+r11 = np.array([0, -0.5, -0])
+r12 = np.array([0, 0, -1])
+r13 = np.array([0, 0.5, -0])
+r14 = np.array([0, 0, -1])
+r15 = np.array([0.5, 0, -0])
+r16 = np.array([0, 0, -1])
+r17 = np.array([-0.3, 0.4, -0])
+r19 = np.array([0, 0, 0])
+
 xys = np.array([give_x_y_for_two_points(r1, r2, z_prime=1, alpha=np.pi/4, steps=180),
                 give_x_y_for_two_points(r3, r4, z_prime=1, alpha=np.pi/4, steps=180),
-                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180)])
+                give_x_y_for_two_points(r5, r6, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r7, r8, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r9, r10, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r11, r12, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r13, r14, z_prime=1, alpha=np.pi/4, steps=180),
+                give_x_y_for_two_points(r15, r16, z_prime=1, alpha=np.pi/4, steps=180)])
 
-plot_it2(xys, np.array([r1, r3, r5]), individual_points=True)
-#plot_it(x, ys=np.array([y]), r1=r1, individual_points=False)
-# test change
+plot_it2(xys, np.array([r1, r3, r5, r7, r9, r11, r13, r15]), individual_points=False)
+
+xys = []
+points = [r1, r3, r5, r7, r9, r11, r13, r15, r17, r19]
+for point in points:
+    xys.append(give_x_y_for_two_points(point, r2, z_prime=1, alpha=np.pi/4, steps=180))
+    
+plot_it2(xys, points)
+# plot_it2([give_x_y_for_two_points(r19, r2, z_prime=1, alpha=np.pi/4, steps=180)], [r2])
+
+
+
+
+
+
+
+
