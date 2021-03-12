@@ -20,11 +20,11 @@ e = scipy.constants.e
 
 #path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_3-Lab_Experiment_1-Run_3.csv"
 # path = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_2.csv"
-path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
+# path = 'D:/University/Year 3/Group Studies/Monte Carlo data/Old Data/compt_photo_chain_data_4_detectors.csv'
 #path =  r'C:\Users\laure\Documents\Physics\Year 3\Group Study\Point_Source-Truth_Data_1.csv'
 #path = 'D:/University/Year 3/Group Studies/Monte Carlo data/compt_photo_chain_data_4_detectors.csv'
 #path = r"C:\Users\lawre\Documents\Y3_Compton_Camera\compt_photo_chain_data_.csv"
-# path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
+path = "U:\Physics\Yr 3\MI Group Studies\MC data/compt_photo_chain_data_45_degrees_point_source.csv"
 
 dataframe = pd.read_csv(path)
 
@@ -103,33 +103,7 @@ def theta_angle(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
     theta = np.arccos((z_prime - z_0_prime)/np.sqrt((x_prime - x_0_prime)**2 + (y_prime - y_0_prime)**2 + (z_prime - z_0_prime)**2))
     return theta
 
-def cone_vector(x_prime, x_0_prime, y_prime, y_0_prime, z_prime, z_0_prime):
-    '''
-    Returns cone axis vector as a list in primed axes.
-    '''
-    return [(x_prime-x_0_prime), (y_prime-y_0_prime), (z_prime-z_0_prime)]
-    
-def N(z):
-    '''
-    Calculate vector for the line of nodes, N.
-
-    Parameters
-    ----------
-    z : TYPE - array-like
-        DESCRIPTION - of the form [a, b, c] where a,b,c are the components of
-    the cone axial vector in the primed coordinate system.
-    z_prime : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    N vector of the form [i, j, k] where ijk are the components of the N vector
-    in the primed coordinate frame.
-
-    '''
-    return [-z[1], z[0], 0]
-
-def phi_angle(N):
+def phi_angle(z):
     '''
     Calculate the angle, phi, between N and the x_prime axis.
 
@@ -144,10 +118,15 @@ def phi_angle(N):
     phi
 
     '''
-    if N[0] == 0:
+    if z[0] == 0 and z[1] == 0:
+        print(f'phi = 0')
         return 0
-    else:
-        return np.arccos(N[0]/((N[0]**2 + N[1]**2)**0.5))
+    
+    phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
+    if z[1]<0:
+        phi = 2*np.pi - phi
+    print(f'phi is {phi}')    
+    return phi
 
 def dz(theta, phi, psi, z_prime, a):
     '''Calculate dz/dpsi'''
@@ -367,7 +346,7 @@ def give_x_y_for_two_points(r1, r2, z_prime, alpha, steps, estimate, ROI, ds):
         Numpy array of the form np.array([x, y]) of the (x, y) values imaged on the imaging plane.
     '''
     theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-    phi = phi_angle(N(cone_vector(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])))
+    phi = phi_angle(r1-r2)
     # print(f'theta = {theta}, phi = {phi}')
     x, y, ds = x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)    
     # print(x, y)
@@ -569,7 +548,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
         y along axis 1.
 
     '''
-    n_points = 1000
+    n_points = 100
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
