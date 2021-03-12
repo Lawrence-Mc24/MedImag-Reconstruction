@@ -665,7 +665,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     '''
     if estimate == False:
         estimate = [image_distance[0], image_distance[1]]
-    n_points = 100
+    n_points = 400
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
 
@@ -761,10 +761,13 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, y_bins, x_centre, y_centre  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-
+        heatmap_combined, extent_combined, bins_combined, y_bins_combined, x_centre_combined, y_centre_combined  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap1, extent1, bins1, y_bins1, x_centre1, y_centre1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap2, extent2, bins2, y_bins2, x_centre2, y_centre2 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, y_bins, n_points, centre=(x_centre, y_centre))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, y_bins_combined, n_points, centre=(x_centre_combined, y_centre_combined))
+        plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(x_centre1, y_centre1))
+        plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
     print(j)
     
     return heatmap_combined, extent_combined
