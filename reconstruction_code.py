@@ -250,13 +250,13 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         if counter > 5000:
-            if d < np.pi/steps*10**-3*1.01:
+            if d < np.pi/steps*10**-3*1.01*5:
                 print(f'd = {d}')
         if anticlockwise:            
             psi += d
         else:
             psi-=d
-        if d < np.pi/steps*10**-3 and anticlockwise:
+        if d < np.pi/steps*10**-3*5 and anticlockwise:
             anticlockwise=False
             if iteration=='first':
                 psi=0
@@ -265,7 +265,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
                 psi=np.pi
                 iteration='stop'
                 continue
-        if d < np.pi/steps*10**-3 and not anticlockwise:
+        if d < np.pi/steps*10**-3*5 and not anticlockwise:
             if iteration=='stop':
                 break
             iteration = 'second'
@@ -565,7 +565,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
         y along axis 1.
 
     '''
-    n_points = 10
+    n_points = 100
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -573,8 +573,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     y_list = []
     j = 0
     ds=0
-    E_loss_error = np.concatenate((E_loss_error[0:10], E_loss_error[5000:5010], E_loss_error[12000:12010], E_loss_error[21000:21010]))
-    for index, p in enumerate(np.concatenate((points[0:10], points[5000:5010], points[12000:12010], points[21000:21010]))):
+    E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[5000:5000+n_points], E_loss_error[12000:12000+n_points], E_loss_error[21000:21000+n_points]))
+    for index, p in enumerate(np.concatenate((points[0:n_points], points[5000:5000+n_points], points[12000:12000+n_points], points[21000:21000+n_points]))):
         print(f'\nindex = {index}\n')
         xs2 = np.array([])
         ys2 = np.array([])
