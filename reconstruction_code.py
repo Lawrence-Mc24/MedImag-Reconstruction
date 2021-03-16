@@ -20,28 +20,33 @@ c = scipy.constants.c
 e = scipy.constants.e
 
 # path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
-path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
+# path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
+path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
 dataframe = pd.read_csv(path)
 
 
 #dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
 
-scatterer_0 = [-7.5, 0, 0]
+# scatterer_0 = [-7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+scatterer_0 = [-3.5, 0, -3.5] # Gary for 02.03.2021 lab set-up
 dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
 dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
 dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
 
-scatterer_1 = [7.5, 0, 0]
+# scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
 dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
 dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
 dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
 
-absorber_0 = [7.5, 0, -50]
+# absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
 dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
 dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
 dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
 
-absorber_1 = [-7.5, 0, -50]
+# absorber_1 = [-7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+absorber_1 = [-4.5, 0, -38.5] # Tony for 02.03.2021 lab set-up
 dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
 dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
 dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
@@ -495,8 +500,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     # x/y_centre are actually the edges of the first maximum bin so not really the centre
-    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/50
-    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/50
+    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
+    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
     return heatmap2, extent, bins, bins2, x_centre, y_centre
 
@@ -512,7 +517,7 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.9*np.amax(h)] = 0
+    h[h < 0.6*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -522,18 +527,18 @@ def image_slicer(h, ZoomOut=0):
         if np.sum(h[ind[0]+i]) == 0:
             chop_indices[1] = ind[0] + (i+ZoomOut)
             break
-    for i in range(np.shape(h)[0]):
+    for i in range(np.shape(h.T)[0]):
         if np.sum(h.T[ind[1]-i]) == 0:
             chop_indices[2] = ind[1] - (i+ZoomOut)
             break
-    for i in range(np.shape(h)[0]):
+    for i in range(np.shape(h.T)[0]):
         if np.sum(h.T[ind[1]+i]) == 0:
             chop_indices[3] = ind[1] + (i+ZoomOut)
             break
         
     return chop_indices, ind
 
-def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_error, ROI, steps=180, plot=True, ZoomOut=0):
+def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_error, ROI, steps=180, plot=True, ZoomOut=0):
     '''
     Parameters
     ----------
@@ -543,9 +548,9 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     n : TYPE - integer
         DESCRIPTION - number of angles to iterate through in alpha_bounds 
     estimate : TYPE - float
-        DESCRIPTION - estimate of z distance of source from Compton detector
-    image_distance : TYPE - float
-        DESCRIPTION - distance of imaging plane from the Compton detector
+        DESCRIPTION - (same as image_plane) estimate of z distance of source from Compton detector
+    image_plane : TYPE - float
+        DESCRIPTION - z-coordinate of the image plane
     source_energy : TYPE - float
         DESCRIPTION - energy of the source in eV
     bins : TYPE - integer
@@ -565,7 +570,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
         y along axis 1.
 
     '''
-    n_points = 100
+    n_points = 10
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -573,8 +578,8 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     y_list = []
     j = 0
     ds=0
-    E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[5000:5000+n_points], E_loss_error[12000:12000+n_points], E_loss_error[21000:21000+n_points]))
-    for index, p in enumerate(np.concatenate((points[0:n_points], points[5000:5000+n_points], points[12000:12000+n_points], points[21000:21000+n_points]))):
+    E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
+    for index, p in enumerate(np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))):
         print(f'\nindex = {index}\n')
         xs2 = np.array([])
         ys2 = np.array([])
@@ -611,7 +616,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
             for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2, image_plane, angle, steps, estimate, ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
@@ -619,7 +624,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
         else:
             # print(f'r1={r1}')
             # print(f'r2={r2}')
-            x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
+            x, y, ds = give_x_y_for_two_points(r1, r2, image_plane, alpha, steps, estimate, ROI, ds=ds)
             xs2 = np.append(xs2, x, axis=0)
             ys2 = np.append(ys2, y, axis=0)
             x_list.append(xs2)
@@ -638,5 +643,5 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     return heatmap_combined, extent_combined
 
 start_time = time.time()
-heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, E_loss_error = E_loss_error, ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 0, 0, 662E3, 100, E_loss_error = E_loss_error, ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
 print(f'Run time = {time.time()-start_time}')
