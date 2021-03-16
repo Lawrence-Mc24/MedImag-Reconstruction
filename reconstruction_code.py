@@ -439,19 +439,19 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 2*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
     extend_y = 2*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
-    print(f'y_bins = {y_bins}')
-    print(f'type(y_bins) = {type(y_bins)}')
+    # print(f'y_bins = {y_bins}')
+    # print(f'type(y_bins) = {type(y_bins)}')
     h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     # np.where(xtot<extent[0], 0, xtot)
     # np.where(xtot>extent[1], 0, xtot)
     # np.where(ytot<extent[2], 0, ytot)
@@ -467,36 +467,65 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
             hist[hist != 0] = 1
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
-    plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop')
+    #plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop')
     
     chop_indices, ind = image_slicer(heatmap, ZoomOut)
-    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
-    print(f'chop_indices = {chop_indices}')
-    print(chop_indices[0])
+    # print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    # print(f'chop_indices = {chop_indices}')
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
-    x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
+    x_chop = xedges[chop_indices[0]+1] , xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 50
-    print(f'y_bins = {y_bins}', f', x_bins = {bins}')
+    xpixel = np.abs(x_chop[1]-x_chop[0])/bins2
+    ypixel = np.abs(y_chop[1]-y_chop[0])/bins2
+    ybins = int(round(bins2*ypixel/xpixel))
     heatmaps2 = []
     for i in range(len(x)):
-        hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
+        hist, xedge2, yedge2 = np.histogram2d(x[i], y[i], [bins2, ybins], range=np.array([x_chop, y_chop]))
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
             hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
-    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
-    
+   # ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+    print(f'where? {np.where(heatmap2==np.max(heatmap2))}')
+    print(np.shape(heatmap2))
+    print(f'max is {np.max(heatmap2), np.argmax(heatmap2)}')
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     # x/y_centre are actually the edges of the first maximum bin so not really the centre
-    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/50
-    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/50
-    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, bins2, x_centre, y_centre
+    # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/50
+    # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/50
+    
+    # chop_indices1, ind3 = image_slicer(heatmap2.copy(), ZoomOut)
+    # x_chop = xedge2[chop_indices1[0]+1] , xedge2[chop_indices1[1]]
+    # y_chop = yedge2[chop_indices1[2]+1], yedge2[chop_indices1[3]]
+    # extent1 = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    indices = np.where(heatmap2==np.max(heatmap2))
+    pixel_x = xedge2[1]-xedge2[0]
+    pixel_y = yedge2[1]-yedge2[0]
+    print(f'pixelx = {pixel_x}')
+    print(f'pixely = {pixel_y}')
+    for i in range(len(indices[0])):
+        xpixel = indices[0][i]
+        ypixel = indices[1][i]
+        xmin = xedge2[xpixel]
+        xmax = xedge2[xpixel+1]
+        ymin = yedge2[ypixel]
+        ymax = yedge2[ypixel+1]
+        print(f'spot{i} is {(indices[0][i], indices[1][i])}')
+        xav = (xmax+xmin)/2
+        yav = (ymax+ymin)/2
+        xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
+        yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
+        print(f'x: {xav} +- {xerr}')
+        print(f'y: {yav} +- {yerr}')
+    
+        
+    #plot_heatmap(heatmap2[chop_indices1[0]+1:chop_indices1[1], chop_indices1[2]+1:chop_indices1[3]], extent1, bins, y_bins, n_points='chopped')
+    return heatmap2, extent, bins, bins2, round(xav, 5), round(xerr, 5), round(yav, 5), round(yerr, 5) 
 
 def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
@@ -504,7 +533,7 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
     plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
+    plt.title(f'bins, bins2, coincidences = {bins, bins2, n_points} \n centre = {centre}')
     plt.show()
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
@@ -520,11 +549,11 @@ def image_slicer(h, ZoomOut=0):
         if np.sum(h[ind[0]+i]) == 0:
             chop_indices[1] = ind[0] + (i+ZoomOut)
             break
-    for i in range(np.shape(h)[0]):
+    for i in range(np.shape(h.T)[0]):
         if np.sum(h.T[ind[1]-i]) == 0:
             chop_indices[2] = ind[1] - (i+ZoomOut)
             break
-    for i in range(np.shape(h)[0]):
+    for i in range(np.shape(h.T)[0]):
         if np.sum(h.T[ind[1]+i]) == 0:
             chop_indices[3] = ind[1] + (i+ZoomOut)
             break
@@ -569,7 +598,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     '''
     if estimate == False:
         estimate = [image_distance[0], image_distance[1]]
-    n_points = 400
+    n_points = 100
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
 
@@ -660,12 +689,12 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins_combined, y_bins_combined, x_centre_combined, y_centre_combined  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins_combined, y_bins_combined, xav, xerr, yav, yerr  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
         if plot_individuals is True and len(sides)==2:    
             heatmap1, extent1, bins1, y_bins1, x_centre1, y_centre1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
             heatmap2, extent2, bins2, y_bins2, x_centre2, y_centre2 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins_combined, y_bins_combined, n_points, centre=(x_centre_combined, y_centre_combined))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, y_bins_combined, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
         if plot_individuals is True and len(sides)==2:
             plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(x_centre1, y_centre1))
             plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
@@ -674,5 +703,5 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     return heatmap_combined, extent_combined
 start_time = time.time()
 
-heatmap, extent = get_image(sides, 10, [25, 25], 662E3, 100, R=[0,0], ROI=[-100, 100, -100, 100], steps=[50,50], ZoomOut=0, plot_individuals=True)
+heatmap, extent = get_image([points1], 10, [25, 25], 662E3, 100, R=[0,0], ROI=[-100, 100, -100, 100], steps=[50,50], ZoomOut=0, plot_individuals=True)
 print("--- %s seconds ---" % (time.time() - start_time))
