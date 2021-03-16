@@ -571,7 +571,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     j = 0
     ds=0
 
-    for index, point in enumerate([points[0:10], points[5000:5010], points[12000:12010], points[21000:21010]]):
+    for index, point in enumerate([points[0:100], points[5000:5100], points[12000:12100], points[21000:21100]]):
         for p in point:
             xs2 = np.array([])
             ys2 = np.array([])
