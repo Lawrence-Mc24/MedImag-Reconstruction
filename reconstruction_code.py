@@ -31,9 +31,9 @@ dataframe.loc[dataframe["X_2 [cm]"] > 26, "Y_2 [cm]"] = absorber_2[1]
 dataframe.loc[dataframe["X_2 [cm]"] > 26, "Z_2 [cm]"] = absorber_2[2]
 
 absorber_3 = [-30.961, 0, -23.923]
-dataframe.loc[dataframe["X_2 [cm]"] < 25, "X_2 [cm]"] = absorber_3[0]
-dataframe.loc[dataframe["X_2 [cm]"] < 25, "Y_2 [cm]"] = absorber_3[1]
-dataframe.loc[dataframe["X_2 [cm]"] < 25, "Z_2 [cm]"] = absorber_3[2]
+dataframe.loc[dataframe["X_2 [cm]"] < -25, "X_2 [cm]"] = absorber_3[0]
+dataframe.loc[dataframe["X_2 [cm]"] < -25, "Y_2 [cm]"] = absorber_3[1]
+dataframe.loc[dataframe["X_2 [cm]"] < -25, "Z_2 [cm]"] = absorber_3[2]
 
 absorber_4 = [16.397, 0, -31.954]
 dataframe.loc[(dataframe["X_2 [cm]"] > 10) & (dataframe["X_2 [cm]"] < 26), "X_2 [cm]"] = absorber_4[0]
@@ -74,23 +74,23 @@ r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
 
 points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
-for i in range(len(points)):
-    if points[i][3]<-20 and points[i][3]>-40:
-        points[i][3] = -30.961
-        points[i][4] = 0
-        points[i][5] = -23.923
-    if points[i][3]<-10 and points[i][3]>-30:
-        points[i][3] = -16.397
-        points[i][4] = 0
-        points[i][5] = -31.954
-    if points[i][3]<25 and points[i][3]>10:
-        points[i][3] = 16.397
-        points[i][4] = 0
-        points[i][5] = -31.954
-    if points[i][3]<40 and points[i][3]>25:
-        points[i][3] = 30.961
-        points[i][4] = 0
-        points[i][5] = -23.923
+# for i in range(len(points)):
+#     if points[i][3]<-20 and points[i][3]>-40:
+#         points[i][3] = -30.961
+#         points[i][4] = 0
+#         points[i][5] = -23.923
+#     if points[i][3]<-10 and points[i][3]>-30:
+#         points[i][3] = -16.397
+#         points[i][4] = 0
+#         points[i][5] = -31.954
+#     if points[i][3]<25 and points[i][3]>10:
+#         points[i][3] = 16.397
+#         points[i][4] = 0
+#         points[i][5] = -31.954
+#     if points[i][3]<40 and points[i][3]>25:
+#         points[i][3] = 30.961
+#         points[i][4] = 0
+#         points[i][5] = -23.923
 
 def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
 
@@ -534,8 +534,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
 def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
-    # plt.imshow(heatmap.T, extent=extent, origin='lower')
-    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
+    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    # plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
     plt.colorbar()
     plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
     plt.show()
@@ -543,7 +543,7 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.5*np.amax(h)] = 0
+    h[h < 0.75*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -603,7 +603,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     x_list = []
     y_list = []
     j = 0
-    ds=0
+    ds = 0
     for point in points[:n_points]:
         xs2 = np.array([])
         ys2 = np.array([])
