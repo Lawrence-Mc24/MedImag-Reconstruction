@@ -421,7 +421,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations = 5, erase=False):
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
-        hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+        if dilate_erode_iterations > 0:
+            hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
     if erase is True:
@@ -476,14 +477,23 @@ y_list = []
 for point in points:
     xs2 = np.array([])
     ys2 = np.array([])
-    for angle in alpha_bounds:
-        x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
-        xs2 = np.append(xs2, x, axis=0)
-        ys2 = np.append(ys2, y, axis=0)
+    # for angle in alpha_bounds:
+    #     x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=angle, steps=180, estimate=1)
+    #     xs2 = np.append(xs2, x, axis=0)
+    #     ys2 = np.append(ys2, y, axis=0)
+    x, y = give_x_y_for_two_points(point[0], point[1], z_prime=1, alpha=alpha, steps=180, estimate=1)
+    xs2 = np.append(xs2, x, axis=0)
+    ys2 = np.append(ys2, y, axis=0)
     x_list.append(xs2)
     y_list.append(ys2)
+
+xtot = np.hstack(x_list)
+ytot = np.hstack(y_list)
+h, xedges, yedges = np.histogram2d(xtot, ytot, bins=50)
+extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+plot_heatmap(h, extent)
     
-heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175, dilate_erode_iterations = 5)
+heatmap_combined, extent_combined = calculate_heatmap(x_list, y_list, bins=175, dilate_erode_iterations = 0)
 plot_heatmap(heatmap_combined, extent_combined)
 
 
