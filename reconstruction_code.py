@@ -12,7 +12,7 @@ import scipy.constants
 from scipy import ndimage
 from astropy.convolution.kernels import Gaussian2DKernel
 from astropy.convolution import convolve
-
+import time
 h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
@@ -531,113 +531,15 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
-# def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, steps=180, plot=True, ZoomOut=0):
-#     '''
-#     Parameters
-#     ----------
-#     points : TYPE - array
-#         DESCRIPTION - each item in the array is an array-like object consisting of [r1, r2, dE] where
-#         r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
-#     n : TYPE - integer
-#         DESCRIPTION - number of angles to iterate through in alpha_bounds 
-#     estimate : TYPE - float
-#         DESCRIPTION - estimate of z distance of source from Compton detector
-#     image_distance : TYPE - float
-#         DESCRIPTION - distance of imaging plane from the Compton detector
-#     source_energy : TYPE - float
-#         DESCRIPTION - energy of the source in eV
-#     bins : TYPE - integer
-#         DESCRIPTION - number of bins to construct heatmap
-#     R : TYPE - float
-#         DESCRIPTION - resolution of the detector
-#     ROI : TYPE - array
-#         DESCRIPTION - region of interest to image of the form [xmin, xmax, ymin, ymax]
-#     steps : TYPE - integer
-#         DESCRIPTION - approximate number of steps to take in psi to calculate cone projections 
-#     plot : TYPE - boolean
-#         DESCRIPTION - plots heatmap if set to True
 
-#     Returns
-#     -------
-#     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
-#         y along axis 1.
-
-#     '''
-#     n_points = 100
-#     if n_points > np.shape(points)[0]:
-#         n_points = np.shape(points)[0]
-            
-#     x_list = []
-#     y_list = []
-#     j = 0
-#     ds=0
-#     for point in points[:n_points]:
-#         xs2 = np.array([])
-#         ys2 = np.array([])
-#         # print(source_energy-point[6])
-#         alpha = compton_angle(source_energy, source_energy-point[6])
-#         # print(alpha)
-#         Ef = source_energy - point[6]
-#         Ef = Ef*e
-#         r1 = np.array([point[0], point[1], point[2]])
-#         r2 = np.array([point[3], point[4], point[5]])
-#         # print(f'alpha={alpha}')
-#         theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-#         if theta+alpha < np.pi/2:
-#             j+=1
-#         if theta + alpha >= np.pi/2-0.001:
-#             # continue # This continue skips parabolas
-#             if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
-#                 continue
-#             else:
-#                 pass
-#         if R>0:
-#             alpha_err = (R*m_e*c**2) / (2.35*np.sin(alpha)*Ef)
-#             # print(f'alpha_err is {alpha_err}')
-#             alpha_min = alpha-alpha_err
-#             alpha_max = alpha+alpha_err
-#             if alpha_min < 0:
-#                 alpha_min = 0
-#             if alpha_max >= np.pi/2:
-#                 alpha_max = (np.pi/2)-0.01
-#             alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-#             for angle in alpha_bounds:
-#                 # print(f'r1={r1}')
-#                 # print(f'r2={r2}')
-#                 x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
-#                 xs2 = np.append(xs2, x, axis=0)
-#                 ys2 = np.append(ys2, y, axis=0)
-#             x_list.append(xs2)
-#             y_list.append(ys2)
-#         else:
-#             # print(f'r1={r1}')
-#             # print(f'r2={r2}')
-#             x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
-#             xs2 = np.append(xs2, x, axis=0)
-#             ys2 = np.append(ys2, y, axis=0)
-#             x_list.append(xs2)
-#             y_list.append(ys2)
- 
-#     if R>0:
-#         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
-#     else:
-#         # Need to not dilate for zero error (perfect resolution: R=0)
-#         print('R=0')
-#         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-
-#     if plot is True:
-#         plot_heatmap(heatmap_combined, extent_combined, bins, bins2, n_points, (x_centre, y_centre))
-    
-#     return heatmap_combined, extent_combined
-
-def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False):
+def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot=True, ZoomOut=0, estimate=False, plot_individuals=False):
     '''
     Parameters
     ----------
-    sides : TYPE - array
+    sides : TYPE - array-like
         DESCRIPTION - 2 objects containing items from different sides of the source, 
         where each item in the array is an array-like object consisting of [r1, r2, dE] 
-        where r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
+        where r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss.
     n : TYPE - integer
         DESCRIPTION - number of angles to iterate through in alpha_bounds 
     image_distance : TYPE - array
@@ -658,6 +560,8 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     estimate : TYPE - array, boolean
         DESCRIPTION - estimate of z distance of source from Compton detector for each side of form [estimate1, estimate2],
         if False then sets estimates as imaging distances.
+    plot_individuals: TYPE - boolean
+        DESCRIPTION - if True then plots individual heatmaps of each side 
     Returns
     -------
     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
@@ -677,17 +581,8 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
         x_list = []
         y_list = []
         if side>2:
-            raise Exception('too many sides')
-        # if side == 1:
-        #     image_distance = image_distance[0]
-        #     R = R[0]
-        #     steps = steps[0]
-        #     estimate = estimate[0]
-        # if side == 2:
-        #     image_distance = image_distance[1]
-        #     R  = R[1]
-        #     steps = steps[1]
-        #     estimate = estimate[1]
+            raise Exception('trying 3rd side')
+
         for point in sides[i][:n_points]:
             xs2 = np.array([])
             ys2 = np.array([])
@@ -718,8 +613,6 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
                     alpha_max = (np.pi/2)-0.01
                 alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
                 for angle in alpha_bounds:
-                    # print(f'r1={r1}')
-                    # print(f'r2={r2}')
                     x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance[i], angle, steps[i], estimate[i], ROI, ds=ds)
                     xs2 = np.append(xs2, x, axis=0)
                     ys2 = np.append(ys2, y, axis=0)
@@ -727,8 +620,7 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
                 x_list.append(xs2)
                 y_list.append(ys2)
             else:
-                # print(f'r1={r1}')
-                # print(f'r2={r2}')
+
                 x, y, ds = give_x_y_for_two_points(r1, r2 , image_distance[i], alpha, steps[i], estimate[i], ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
@@ -747,14 +639,21 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
     #assume side 1 is the side you're 'looking' from in the final image. 
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped
 
-
-    x_list2_ = []
-    for xs in x_list2:
-        xs = np.array(xs)*-1
-        x_list2_.append(xs)
+    if len(sides)>1:
+        x_list2_ = []
+        for xs in x_list2:
+            xs = np.array(xs)*-1
+            x_list2_.append(xs)
         
-    x_list_tot = np.concatenate([x_list1, x_list2_])
-    y_list_tot = np.concatenate([y_list1, y_list2])
+        x_list_tot = np.concatenate([x_list1, x_list2_])
+        y_list_tot = np.concatenate([y_list1, y_list2])
+        
+    if len(sides)==1:
+        x_list_tot = x_list1
+        y_list_tot = y_list1
+        
+    if len(sides) not in [1, 2]:
+        raise Exception(f'number of sides is {len(sides)}')
     
     if R[0]>0:
         heatmap_combined, extent_combined, bins, y_bins  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, ZoomOut=ZoomOut)
@@ -762,14 +661,18 @@ def get_image(sides, n, image_distance, source_energy, bins, R, ROI, steps, plot
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
         heatmap_combined, extent_combined, bins_combined, y_bins_combined, x_centre_combined, y_centre_combined  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-        heatmap1, extent1, bins1, y_bins1, x_centre1, y_centre1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-        heatmap2, extent2, bins2, y_bins2, x_centre2, y_centre2 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        if plot_individuals is True and len(sides)==2:    
+            heatmap1, extent1, bins1, y_bins1, x_centre1, y_centre1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            heatmap2, extent2, bins2, y_bins2, x_centre2, y_centre2 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined, bins_combined, y_bins_combined, n_points, centre=(x_centre_combined, y_centre_combined))
-        plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(x_centre1, y_centre1))
-        plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
+        if plot_individuals is True and len(sides)==2:
+            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(x_centre1, y_centre1))
+            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
     print(j)
     
     return heatmap_combined, extent_combined
+start_time = time.time()
 
-heatmap, extent = get_image(sides, 10, [30, 30], 662E3, 100, R=[0,0], ROI=[-100, 100, -100, 100], steps=[50,50], ZoomOut=0)
+heatmap, extent = get_image(sides, 10, [25, 25], 662E3, 100, R=[0,0], ROI=[-100, 100, -100, 100], steps=[50,50], ZoomOut=0, plot_individuals=True)
+print("--- %s seconds ---" % (time.time() - start_time))
