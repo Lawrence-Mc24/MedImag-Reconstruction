@@ -12,14 +12,17 @@ import scipy.constants
 from scipy import ndimage
 from astropy.convolution.kernels import Gaussian2DKernel
 from astropy.convolution import convolve
+import time
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
+# path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
+path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
 dataframe = pd.read_csv(path)
+
 
 #dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
 
@@ -570,56 +573,59 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     y_list = []
     j = 0
     ds=0
-
-    for index, point in enumerate([points[0:100], points[5000:5100], points[12000:12100], points[21000:21100]]):
-        for p in point:
-            xs2 = np.array([])
-            ys2 = np.array([])
-            # print(source_energy-point[6])
-            alpha = compton_angle(source_energy, source_energy-p[6])
-            # print(alpha)
-            Ef = source_energy - p[6]
-            Ef = Ef*e
-            r1 = np.array([p[0], p[1], p[2]])
-            r2 = np.array([p[3], p[4], p[5]])
-            # print(f'alpha={alpha}'
-            theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-            if theta+alpha < np.pi/2:
-                j+=1
-            if theta + alpha >= np.pi/2-0.001:
-                # continue # This continue skips parabolas
-                if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
-                    continue
-                else:
-                    pass
-            if E_loss_error.any()>0:
-                alpha_err = ((((m_e*c**2/(source_energy**2))*1/(1 - (1 - m_e*c**2*((1/(Ef))-(1/source_energy)))**2)**0.5)*E_loss_error[index])**2)**0.5
-                print(f'alpha_err is {alpha_err}')
-                alpha_min = alpha-alpha_err
-                alpha_max = alpha+alpha_err
-                if alpha_min < 0:
-                    alpha_min = 0
-                if alpha_max >= np.pi/2:
-                    alpha_max = (np.pi/2)-0.01
-                alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-                for angle in alpha_bounds:
-                    # print(f'r1={r1}')
-                    # print(f'r2={r2}')
-                    x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
-                    xs2 = np.append(xs2, x, axis=0)
-                    ys2 = np.append(ys2, y, axis=0)
-                x_list.append(xs2)
-                y_list.append(ys2)
+    E_loss_error = np.concatenate((E_loss_error[0:10], E_loss_error[5000:5010], E_loss_error[12000:12010], E_loss_error[21000:21010]))
+    for index, p in enumerate(np.concatenate((points[0:10], points[5000:5010], points[12000:12010], points[21000:21010]))):
+        print(f'\nindex = {index}\n')
+        xs2 = np.array([])
+        ys2 = np.array([])
+        # print(source_energy-point[6])
+        alpha = compton_angle(source_energy, source_energy-p[6])
+        print(f'alpha = {alpha}')
+        Ef = source_energy - p[6]
+        # Ef = Ef*e
+        r1 = np.array([p[0], p[1], p[2]])
+        r2 = np.array([p[3], p[4], p[5]])
+        # print(f'alpha={alpha}'
+        theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+        if theta+alpha < np.pi/2:
+            j+=1
+        if theta + alpha >= np.pi/2-0.001:
+            # continue # This continue skips parabolas
+            if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+                continue
             else:
+                pass
+        if E_loss_error.any()>0:
+            print(f'source_energy = {source_energy}')
+            print(f'Ef = {Ef}')
+            print(f'E_loss_error[index] = {E_loss_error[index]}')
+            alpha_err = (((m_e*c**2/e)/(source_energy**2))*1/np.sqrt(1 - (1 - (m_e*c**2/e)*((1/(Ef))-(1/source_energy)))**2))*E_loss_error[index]
+            print(f'alpha_err is {alpha_err}')
+            alpha_min = alpha-alpha_err
+            alpha_max = alpha+alpha_err
+            if alpha_min < 0:
+                alpha_min = 0
+            if alpha_max >= np.pi/2:
+                alpha_max = (np.pi/2)-0.01
+            alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+            for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, angle, steps, estimate, ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
-                x_list.append(xs2)
-                y_list.append(ys2)
+            x_list.append(xs2)
+            y_list.append(ys2)
+        else:
+            # print(f'r1={r1}')
+            # print(f'r2={r2}')
+            x, y, ds = give_x_y_for_two_points(r1, r2, image_distance, alpha, steps, estimate, ROI, ds=ds)
+            xs2 = np.append(xs2, x, axis=0)
+            ys2 = np.append(ys2, y, axis=0)
+            x_list.append(xs2)
+            y_list.append(ys2)
  
-    if E_loss_error>0:
+    if E_loss_error.any()>0:
         heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
@@ -631,4 +637,6 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, E_loss_e
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, E_loss_error = E_loss_error , ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
+start_time = time.time()
+heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, E_loss_error = E_loss_error, ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
+print(f'Run time = {time.time()-start_time}')
