@@ -18,47 +18,79 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
+path = 'D:/University/Year 3/Group Studies/Data/Old Data/compt_photo_chain_data_4_detectors.csv'
+# path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
+# path = 'D:/University/Year 3/Group Studies/Data/Lab Data/HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
 dataframe = pd.read_csv(path)
 
-#dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
+# dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
 
-scatterer_0 = [-7.5, 0, 0]
-dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
+absorber_2 = [30.961, 0, -23.923]
+dataframe.loc[dataframe["X_2 [cm]"] > 26, "X_2 [cm]"] = absorber_2[0]
+dataframe.loc[dataframe["X_2 [cm]"] > 26, "Y_2 [cm]"] = absorber_2[1]
+dataframe.loc[dataframe["X_2 [cm]"] > 26, "Z_2 [cm]"] = absorber_2[2]
 
-scatterer_1 = [7.5, 0, 0]
-dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+absorber_3 = [-30.961, 0, -23.923]
+dataframe.loc[dataframe["X_2 [cm]"] < 25, "X_2 [cm]"] = absorber_3[0]
+dataframe.loc[dataframe["X_2 [cm]"] < 25, "Y_2 [cm]"] = absorber_3[1]
+dataframe.loc[dataframe["X_2 [cm]"] < 25, "Z_2 [cm]"] = absorber_3[2]
 
-absorber_0 = [7.5, 0, -50]
-dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
+absorber_4 = [16.397, 0, -31.954]
+dataframe.loc[(dataframe["X_2 [cm]"] > 10) & (dataframe["X_2 [cm]"] < 26), "X_2 [cm]"] = absorber_4[0]
+dataframe.loc[(dataframe["X_2 [cm]"] > 10) & (dataframe["X_2 [cm]"] < 26), "Y_2 [cm]"] = absorber_4[1]
+dataframe.loc[(dataframe["X_2 [cm]"] > 10) & (dataframe["X_2 [cm]"] < 26), "Z_2 [cm]"] = absorber_4[2]
 
-absorber_1 = [-7.5, 0, -50]
-dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
+absorber_5 = [-16.397, 0, -31.954]
+dataframe.loc[(dataframe["X_2 [cm]"] < -10) & (dataframe["X_2 [cm]"] > -25), "X_2 [cm]"] = absorber_5[0]
+dataframe.loc[(dataframe["X_2 [cm]"] < -10) & (dataframe["X_2 [cm]"] > -25), "Y_2 [cm]"] = absorber_5[1]
+dataframe.loc[(dataframe["X_2 [cm]"] < -10) & (dataframe["X_2 [cm]"] > -25), "Z_2 [cm]"] = absorber_5[2]
 
+
+# dropnan = dataframe.dropna(axis = 'rows')
+# dropnan = dataframe
+# x_prime = -dropnan['X_1 [cm]']
+# y_prime = dropnan['Y_1 [cm]']
+# z_prime = dropnan['Z_1 [cm]']
+# x_0_prime = -dropnan['X_2 [cm]']
+# y_0_prime = dropnan['Y_2 [cm]']
+# z_0_prime = dropnan['Z_2 [cm]']
+# E_loss = np.abs(dropnan['Energy Loss [MeV]'])*10**6
+# E_loss_error = np.zeros((len(E_loss),1))
+# E_loss_error = dropnan['Energy Error_1']*10**3
 #dropnan = dataframe.dropna(axis = 'rows')
+
 dropnan = dataframe
-x_prime = -dropnan['X_1']
-y_prime = dropnan['Y_1']
-z_prime = dropnan['Z_1']
-x_0_prime = -dropnan['X_2']
-y_0_prime = dropnan['Y_2']
-z_0_prime = dropnan['Z_2']
-E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
+x_prime = -dropnan["X_1 [cm]"]
+y_prime = dropnan["Y_1 [cm]"]
+z_prime = dropnan["Z_1 [cm]"]
+x_0_prime = -dropnan["X_2 [cm]"]
+y_0_prime = dropnan["Y_2 [cm]"]
+z_0_prime = dropnan["Z_2 [cm]"]
+E_loss = np.abs(dropnan["Energy Loss [MeV]"])*10**6
 
-
+   
 r1 = np.array([x_prime, y_prime, z_prime])
 r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
 
 points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
+for i in range(len(points)):
+    if points[i][3]<-20 and points[i][3]>-40:
+        points[i][3] = -30.961
+        points[i][4] = 0
+        points[i][5] = -23.923
+    if points[i][3]<-10 and points[i][3]>-30:
+        points[i][3] = -16.397
+        points[i][4] = 0
+        points[i][5] = -31.954
+    if points[i][3]<25 and points[i][3]>10:
+        points[i][3] = 16.397
+        points[i][4] = 0
+        points[i][5] = -31.954
+    if points[i][3]<40 and points[i][3]>25:
+        points[i][3] = 30.961
+        points[i][4] = 0
+        points[i][5] = -23.923
 
 def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
 
@@ -221,6 +253,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
     counter = 0
     while True:
         counter += 1
+        # print(f'counter is {counter}')
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
         
         if counter > 5000:
@@ -246,9 +279,11 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
         
         d = dpsi(ds, theta, phi, psi, z_prime, a)
         if counter > 5000:
-            if d < np.pi/steps*10**-3*1.01:
+            print(d)
+            print(d>((np.pi/steps)*10**-3 * 1.01))
+            if d < (np.pi/steps)*10**-3 * 1.01:
                 print(f'd = {d}')
-        if anticlockwise:            
+        if anticlockwise:
             psi += d
         else:
             psi-=d
@@ -561,7 +596,7 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
         y along axis 1.
 
     '''
-    n_points = 10
+    n_points = 1000
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -628,4 +663,4 @@ def get_image(points, n, estimate, image_distance, source_energy, bins, R, ROI, 
     
     return heatmap_combined, extent_combined
 
-heatmap, extent = get_image(points, 10, 7.5, 7.5, 662E3, 100, R=0, ROI=[-300, 300, -300, 300], steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 25, 25, 662E3, 100, R=0, ROI=[-300, 300, -300, 300], steps=50, ZoomOut=0)
