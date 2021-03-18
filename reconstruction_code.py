@@ -749,12 +749,16 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
     return heatmap_combined, extent_combined
 
 points, E_loss_error, dataframe = extract_points_from_dataframe(path_HGTD, HGTD)
-points, E_loss_error, dataframe = extract_points_from_dataframe(path_HAAL, HAAL)
+# points, E_loss_error, dataframe = extract_points_from_dataframe(path_HAAL, HAAL)
+start00 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 0)][0]
+start01 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 1)][0]
+start10 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 0)][0]
+start11 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 1)][0]
 n_points=10
 # points = np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))
 # E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
-points = np.concatenate((points[0:n_points], points[29900:29900+n_points], points[36500:36500+n_points], points[130000:130000+n_points]))
-E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[29900:29900+n_points], E_loss_error[36500:36500+n_points], E_loss_error[130000:130000+n_points]))
+points = np.concatenate((points[start00:n_points], points[start01:start01+n_points], points[start10:start10+n_points], points[start11:start11+n_points]))
+E_loss_error = np.concatenate((E_loss_error[start00:n_points], E_loss_error[start01:start01+n_points], E_loss_error[start10:start10+n_points], E_loss_error[start11:start11+n_points]))
 
 
 start_time = time.time()
