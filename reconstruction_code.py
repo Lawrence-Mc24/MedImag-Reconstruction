@@ -21,7 +21,8 @@ e = scipy.constants.e
 
 # path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
 # path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
-path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
+#path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
+path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
 dataframe = pd.read_csv(path)
 
 
@@ -487,23 +488,44 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 50
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
+    xpixel = np.abs(x_chop[1]-x_chop[0])/bins2
+    ypixel = np.abs(y_chop[1]-y_chop[0])/bins2
+    ybins = int(round(bins2*ypixel/xpixel))
     heatmaps2 = []
     for i in range(len(x)):
-        hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
+        hist, xedge2, yedge2 = np.histogram2d(x[i], y[i], [bins2, ybins], range=np.array([x_chop, y_chop]))
         hist[hist != 0] = 1
         if dilate_erode_iterations>0:
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
             hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
-    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+    # ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
-    # x/y_centre are actually the edges of the first maximum bin so not really the centre
-    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
-    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
+    # # x/y_centre are actually the edges of the first maximum bin so not really the centre
+    # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
+    # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
+    indices = np.where(heatmap2==np.max(heatmap2))
+    pixel_x = xedge2[1]-xedge2[0]
+    pixel_y = yedge2[1]-yedge2[0]
+    print(f'pixelx = {pixel_x}')
+    print(f'pixely = {pixel_y}')
+    for i in range(len(indices[0])):
+        xpixel = indices[0][i]
+        ypixel = indices[1][i]
+        xmin = xedge2[xpixel]
+        xmax = xedge2[xpixel+1]
+        ymin = yedge2[ypixel]
+        ymax = yedge2[ypixel+1]
+        xav = (xmax+xmin)/2
+        yav = (ymax+ymin)/2
+        xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
+        yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
+        
+    
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, bins2, x_centre, y_centre
+    return heatmap2, extent, bins, bins2, round(xav, 5), round(xerr, 5), round(yav, 5), round(yerr, 5)
 
 def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
@@ -538,110 +560,162 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
-def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_error, ROI, steps=180, plot=True, ZoomOut=0):
+def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, camera_distance=0, steps=180, plot=True, ZoomOut=0, plot_individuals=False, estimate=False):
     '''
     Parameters
     ----------
-    points : TYPE - array
-        DESCRIPTION - each item in the array is an array-like object consisting of [r1, r2, dE] where
+    sides : TYPE - array
+        DESCRIPTION - each object is one side/compton camera containing a points array. Each item in the points array is an array-like object consisting of [r1, r2, dE] where
         r1 is an array of the coordinates of the hit in the Compton detector (x, y, z) and r2 the absorbing detector, dE is energy loss
     n : TYPE - integer
         DESCRIPTION - number of angles to iterate through in alpha_bounds 
-    estimate : TYPE - float
-        DESCRIPTION - (same as image_plane) estimate of z distance of source from Compton detector
     image_plane : TYPE - float
-        DESCRIPTION - z-coordinate of the image plane
+        DESCRIPTION - z-coordinate of the image plane from the first Compton camera
     source_energy : TYPE - float
         DESCRIPTION - energy of the source in eV
     bins : TYPE - integer
         DESCRIPTION - number of bins to construct heatmap
-    R : TYPE - float
-        DESCRIPTION - resolution of the detector
     ROI : TYPE - array
         DESCRIPTION - region of interest to image of the form [xmin, xmax, ymin, ymax]
-    steps : TYPE - integer
-        DESCRIPTION - approximate number of steps to take in psi to calculate cone projections 
+    steps : TYPE - array
+        DESCRIPTION - approximate number of steps to take in psi to calculate cone projections for each side
+        of the form [steps1, steps2]
     plot : TYPE - boolean
         DESCRIPTION - plots heatmap if set to True
-
+    camera_distance : TYPE - float
+        DESCRIPTION - the distance between the scattering detectors of each Compton camera
+    plot_individuals : TYPE - boolean
+        DESCRIPTION - if True, plots the heatmaps of both cameras individually
+    estimate : TYPE - array
+        DESCRIPTION - (same as image_plane) estimate of z distance of source from Compton detector for each side
+        of the form [estimate1, estimate2]
+    
     Returns
     -------
     heatmap: A numpy array of the shape (bins, bins) containing the histogram values: x along axis 0 and
         y along axis 1.
 
     '''
+    
+
     n_points = 10
-    if n_points > np.shape(points)[0]:
-        n_points = np.shape(points)[0]
-            
-    x_list = []
-    y_list = []
+    if n_points > np.shape(sides[0])[0]:
+        n_points = np.shape(sides[0])[0]
+    
+    image_coordinates = [image_plane, camera_distance-image_plane]
+    
+    if estimate == False:
+        estimate = [image_coordinates[0], image_coordinates[1]]     
     j = 0
     ds=0
-    E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
-    for index, p in enumerate(np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))):
-        print(f'\nindex = {index}\n')
-        xs2 = np.array([])
-        ys2 = np.array([])
-        # print(source_energy-point[6])
-        alpha = compton_angle(source_energy, source_energy-p[6])
-        print(f'alpha = {alpha}')
-        Ef = source_energy - p[6]
-        # Ef = Ef*e
-        r1 = np.array([p[0], p[1], p[2]])
-        r2 = np.array([p[3], p[4], p[5]])
-        # print(f'alpha={alpha}'
-        theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
-        if theta+alpha < np.pi/2:
-            j+=1
-        if theta + alpha >= np.pi/2-0.001:
-            # continue # This continue skips parabolas
-            if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
-                continue
+    side=0
+    for i in range(len(sides)):
+        if i>1:
+            print('i>1')
+        side+=1
+        x_list = []
+        y_list = []
+        #E_loss_error = np.concatenate((E_loss_error[i][0:n_points], E_loss_error[i][2800:2800+n_points], E_loss_error[i][4100:4100+n_points], E_loss_error[i][6800:6800+n_points]))
+        E_loss_error = E_loss_errors[i]
+        print(f'type(E_loss_error)')
+        #for index, p in enumerate(np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))):
+        for index, p in enumerate(sides[i]):
+            #print(f'\nindex = {index}\n')
+            xs2 = np.array([])
+            ys2 = np.array([])
+            # print(source_energy-point[6])
+            alpha = compton_angle(source_energy, source_energy-p[6])
+            #print(f'alpha = {alpha}')
+            Ef = source_energy - p[6]
+            # Ef = Ef*e
+            r1 = np.array([p[0], p[1], p[2]])
+            r2 = np.array([p[3], p[4], p[5]])
+            # print(f'alpha={alpha}'
+            theta = theta_angle(r1[0], r2[0], r1[1], r2[1], r1[2], r2[2])
+            if theta+alpha < np.pi/2:
+                j+=1
+            if theta + alpha >= np.pi/2-0.001:
+                # continue # This continue skips parabolas
+                if j < 1: #if an ellipse hasn't already been plotted, don't plot a parabola (no accurate ds)
+                    continue
+                else:
+                    pass
+            if E_loss_error.any()>0:
+                #print(f'source_energy = {source_energy}')
+                #print(f'Ef = {Ef}')
+                #print(f'E_loss_error[index] = {E_loss_error[index]}')
+                alpha_err = (((m_e*c**2/e)/(source_energy**2))*1/np.sqrt(1 - (1 - (m_e*c**2/e)*((1/(Ef))-(1/source_energy)))**2))*E_loss_error[index]
+                #print(f'alpha_err is {alpha_err}')
+                alpha_min = alpha-alpha_err
+                alpha_max = alpha+alpha_err
+                if alpha_min < 0:
+                    alpha_min = 0
+                if alpha_max >= np.pi/2:
+                    alpha_max = (np.pi/2)-0.01
+                alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
+                for angle in alpha_bounds:
+                    # print(f'r1={r1}')
+                    # print(f'r2={r2}')
+                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_coordinates[i], angle, steps[i], estimate[i], ROI, ds=ds)
+                    xs2 = np.append(xs2, x, axis=0)
+                    ys2 = np.append(ys2, y, axis=0)
+                x_list.append(xs2)
+                y_list.append(ys2)
             else:
-                pass
-        if E_loss_error.any()>0:
-            print(f'source_energy = {source_energy}')
-            print(f'Ef = {Ef}')
-            print(f'E_loss_error[index] = {E_loss_error[index]}')
-            alpha_err = (((m_e*c**2/e)/(source_energy**2))*1/np.sqrt(1 - (1 - (m_e*c**2/e)*((1/(Ef))-(1/source_energy)))**2))*E_loss_error[index]
-            print(f'alpha_err is {alpha_err}')
-            alpha_min = alpha-alpha_err
-            alpha_max = alpha+alpha_err
-            if alpha_min < 0:
-                alpha_min = 0
-            if alpha_max >= np.pi/2:
-                alpha_max = (np.pi/2)-0.01
-            alpha_bounds = np.linspace(alpha-alpha_err, alpha+alpha_err, num=n)
-            for angle in alpha_bounds:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2, image_plane, angle, steps, estimate, ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2 , image_coordinates[i], angle, steps[i], estimate[i], ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
-            x_list.append(xs2)
-            y_list.append(ys2)
-        else:
-            # print(f'r1={r1}')
-            # print(f'r2={r2}')
-            x, y, ds = give_x_y_for_two_points(r1, r2, image_plane, alpha, steps, estimate, ROI, ds=ds)
-            xs2 = np.append(xs2, x, axis=0)
-            ys2 = np.append(ys2, y, axis=0)
-            x_list.append(xs2)
-            y_list.append(ys2)
- 
-    if E_loss_error.any()>0:
-        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+                x_list.append(xs2)
+                y_list.append(ys2)
+        
+        if side==1:
+            x_list1 = x_list
+            y_list1 = y_list
+        if side==2:
+            x_list2 = np.array(x_list)
+            y_list2 = y_list
+    
+    #assume side 1 is the side you're 'looking' from in the final image. 
+    #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped    
+        
+    if len(sides)>1:
+        x_list_tot = np.concatenate([x_list1, -x_list2])
+        y_list_tot = np.concatenate([y_list1, y_list2])
+    
+    if len(sides)==1:
+        print('ONE SIDE')
+        x_list_tot = x_list1
+        y_list_tot = y_list1
+    
+    if len(sides) not in [1, 2]:
+        raise Exception(f'number of sides is {len(sides)}')
+        
+    
+    
+    if E_loss_errors.any()>0:
+        heatmap_combined, extent_combined, bins_combined, bins2_combined, xav, xerr, yav, yerr  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-
+        heatmap_combined, extent_combined, bins_combined, bins2_combined, xav, xerr, yav, yerr = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        if plot_individuals is True and len(sides)==2:    
+            heatmap1, extent1, bins1, y_bins1, x_centre1, y_centre1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            heatmap2, extent2, bins2, y_bins2, x_centre2, y_centre2 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, bins2, n_points, (x_centre, y_centre))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+        if plot_individuals is True and len(sides)==2:
+            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(x_centre1, y_centre1))
+            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
     
     return heatmap_combined, extent_combined
+n_points=10
+
+points = np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))
+E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
 
 start_time = time.time()
-heatmap, extent = get_image(points, 10, 0, 0, 662E3, 100, E_loss_error = E_loss_error, ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
+heatmap, extent = get_image([points], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 print(f'Run time = {time.time()-start_time}')
