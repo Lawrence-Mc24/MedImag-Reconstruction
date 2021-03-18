@@ -502,8 +502,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     x_centre = extent[0] + (extent[1]-extent[0])*ind[0]/bins
     y_centre = extent[2] + (extent[3]-extent[2])*ind[1]/bins
-    x_centre = round(x_centre, 3)
-    y_centre = round(y_centre, 3)
+    x_centre = round(x_centre, 5)
+    y_centre = round(y_centre, 5)
     # x/y_centre are actually the edges of the first maximum bin so not really the centre
     # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
@@ -525,8 +525,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         yav = (ymax+ymin)/2
         xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
         yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
-    xerr = round(xerr, 3)
-    yerr = round(yerr, 3)
+    xerr = round(xerr, 5)
+    yerr = round(yerr, 5)
     return heatmap_chop, extent, bins, x_centre, y_centre, xerr, yerr
 
 def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
@@ -550,7 +550,6 @@ def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
     plt.colorbar()
     plt.title(f'bins, points = {bins, n_points} \n centre = {centre}')
     plt.show()
-    # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
@@ -676,7 +675,7 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
         heatmap_combined, extent_combined, bins, x_centre, y_centre, xerr, yerr = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, n_points, (x_centre, y_centre))
+        plot_heatmap(heatmap_combined, extent_combined, bins, n_points, centre=(f'{x_centre} +- {xerr}', f'{y_centre} +- {yerr}'))
     
     return heatmap_combined, extent_combined
 
