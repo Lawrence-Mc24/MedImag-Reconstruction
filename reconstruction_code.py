@@ -509,6 +509,22 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, n_points='chopped')
     heatmap_chop = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    pixel_x = xedges[1]-xedges[0]
+    pixel_y = yedges[1]-yedges[0]
+    print(f'pixelx = {pixel_x}')
+    print(f'pixely = {pixel_y}')
+    for i in range(len(indices[0])):
+        xpixel = indices[0][i]
+        ypixel = indices[1][i]
+        xmin = xedge2[xpixel]
+        xmax = xedge2[xpixel+1]
+        ymin = yedge2[ypixel]
+        ymax = yedge2[ypixel+1]
+        xav = (xmax+xmin)/2
+        yav = (ymax+ymin)/2
+        xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
+        yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
+    
     return heatmap_chop, extent, bins, x_centre, y_centre
 
 def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
