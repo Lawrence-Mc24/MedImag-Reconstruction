@@ -21,53 +21,89 @@ e = scipy.constants.e
 
 # path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
 # path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
-#path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
-path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
-dataframe = pd.read_csv(path)
+path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
+path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg.csv' # Perpendicular distance between front detectors and source = 7cm
+# path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
 
+HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
+HAAL = [[7, 0, -7], [-7, 0, -7], [7, 0, -40], [-7, 0, -40]]
 
-#dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
+def extract_points_from_dataframe(path, detector_coordinates):
+    '''
+    Returns an array of points including the detector positions and E_loss, and the E_loss_error,
+    (Could implement: but forces the detector positions z to be negative).
 
-# scatterer_0 = [-7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-scatterer_0 = [-3.5, 0, -3.5] # Gary for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
+    Parameters
+    ----------
+    path : str
+        Local path and filename to where the lab data is stored in a .csv file of the form
+        'Folder path\ Name', e.g. 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv'.
+    detector_coordinates : array_like
+        List containing the detector coordinates (as given in the lab set-up diagrams) of the form
+        [scatterer_0, scatterer_1, absorber_0, absorber_1], where each detector has coordinates [x, y, z].
 
-# scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+    Returns
+    -------
+    points : ndarray
+        Array of shape (points, 7) with each row being [x1, y1, z1, x2, y2, z2, E_loss], where 
+        (x1, y1, z1) are the coordinates of the coincidence hit in the scattering detector,
+        (x2, y2, z2) are the coordinates of the coincidence hit in the absorbing detector, and
+        E_loss is the energy lost in the scattering detector.
+    E_loss_error : ndarray
+        Array of the same length as points, i.e. of shape (points, ) that gives the error on E_loss.
+    dataframe
 
-# absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
-
-# absorber_1 = [-7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-absorber_1 = [-4.5, 0, -38.5] # Tony for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
-
-#dropnan = dataframe.dropna(axis = 'rows')
-dropnan = dataframe
-x_prime = -dropnan['X_1']
-y_prime = dropnan['Y_1']
-z_prime = dropnan['Z_1']
-x_0_prime = -dropnan['X_2']
-y_0_prime = dropnan['Y_2']
-z_0_prime = dropnan['Z_2']
-E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
-E_loss_error = dropnan['Energy Error_1']*10**3
-
-
-r1 = np.array([x_prime, y_prime, z_prime])
-r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
-
-points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
+    '''
+    
+    dataframe = pd.read_csv(path)
+    
+    scatterer_0 = detector_coordinates[0]
+    scatterer_1 = detector_coordinates[1]
+    absorber_0 = detector_coordinates[2]
+    absorber_1 = detector_coordinates[3]
+    #dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
+    
+    # scatterer_0 = [-7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+    # scatterer_0 = [-3.5, 0, -3.5] # Gary for 02.03.2021 lab set-up
+    dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
+    dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
+    dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
+    
+    # scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+    # scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
+    dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
+    dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
+    dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+    
+    # absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+    # absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
+    dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
+    dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
+    dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
+    
+    # absorber_1 = [-7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+    # absorber_1 = [-4.5, 0, -38.5] # Tony for 02.03.2021 lab set-up
+    dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
+    dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
+    dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
+    
+    #dropnan = dataframe.dropna(axis = 'rows')
+    dropnan = dataframe
+    x_prime = -dropnan['X_1']
+    y_prime = dropnan['Y_1']
+    z_prime = dropnan['Z_1']
+    x_0_prime = -dropnan['X_2']
+    y_0_prime = dropnan['Y_2']
+    z_0_prime = dropnan['Z_2']
+    E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
+    E_loss_error = dropnan['Energy Error_1']*10**3
+    
+    
+    r1 = np.array([x_prime, y_prime, z_prime])
+    r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
+    
+    points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
+    return points, E_loss_error, dataframe
 
 
 def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
@@ -711,10 +747,15 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
             plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(x_centre2, y_centre2))
     
     return heatmap_combined, extent_combined
-n_points=10
 
-points = np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))
-E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
+points, E_loss_error, dataframe = extract_points_from_dataframe(path_HGTD, HGTD)
+points, E_loss_error, dataframe = extract_points_from_dataframe(path_HAAL, HAAL)
+n_points=10
+# points = np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))
+# E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
+points = np.concatenate((points[0:n_points], points[29900:29900+n_points], points[36500:36500+n_points], points[130000:130000+n_points]))
+E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[29900:29900+n_points], E_loss_error[36500:36500+n_points], E_loss_error[130000:130000+n_points]))
+
 
 start_time = time.time()
 heatmap, extent = get_image([points], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
