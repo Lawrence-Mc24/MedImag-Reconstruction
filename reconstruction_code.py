@@ -509,6 +509,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
     plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, n_points='chopped')
     heatmap_chop = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    indices = np.where(heatmap==np.max(heatmap))
     pixel_x = xedges[1]-xedges[0]
     pixel_y = yedges[1]-yedges[0]
     print(f'pixelx = {pixel_x}')
@@ -516,16 +517,17 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     for i in range(len(indices[0])):
         xpixel = indices[0][i]
         ypixel = indices[1][i]
-        xmin = xedge2[xpixel]
-        xmax = xedge2[xpixel+1]
-        ymin = yedge2[ypixel]
-        ymax = yedge2[ypixel+1]
+        xmin = xedges[xpixel]
+        xmax = xedges[xpixel+1]
+        ymin = yedges[ypixel]
+        ymax = yedges[ypixel+1]
         xav = (xmax+xmin)/2
         yav = (ymax+ymin)/2
         xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
         yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
-    
-    return heatmap_chop, extent, bins, x_centre, y_centre
+    xerr = round(xerr, 3)
+    yerr = round(yerr, 3)
+    return heatmap_chop, extent, bins, x_centre, y_centre, xerr, yerr
 
 def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
@@ -671,7 +673,7 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, x_centre, y_centre = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, x_centre, y_centre, xerr, yerr = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
         plot_heatmap(heatmap_combined, extent_combined, bins, n_points, (x_centre, y_centre))
