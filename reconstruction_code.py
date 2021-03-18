@@ -21,46 +21,49 @@ e = scipy.constants.e
 
 # path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
 # path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
-path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
+# path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
+# path = 'D:/University/Year 3/Group Studies/Data/Lab Data/HGTD_02_03_TuesFri_30deg_block0.csv'
+path = 'D:/University/Year 3/Group Studies/Data/Old Data/compt_photo_chain_data_4_detectors.csv'
 dataframe = pd.read_csv(path)
 
 
 #dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
 
 # scatterer_0 = [-7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-scatterer_0 = [-3.5, 0, -3.5] # Gary for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
-dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
+# scatterer_0 = [-3.5, 0, -3.5] # Gary for 02.03.2021 lab set-up
+# dataframe.loc[dataframe["Scatter Number"] == 0, "X_1"] = scatterer_0[0]
+# dataframe.loc[dataframe["Scatter Number"] == 0, "Y_1"] = scatterer_0[1]
+# dataframe.loc[dataframe["Scatter Number"] == 0, "Z_1"] = scatterer_0[2]
 
-# scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
-dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+# # scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+# scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
+# dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
+# dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
+# dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
 
-# absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
-dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
+# # absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+# absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
+# dataframe.loc[dataframe["Absorber Number"] == 0, "X_2"] = absorber_0[0]
+# dataframe.loc[dataframe["Absorber Number"] == 0, "Y_2"] = absorber_0[1]
+# dataframe.loc[dataframe["Absorber Number"] == 0, "Z_2"] = absorber_0[2]
 
-# absorber_1 = [-7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
-absorber_1 = [-4.5, 0, -38.5] # Tony for 02.03.2021 lab set-up
-dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
-dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
+# # absorber_1 = [-7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
+# absorber_1 = [-4.5, 0, -38.5] # Tony for 02.03.2021 lab set-up
+# dataframe.loc[dataframe["Absorber Number"] == 1, "X_2"] = absorber_1[0]
+# dataframe.loc[dataframe["Absorber Number"] == 1, "Y_2"] = absorber_1[1]
+# dataframe.loc[dataframe["Absorber Number"] == 1, "Z_2"] = absorber_1[2]
 
 #dropnan = dataframe.dropna(axis = 'rows')
 dropnan = dataframe
-x_prime = -dropnan['X_1']
-y_prime = dropnan['Y_1']
-z_prime = dropnan['Z_1']
-x_0_prime = -dropnan['X_2']
-y_0_prime = dropnan['Y_2']
-z_0_prime = dropnan['Z_2']
-E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
-E_loss_error = dropnan['Energy Error_1']*10**3
+x_prime = -dropnan['X_1 [cm]']
+y_prime = dropnan['Y_1 [cm]']
+z_prime = dropnan['Z_1 [cm]']
+x_0_prime = -dropnan['X_2 [cm]']
+y_0_prime = dropnan['Y_2 [cm]']
+z_0_prime = dropnan['Z_2 [cm]']
+E_loss = np.abs(dropnan['Energy Loss [MeV]'])*10**6
+E_loss_error = np.zeros(len(dataframe))
+# E_loss_error = dropnan['Energy Error_1']*10**3
 
 
 r1 = np.array([x_prime, y_prime, z_prime])
@@ -69,28 +72,28 @@ r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
 points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
 
 
-def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
+# def data_merger(scatterer, absorber, absorber_distance, absorber_angle):
 
-    merged = pd.concat([scatterer, absorber], axis=1, join="inner")
+#     merged = pd.concat([scatterer, absorber], axis=1, join="inner")
     
-    merged.columns = ["X_1", "Y_1", "Z_1", "Energy Loss", "Compton Scatters in f'scatterer'", "X_2", "Y_2", "Z_2", "Energy Loss 2", "Compton Scatters in f'absorber'"]
+#     merged.columns = ["X_1", "Y_1", "Z_1", "Energy Loss", "Compton Scatters in f'scatterer'", "X_2", "Y_2", "Z_2", "Energy Loss 2", "Compton Scatters in f'absorber'"]
     
-    merged.loc[merged["Compton Scatters in f'scatterer'"] != 1, "Compton Scatters in f'absorber'"] = np.nan
-    #merged.loc[merged["Compton Scatters in David"] != 1, "Compton Scatters in David"] = np.nan
+#     merged.loc[merged["Compton Scatters in f'scatterer'"] != 1, "Compton Scatters in f'absorber'"] = np.nan
+#     #merged.loc[merged["Compton Scatters in David"] != 1, "Compton Scatters in David"] = np.nan
     
-    dropnan = merged.dropna(axis = 'rows')
+#     dropnan = merged.dropna(axis = 'rows')
     
     
-    G_coords = [0,0,0]
-    dropnan["X_1"] = G_coords[0]
-    dropnan["Y_1"] = G_coords[1]
-    dropnan["Z_1"] = G_coords[2]
+#     G_coords = [0,0,0]
+#     dropnan["X_1"] = G_coords[0]
+#     dropnan["Y_1"] = G_coords[1]
+#     dropnan["Z_1"] = G_coords[2]
     
-    D_coords = [absorber_distance*np.cos(absorber_angle*np.pi/180),0,absorber_distance*np.sin(absorber_angle*np.pi/180)]
-    dropnan["X_2"] = D_coords[0]
-    dropnan["Y_2"] = D_coords[1]
-    dropnan["Z_2"] = D_coords[2]
-    return dropnan
+#     D_coords = [absorber_distance*np.cos(absorber_angle*np.pi/180),0,absorber_distance*np.sin(absorber_angle*np.pi/180)]
+#     dropnan["X_2"] = D_coords[0]
+#     dropnan["Y_2"] = D_coords[1]
+#     dropnan["Z_2"] = D_coords[2]
+#     return dropnan
 
 # output = data_merger(Garry, David, 25, 40)
 
@@ -141,7 +144,7 @@ def phi_angle(z):
 
     '''
     if z[0] == 0 and z[1] == 0:
-        print(f'phi = 0')
+        print('phi = 0')
         return 0
     
     phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
@@ -186,8 +189,8 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0):
     a = np.tan(alpha)
-    print(f'a value = {a}')
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    # print(f'a value = {a}')
+    # print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     if alpha + theta > np.pi/2-0.01:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)
     x_prime_vals = np.array([])
@@ -231,13 +234,14 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
     while True:
         counter += 1
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
-        
+        if np.abs(psi) >= 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
         if counter > 5000:
             if psi == 0 or psi == np.pi or psi == 2*np.pi:
                 print(f'psi = {psi}')
-                print(f'iteration = {iteration}')
-                print(f'anticlockwise = {anticlockwise}')
-                print(f'z= {z}')
+                # print(f'iteration = {iteration}')
+                # print(f'anticlockwise = {anticlockwise}')
+                # print(f'z= {z}')
         if z<0:
             iteration = 'second'
             psi+=np.pi
@@ -278,8 +282,6 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
             psi=np.pi
             continue
         
-        if np.abs(psi) >= 2*np.pi:
-            return x_prime_vals, y_prime_vals, ds
     # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
     
@@ -446,26 +448,26 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 2*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
     extend_y = 2*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
-    print(f'y_bins = {y_bins}')
-    print(f'type(y_bins) = {type(y_bins)}')
+    # print(f'y_bins = {y_bins}')
+    # print(f'type(y_bins) = {type(y_bins)}')
     h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     # np.where(xtot<extent[0], 0, xtot)
     # np.where(xtot>extent[1], 0, xtot)
     # np.where(ytot<extent[2], 0, ytot)
     # np.where(ytot>extent[3], 0, ytot)
 
     heatmaps = []
-    print(f'len(x) = {len(x)}')
+    # print(f'len(x) = {len(x)}')
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
@@ -474,50 +476,69 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
             hist[hist != 0] = 1
         heatmaps.append(hist)
     heatmap = np.sum(heatmaps, 0)
-    plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop')
+    # plot_heatmap(heatmap, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, n_points='no chop')
+    ind = np.unravel_index(np.argmax(heatmap, axis=None), heatmap.shape)
     
     chop_indices, ind = image_slicer(heatmap, ZoomOut)
-    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
-    print(f'chop_indices = {chop_indices}')
+    # print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    # print(f'chop_indices = {chop_indices}')
     print(chop_indices[0])
-    # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
-    # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
-    bins2 = 50
-    print(f'y_bins = {y_bins}', f', x_bins = {bins}')
-    heatmaps2 = []
-    for i in range(len(x)):
-        hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
-        hist[hist != 0] = 1
-        if dilate_erode_iterations>0:
-            hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
-            hist[hist != 0] = 1
-        heatmaps2.append(hist)
-    heatmap2 = np.sum(heatmaps2, 0)
-    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
-    
+    # print(f'y_bins = {y_bins}', f', x_bins = {bins}')
+    # heatmaps2 = []
+    # for i in range(len(x)):
+    #     hist = np.histogram2d(x[i], y[i], bins2, range=np.array([x_chop, y_chop]))[0]
+    #     hist[hist != 0] = 1
+    #     if dilate_erode_iterations>0:
+    #         hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
+    #         hist[hist != 0] = 1
+    #     heatmaps2.append(hist)
+    # heatmap2 = np.sum(heatmaps2, 0)
+    # ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+    # heatmap_chop = heatmap
+    # extent = np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]])
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    x_centre = extent[0] + (extent[1]-extent[0])*ind[0]/bins
+    y_centre = extent[2] + (extent[3]-extent[2])*ind[1]/bins
+    x_centre = round(x_centre, 3)
+    y_centre = round(y_centre, 3)
     # x/y_centre are actually the edges of the first maximum bin so not really the centre
-    x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
-    y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
-    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, bins2, x_centre, y_centre
+    # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
+    # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
+    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, n_points='chopped')
+    heatmap_chop = heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]]
+    return heatmap_chop, extent, bins, x_centre, y_centre
 
-def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
+def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
+    # heatmap = heatmap/np.std(heatmap)
+    # print(f'max value is {np.amax(heatmap)}')
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
-    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=1, y_stddev=1)), extent=extent, origin='lower')
+    # print(f'max value is {np.amax(heatmap)}')
+    # if np.amin(heatmap) == 0:
+    #     print(f'dynamic range is {np.amax(heatmap)}')
+    # else:
+    #     print(f'dynamic range is {np.amax(heatmap)/np.amin(heatmap)}')
+    heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=9, y_stddev=9))
+    heatmap_convolve = heatmap_convolve/np.std(heatmap_convolve)
+    print(f'max value is {np.amax(heatmap_convolve)}')
+    if np.amin(heatmap) == 0:
+        print(f'dynamic range is {np.amax(heatmap_convolve)}')
+    else:
+        print(f'dynamic range is {np.amax(heatmap_convolve)/np.amin(heatmap_convolve)}')
+    plt.imshow(heatmap_convolve, extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
+    plt.title(f'bins, points = {bins, n_points} \n centre = {centre}')
     plt.show()
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.6*np.amax(h)] = 0
+    h[h < np.amax(h)-5*np.std(h)] = 0
+    # h[h < 0.5*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -570,7 +591,7 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
         y along axis 1.
 
     '''
-    n_points = 10
+    n_points = 1000
     if n_points > np.shape(points)[0]:
         n_points = np.shape(points)[0]
             
@@ -585,7 +606,7 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
         ys2 = np.array([])
         # print(source_energy-point[6])
         alpha = compton_angle(source_energy, source_energy-p[6])
-        print(f'alpha = {alpha}')
+        # print(f'alpha = {alpha}')
         Ef = source_energy - p[6]
         # Ef = Ef*e
         r1 = np.array([p[0], p[1], p[2]])
@@ -601,11 +622,11 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
             else:
                 pass
         if E_loss_error.any()>0:
-            print(f'source_energy = {source_energy}')
-            print(f'Ef = {Ef}')
-            print(f'E_loss_error[index] = {E_loss_error[index]}')
+            # print(f'source_energy = {source_energy}')
+            # print(f'Ef = {Ef}')
+            # print(f'E_loss_error[index] = {E_loss_error[index]}')
             alpha_err = (((m_e*c**2/e)/(source_energy**2))*1/np.sqrt(1 - (1 - (m_e*c**2/e)*((1/(Ef))-(1/source_energy)))**2))*E_loss_error[index]
-            print(f'alpha_err is {alpha_err}')
+            # print(f'alpha_err is {alpha_err}')
             alpha_min = alpha-alpha_err
             alpha_max = alpha+alpha_err
             if alpha_min < 0:
@@ -631,17 +652,17 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
             y_list.append(ys2)
  
     if E_loss_error.any()>0:
-        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, x_centre, y_centre = calculate_heatmap(x_list, y_list, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
-        heatmap_combined, extent_combined, bins, bins2, x_centre, y_centre  = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+        heatmap_combined, extent_combined, bins, x_centre, y_centre = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, bins2, n_points, (x_centre, y_centre))
+        plot_heatmap(heatmap_combined, extent_combined, bins, n_points, (x_centre, y_centre))
     
     return heatmap_combined, extent_combined
 
 start_time = time.time()
-heatmap, extent = get_image(points, 10, 0, 0, 662E3, 100, E_loss_error = E_loss_error, ROI=[-25, 25, -25, 25], steps=50, ZoomOut=0)
+heatmap, extent = get_image(points, 10, 15, 15, 662E3, 100, E_loss_error = E_loss_error, ROI=[-10, 10, -10, 10], steps=50, ZoomOut=0)
 print(f'Run time = {time.time()-start_time}')
