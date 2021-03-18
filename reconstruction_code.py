@@ -249,6 +249,9 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
         counter += 1
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
         
+        if np.abs(psi) > 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
+        
         if counter > 5000:
             if psi == 0 or psi == np.pi or psi == 2*np.pi:
                 print(f'psi = {psi}')
@@ -294,8 +297,7 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ds
             psi=np.pi
             continue
         
-        if np.abs(psi) > 2*np.pi:
-            return x_prime_vals, y_prime_vals, ds
+        
     # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
     
