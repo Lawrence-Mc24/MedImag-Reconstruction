@@ -514,22 +514,21 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
 def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
-    # heatmap = heatmap/np.std(heatmap)
-    # print(f'max value is {np.amax(heatmap)}')
-    # plt.imshow(heatmap.T, extent=extent, origin='lower')
-    # print(f'max value is {np.amax(heatmap)}')
-    # if np.amin(heatmap) == 0:
-    #     print(f'dynamic range is {np.amax(heatmap)}')
-    # else:
-    #     print(f'dynamic range is {np.amax(heatmap)/np.amin(heatmap)}')
-    heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=9, y_stddev=9))
-    heatmap_convolve = heatmap_convolve/np.std(heatmap_convolve)
-    print(f'max value is {np.amax(heatmap_convolve)}')
+    print(f'max value is {np.amax(heatmap)}')
     if np.amin(heatmap) == 0:
-        print(f'dynamic range is {np.amax(heatmap_convolve)}')
+        print(f'dynamic range is {np.amax(heatmap)}')
     else:
-        print(f'dynamic range is {np.amax(heatmap_convolve)/np.amin(heatmap_convolve)}')
-    plt.imshow(heatmap_convolve, extent=extent, origin='lower')
+        print(f'dynamic range is {np.amax(heatmap)/np.amin(heatmap)}')
+    heatmap = heatmap/np.std(heatmap)
+    plt.imshow(heatmap.T, extent=extent, origin='lower')
+    # heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=0.5, y_stddev=0.5))
+    # if np.amin(heatmap) == 0:
+    #     print(f'dynamic range is {np.amax(heatmap_convolve)}')
+    # else:
+    #     print(f'dynamic range is {np.amax(heatmap_convolve)/np.amin(heatmap_convolve)}')
+    # heatmap_convolve = heatmap_convolve/np.std(heatmap_convolve)
+    # print(f'max value is {np.amax(heatmap_convolve)}')
+    # plt.imshow(heatmap_convolve, extent=extent, origin='lower')
     plt.colorbar()
     plt.title(f'bins, points = {bins, n_points} \n centre = {centre}')
     plt.show()
