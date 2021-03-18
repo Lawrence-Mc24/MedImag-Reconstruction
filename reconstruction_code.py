@@ -596,7 +596,7 @@ def image_slicer(h, ZoomOut=0):
         
     return chop_indices, ind
 
-def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, camera_distance=0, steps=180, plot=True, ZoomOut=0, plot_individuals=False, estimate=False):
+def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, steps=180, plot=True, ZoomOut=0, plot_individuals=False, estimate=False):
     '''
     Parameters
     ----------
@@ -638,10 +638,8 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
     if n_points > np.shape(sides[0])[0]:
         n_points = np.shape(sides[0])[0]
     
-    image_coordinates = [image_plane, camera_distance-image_plane]
-    
     if estimate == False:
-        estimate = [image_coordinates[0], image_coordinates[1]]     
+        estimate = image_plane   
     j = 0
     ds=0
     side=0
@@ -692,7 +690,7 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
                 for angle in alpha_bounds:
                     # print(f'r1={r1}')
                     # print(f'r2={r2}')
-                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_coordinates[i], angle, steps[i], estimate[i], ROI, ds=ds)
+                    x, y, ds = give_x_y_for_two_points(r1, r2 , image_plane, angle, steps[i], estimate, ROI, ds=ds)
                     xs2 = np.append(xs2, x, axis=0)
                     ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
@@ -700,7 +698,7 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
             else:
                 # print(f'r1={r1}')
                 # print(f'r2={r2}')
-                x, y, ds = give_x_y_for_two_points(r1, r2 , image_coordinates[i], angle, steps[i], estimate[i], ROI, ds=ds)
+                x, y, ds = give_x_y_for_two_points(r1, r2 , image_plane, angle, steps[i], estimate, ROI, ds=ds)
                 xs2 = np.append(xs2, x, axis=0)
                 ys2 = np.append(ys2, y, axis=0)
                 x_list.append(xs2)
@@ -748,8 +746,8 @@ def get_image(sides, n, image_plane, source_energy, bins, E_loss_errors, ROI, ca
     
     return heatmap_combined, extent_combined
 
-points, E_loss_error, dataframe = extract_points_from_dataframe(path_HGTD, HGTD)
-# points, E_loss_error, dataframe = extract_points_from_dataframe(path_HAAL, HAAL)
+# points, E_loss_error, dataframe = extract_points_from_dataframe(path_HGTD, HGTD)
+points, E_loss_error, dataframe = extract_points_from_dataframe(path_HAAL, HAAL)
 start00 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 0)][0]
 start01 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 1)][0]
 start10 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 0)][0]
