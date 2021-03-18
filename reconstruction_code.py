@@ -675,7 +675,7 @@ def get_image(points, n, estimate, image_plane, source_energy, bins, E_loss_erro
         heatmap_combined, extent_combined, bins, x_centre, y_centre, xerr, yerr = calculate_heatmap(x_list, y_list, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
 
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins, n_points, centre=(f'{x_centre} +- {xerr}', f'{y_centre} +- {yerr}'))
+        plot_heatmap(heatmap_combined, extent_combined, bins, n_points, centre=(f'{x_centre} \u00B1 {xerr}', f'{y_centre} \u00B1 {yerr}'))
     
     return heatmap_combined, extent_combined
 
