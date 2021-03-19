@@ -21,14 +21,14 @@ e = scipy.constants.e
 
 # path = r"C:/Users/laure/Documents/Physics/Year 3/Group Study/Data/Analyst Data/23-02-21_Fixed_Data.csv"
 # path = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_23_02_NEW_ENERGY UPPERBOUND.csv'
-path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_block0.csv' # Perpendicular distance between front detectors and source = 3.5cm
-path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg.csv' # Perpendicular distance between front detectors and source = 7cm
+path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 3.5cm
+path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 7cm
 # path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
 path_HGTD_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGTD_MC_E_CAL.csv'
 path_HAAL_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_E_CAL.csv'
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
-HAAL = [[7, 0, -7], [-7, 0, -7], [7, 0, -40], [-7, 0, -40]]
+HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
 
 # 30 deg set-up
 David_avg = [-24.46, -0.15, -33.41]
@@ -125,7 +125,7 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
         E_loss_error = np.zeros(np.shape(dataframe)[0])
     else:
         E_loss_error = np.concatenate((E_loss_error[start00:n_points], E_loss_error[start01:start01+n_points], E_loss_error[start10:start10+n_points], E_loss_error[start11:start11+n_points]))
-        
+        # 
     r1 = np.array([x_prime, y_prime, z_prime])
     r2 = np.array([x_0_prime, y_0_prime, z_0_prime])
     
@@ -135,7 +135,7 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     # points = np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))
     # E_loss_error = np.concatenate((E_loss_error[0:n_points], E_loss_error[2800:2800+n_points], E_loss_error[4100:4100+n_points], E_loss_error[6800:6800+n_points]))
     points = np.concatenate((points[start00:n_points], points[start01:start01+n_points], points[start10:start10+n_points], points[start11:start11+n_points]))
-
+    # 
     return points, E_loss_error, dataframe
 
 
@@ -781,15 +781,17 @@ n_points = 400
 points_HGTD, E_loss_error_HGTD, dataframe_HGTD = extract_points_from_dataframe(path_HGTD, HGTD, n_points)
 points_HAAL, E_loss_error_HAAL, dataframe_HAAL = extract_points_from_dataframe(path_HAAL, HAAL, n_points)
 points_HGTD_avg, E_loss_error_HGTD_avg, dataframe_HGTD_avg = extract_points_from_dataframe(path_HGTD, HGTD_avg, n_points)
+points_HAAL_avg, E_loss_error_HAAL_avg, dataframe_HAAL_avg = extract_points_from_dataframe(path_HAAL, HAAL_avg, n_points)
 points_HGTD_MC, E_loss_error_HGTD_MC, dataframe_HGTD_MC = extract_points_from_dataframe(path_HGTD_MC, HGTD_avg, n_points)
 points_HAAL_MC, E_loss_error_HAAL_MC, dataframe_HAAL_MC = extract_points_from_dataframe(path_HAAL_MC, HAAL_avg, n_points)
 
 start_time = time.time()
-# heatmap, extent = get_image([points_HGTD, points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-# heatmap, extent = get_image([points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-# heatmap, extent = get_image([points_HGTD], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-# heatmap, extent = get_image([points_HGTD_avg], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+# heatmap, extent = get_image([points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent = get_image([points_HGTD], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent = get_image([points_HGTD_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_avg]), ROI=[-5, 7, -6, 6], steps=[50], ZoomOut=0)
+# heatmap, extent = get_image([points_HAAL_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent = get_image([points_HGTD_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-heatmap, extent = get_image([points_HAAL_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+heatmap, extent = get_image([points_HAAL_MC], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
 print(f'Run time = {time.time()-start_time}')
