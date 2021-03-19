@@ -26,6 +26,9 @@ e = scipy.constants.e
 path = 'D:/University/Year 3/Group Studies/Data/Old Data/compt_photo_chain_data_4_detectors.csv'
 dataframe = pd.read_csv(path)
 
+pos_path = 'D:/University/Year 3/Group Studies/Data/Lab Data/MC Xmas Tree/crystalpos30deg.csv'
+pos_dataframe = pd.read_csv(pos_path)
+
 
 #dataframe.loc[dataframe["Energy (keV)_1"] > 145.2, "Energy (keV)_1"] = np.nan
 
@@ -539,7 +542,7 @@ def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
         print(f'dynamic range is {np.amax(heatmap)/np.amin(heatmap)}')
     heatmap = heatmap/np.std(heatmap)
     plt.imshow(heatmap.T, extent=extent, origin='lower')
-    # heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=0.5, y_stddev=0.5))
+    # heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=10, y_stddev=10))
     # if np.amin(heatmap) == 0:
     #     print(f'dynamic range is {np.amax(heatmap_convolve)}')
     # else:
@@ -551,10 +554,27 @@ def plot_heatmap(heatmap, extent, bins, n_points, centre='(x, y)'):
     plt.title(f'bins, points = {bins, n_points} \n centre = {centre}')
     plt.show()
 
+def threshold_maker(heatmap):
+    thresh = np.mean(heatmap)
+    foreground = heatmap[heatmap > thresh]
+    background = heatmap[heatmap < thresh]
+    diff = thresh - (np.mean(foreground)+np.mean(background))/2
+    thresh = (np.mean(foreground)+np.mean(background))/2
+    print(f'diff is {diff}')
+    while diff > 0.1:
+        foreground = heatmap[heatmap > thresh]
+        background = heatmap[heatmap <= thresh]
+        diff = thresh - (np.mean(foreground)+np.mean(background))/2
+        thresh = (np.mean(foreground)+np.mean(background))/2
+        print(f'diff is {diff}')
+    return thresh
+
+
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < np.amax(h)-5*np.std(h)] = 0
-    # h[h < 0.5*np.amax(h)] = 0
+    # h[h < np.mean(h)] = 0
+    # h[h < np.amax(h)-5*np.std(h)] = 0
+    h[h < 1] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
