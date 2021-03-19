@@ -569,7 +569,31 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
             hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
-    # ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+    
+    y_strip_heat = heatmap2[ind2[0]]        
+    #print(len(x_strip_heat))
+    y_strip_position = yedge2[:-1] + ypixel/2
+    #print(len(x_strip_position))
+    #print(f'shape is {np.shape(xs)}')
+    x_strip_heat = heatmap2.T[ind2[1]]
+    x_strip_position = xedge2[:-1] + ypixel/2
+    print(len(y_strip_position))
+    #xs = np.array([x_strip_position, x_strip_heat])
+    #ys = np.array([y_strip_position, y_strip_heat])
+
+    #xys = [xs, ys]
+    #plot_it2(xys, 0, x_name='position (cm)', y_name='heat', plot_title='Max strip heat')
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.plot(x_strip_position, x_strip_heat, 'b', label='x')
+    ax.plot(y_strip_position, y_strip_heat, 'g', label='y')
+    ax.legend()
+    ax.set_title('Position vs Intensity for each Axis')
+    ax.set_xlabel('Position Along Axis (cm)')
+    ax.set_ylabel('Intensity')
+    plt.show()
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     # # x/y_centre are actually the edges of the first maximum bin so not really the centre
