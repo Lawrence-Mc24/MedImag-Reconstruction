@@ -837,10 +837,10 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
             heatmap2, extent2, bins2, y_bins2, xav2, xerr2, yav2, yerr2, max_pv_1 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
             
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points_combined, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points_combined, centre=(f'{xav} \u00B1 {xerr}', f'{yav} \u00B1 {yerr}'))
         if plot_individuals is True and len(sides)==2:
-            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points1, centre=(f'{xav1} +- {xerr1}', f'{yav1} +- {yerr1}'))
-            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points2, centre=(f'{xav2} +- {xerr2}', f'{yav2} +- {yerr2}'))
+            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points1, centre=(f'{xav1} \u00B1 {xerr1}', f'{yav1} \u00B1 {yerr1}'))
+            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points2, centre=(f'{xav2} \u00B1 {xerr2}', f'{yav2} \u00B1 {yerr2}'))
     
     return heatmap_combined, extent_combined, max_pv_combined
 
