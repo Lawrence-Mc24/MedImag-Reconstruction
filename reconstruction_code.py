@@ -31,23 +31,26 @@ e = scipy.constants.e
 # path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
 # path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
 # path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
-path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+# path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+path_HGTD_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/GHDT_MC_0deg_run2_withscatters.csv'
+path_HAAL_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/HAAL_MC_0deg_run2_withscatters.csv'
+
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
 HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
 
 # 30 deg set-up
-David_avg = [-24.46, -0.15, -33.41]
-Garry_avg = [1.30, -0.08, -4.17]
-Harry_avg = [-5.30, -0.09, -1.44]
-Tony_avg = [-16.63, -0.19, -38.20]
-HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
+# David_avg = [-24.46, -0.15, -33.41]
+# Garry_avg = [1.30, -0.08, -4.17]
+# Harry_avg = [-5.30, -0.09, -1.44]
+# Tony_avg = [-16.63, -0.19, -38.20]
+# HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
 
-Aaron_avg = [-8.03, -0.06, -6.80]
-Alex_avg = [-7.99, -0.40, -41.37]
-Hannah_avg= [7.36, -0.18, -6.90]
-Louis_avg = [7.91, -0.74, -41.73]
-HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
+# Aaron_avg = [-8.03, -0.06, -6.80]
+# Alex_avg = [-7.99, -0.40, -41.37]
+# Hannah_avg= [7.36, -0.18, -6.90]
+# Louis_avg = [7.91, -0.74, -41.73]
+# HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
 
 def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     '''
@@ -113,13 +116,13 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     
     #dropnan = dataframe.dropna(axis = 'rows')
     dropnan = dataframe
-    x_prime = -dropnan['X_1']
-    y_prime = dropnan['Y_1']
-    z_prime = -np.abs(dropnan['Z_1'])
-    x_0_prime = -dropnan['X_2']
-    y_0_prime = dropnan['Y_2']
-    z_0_prime = -np.abs(dropnan['Z_2'])
-    E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
+    x_prime = -dropnan['x_1']
+    y_prime = dropnan['z_1']
+    z_prime = -np.abs(dropnan['y_1'])
+    x_0_prime = -dropnan['x_2']
+    y_0_prime = dropnan['z_2']
+    z_0_prime = -np.abs(dropnan['y_2'])
+    E_loss = np.abs(dropnan['E [keV]_1'])*10**3
     try:
         E_loss_error = dropnan['Energy Error_1']*10**3
     except:
@@ -651,19 +654,18 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
     
 def threshold_maker(heatmap):
-    thresh = np.mean(heatmap)
-    foreground = heatmap[heatmap > thresh]
-    background = heatmap[heatmap <= thresh]
-    diff = thresh - (np.mean(foreground)+np.mean(background))/2
-    thresh = ((np.mean(foreground)*len(foreground))+(np.mean(background)*len(background)))/(len(foreground)+len(background))
-    thresh = (np.mean(foreground)+np.mean(background))/2
-    while diff > 0.001:
-        foreground = heatmap[heatmap > thresh]
-        background = heatmap[heatmap <= thresh]
-        diff = thresh - (np.mean(foreground)+np.mean(background))/2
-        thresh = (np.mean(foreground)+np.mean(background))/2
-    print(f'new threshold is {thresh}')
-    return thresh
+    thresh_init = np.mean(heatmap)
+    print(f'thresh_init is {thresh_init}')
+    foreground = heatmap[heatmap > thresh_init]
+    background = heatmap[heatmap <= thresh_init]
+    thresh_var = (np.mean(background)+np.mean(foreground))/2
+    diff = thresh_init - thresh_var
+    while abs(diff) > 0.1:
+        foreground = heatmap[heatmap > thresh_var]
+        background = heatmap[heatmap <= thresh_var]
+        diff = thresh_var - (np.mean(background)+np.mean(foreground))/2
+        thresh_var = (np.mean(background)+np.mean(foreground))/2
+    return thresh_var
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
@@ -854,8 +856,10 @@ n_points = 10
 # points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
 # points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
 # points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
-points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
-n_points = np.shape(points_HGTD_MC_0deg2)[0]
+# points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
+# n_points = np.shape(points_HGTD_MC_0deg2)[0]
+points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
+points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
 
 start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
@@ -871,7 +875,8 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
-heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+heatmap, extent, max_pv_combined = get_image([points_HGTD_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0, plot_individuals=True)
 
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
