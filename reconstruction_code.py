@@ -20,19 +20,18 @@ m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-#path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 3.5cm
-#path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 7cm
-# path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
-path_HGTD_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HGTD_MC_E_CAL.csv"
-path_HAAL_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HAAL_MC_E_CAL.csv"
-#path_HAAL_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_E_CAL.csv'
-#path_HGTD_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGTD_MC_E_CAL.csv'
-#path_HAAL_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_NEW_withenergydiscrimination.csv'
-#path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
-path_HGTD_MC_0deg = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\0 Degree Christmas tree MC\HGDT_MC_0deg_xmas.csv"
-path_HAAL_MC_0deg = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\0 Degree Christmas tree MC\HAAL_MC_0deg_xmas.csv"
-#path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
-#path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
+# path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 3.5cm
+# path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 7cm
+# # path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
+# # path_HGTD_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HGTD_MC_E_CAL.csv"
+# # path_HAAL_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HAAL_MC_E_CAL.csv"
+# path_HAAL_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_E_CAL.csv'
+# path_HGTD_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGTD_MC_E_CAL.csv'
+# path_HAAL_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_NEW_withenergydiscrimination.csv'
+# path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
+# path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
+# path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
+path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
 HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
@@ -560,6 +559,10 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 50
     print(f'y_bins = {y_bins}', f', x_bins = {bins}')
+    
+    extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
+    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
+    
     xpixel = np.abs(x_chop[1]-x_chop[0])/bins2
     ypixel = np.abs(y_chop[1]-y_chop[0])/bins2
     ybins = int(round(bins2*ypixel/xpixel))
@@ -572,56 +575,68 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
             hist[hist != 0] = 1
         heatmaps2.append(hist)
     heatmap2 = np.sum(heatmaps2, 0)
-    ind2 = np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
-    
-    y_strip_heat = heatmap2[ind2[0]]        
-    #print(len(x_strip_heat))
-    y_strip_position = yedge2[:-1] + ypixel/2
-    #print(len(x_strip_position))
-    #print(f'shape is {np.shape(xs)}')
-    x_strip_heat = heatmap2.T[ind2[1]]
-    x_strip_position = xedge2[:-1] + ypixel/2
-    print(len(y_strip_position))
-    #xs = np.array([x_strip_position, x_strip_heat])
-    #ys = np.array([y_strip_position, y_strip_heat])
+    indices = np.where(heatmap==np.max(heatmap))
+    if len(indices[0])==1:
 
-    #xys = [xs, ys]
-    #plot_it2(xys, 0, x_name='position (cm)', y_name='heat', plot_title='Max strip heat')
+        x_strip_heat = heatmap[ind[0]] 
+        print(f'fml {indices[0]}')
+        #print(len(x_strip_heat))
+        y_strip_position = yedges[:-1] + ypixel/2
+        #print(len(x_strip_position))
+        #print(f'shape is {np.shape(xs)}')
+        y_strip_heat = heatmap.T[ind[1]]
+        x_strip_position = xedges[:-1] + xpixel/2
+        print(len(y_strip_position))
+        #xs = np.array([x_strip_position, x_strip_heat])
+        #ys = np.array([y_strip_position, y_strip_heat])
+        print(x_strip_heat)
+        #xys = [xs, ys]
+        #plot_it2(xys, 0, x_name='position (cm)', y_name='heat', plot_title='Max strip heat')
     
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    ax.plot(x_strip_position, x_strip_heat, 'b', label='x')
-    ax.plot(y_strip_position, y_strip_heat, 'g', label='y')
-    ax.legend()
-    ax.set_title('Position vs Intensity for each Axis')
-    ax.set_xlabel('Position Along Axis (cm)')
-    ax.set_ylabel('Intensity')
-    plt.show()
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1)
+        ax.plot(x_strip_position, x_strip_heat, 'b', label='y')
+        ax.plot(y_strip_position, y_strip_heat, 'g', label='x') #note that everything is transposed in the final graph x on heatmap = y on graph
+        ax.legend()
+        ax.set_title('Position vs Intensity for each Axis')
+        ax.set_xlabel('Position Along Axis (cm)')
+        ax.set_ylabel('Intensity')
+        plt.show()
     
-    extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     # # x/y_centre are actually the edges of the first maximum bin so not really the centre
     # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
-    indices = np.where(heatmap2==np.max(heatmap2))
-    pixel_x = xedge2[1]-xedge2[0]
-    pixel_y = yedge2[1]-yedge2[0]
+    print(indices)
+    pixel_x = xedges[1]-xedges[0]
+    pixel_y = yedges[1]-yedges[0]
     print(f'pixelx = {pixel_x}')
     print(f'pixely = {pixel_y}')
+    #xavs = []
+    #print(len(xedges))
+    #print(len(yedges))
+    print(f'heatmap shape is {np.shape(heatmap)}')
+    avs = []
+    errs = []
+    #yerrs = []
     for i in range(len(indices[0])):
-        xpixel = indices[0][i]
-        ypixel = indices[1][i]
-        xmin = xedge2[xpixel]
-        xmax = xedge2[xpixel+1]
-        ymin = yedge2[ypixel]
-        ymax = yedge2[ypixel+1]
+        xrow = indices[0][i]
+        yrow = indices[1][i]
+        xmin = yedges[xrow]
+        xmax = yedges[xrow+1]
+        ymin = xedges[yrow]
+        ymax = xedges[yrow+1]
         xav = (xmax+xmin)/2
         yav = (ymax+ymin)/2
         xerr = np.max([np.abs(xav-xmin), np.abs(xmax-xav)])
         yerr = np.max([np.abs(yav-ymin), np.abs(ymax-yav)])
-        
+        avs.append([xav, yav])
+        #yavs.append(yav)
+        errs.append([xerr, yerr])
+        #yerrs.append(yerr)
+    avav = np.mean(np.array(avs), axis=0)
+    err = np.sqrt(np.sum(np.array(errs)**2, axis=0))
     
-    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped')
-    return heatmap2, extent, bins, bins2, round(xav, 5), round(xerr, 5), round(yav, 5), round(yerr, 5), np.amax(heatmap)
+    return heatmap2, extent, bins, bins2, round(avav[0], 5), round(err[0], 5), round(avav[1], 5), round(err[1], 5), np.amax(heatmap)
 
 def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
@@ -709,8 +724,13 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
         y along axis 1.
 
     '''
+    n_points1 = np.shape(sides[0])[0]
+    if len(sides)==2:
+        n_points2 = np.shape(sides[1])[0]
+    else:
+        n_points2=0
+    n_points_combined = n_points1+n_points2
 
-    
     if estimate == False:
         estimate = image_plane   
     j = 0
@@ -804,36 +824,38 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     if E_loss_error.any()>0:
         heatmap_combined, extent_combined, bins_combined, bins2_combined, xav, xerr, yav, yerr, max_pv_combined  = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, ZoomOut=ZoomOut)
         if plot_individuals is True and len(sides)==2:    
-            heatmap1, extent1, bins1, y_bins1, xav, xerr, yav, yerr, max_pv_1 = calculate_heatmap(x_list1, y_list1, bins=bins, ZoomOut=ZoomOut)
-            heatmap2, extent2, bins2, y_bins2, xav, xerr, yav, yerr, max_pv_2 = calculate_heatmap(x_list2, y_list2, bins=bins, ZoomOut=ZoomOut)
+            heatmap1, extent1, bins1, y_bins1, xav1, xerr1, yav1, yerr1, max_pv_1 = calculate_heatmap(x_list1, y_list1, bins=bins, ZoomOut=ZoomOut)
+            heatmap2, extent2, bins2, y_bins2, xav2, xerr2, yav2, yerr2, max_pv_2 = calculate_heatmap(x_list2, y_list2, bins=bins, ZoomOut=ZoomOut)
     else:
         # Need to not dilate for zero error (perfect resolution: R=0)
         print('R=0')
         heatmap_combined, extent_combined, bins_combined, bins2_combined, xav, xerr, yav, yerr, max_pv_combined = calculate_heatmap(x_list_tot, y_list_tot, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
         if plot_individuals is True and len(sides)==2:    
-            heatmap1, extent1, bins1, y_bins1, xav, xerr, yav, yerr, max_pv_1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
-            heatmap2, extent2, bins2, y_bins2, xav, xerr, yav, yerr, max_pv_1 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            heatmap1, extent1, bins1, y_bins1, xav1, xerr1, yav1, yerr1, max_pv_1 = calculate_heatmap(x_list1, y_list1, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
+            heatmap2, extent2, bins2, y_bins2, xav2, xerr2, yav2, yerr2, max_pv_1 = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
             
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points_combined, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
         if plot_individuals is True and len(sides)==2:
-            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
-            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points1, centre=(f'{xav1} +- {xerr1}', f'{yav1} +- {yerr1}'))
+            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points2, centre=(f'{xav2} +- {xerr2}', f'{yav2} +- {yerr2}'))
     
     return heatmap_combined, extent_combined, max_pv_combined
 
 
 n_points = 10
-#points_HGTD, E_loss_error_HGTD, dataframe_HGTD = extract_points_from_dataframe(path_HGTD, HGTD, n_points)
-#points_HAAL, E_loss_error_HAAL, dataframe_HAAL = extract_points_from_dataframe(path_HAAL, HAAL, n_points)
-#points_HGTD_avg, E_loss_error_HGTD_avg, dataframe_HGTD_avg = extract_points_from_dataframe(path_HGTD, HGTD_avg, n_points)
-#points_HAAL_avg, E_loss_error_HAAL_avg, dataframe_HAAL_avg = extract_points_from_dataframe(path_HAAL, HAAL_avg, n_points)
-points_HGTD_MC, E_loss_error_HGTD_MC, dataframe_HGTD_MC = extract_points_from_dataframe(path_HGTD_MC, HGTD_avg, n_points)
-points_HAAL_MC, E_loss_error_HAAL_MC, dataframe_HAAL_MC = extract_points_from_dataframe(path_HAAL_MC, HAAL_avg, n_points)
-#points_HGTD_MC_exact, E_loss_error_HGTD_MC_exact, dataframe_HGTD_MC_exact = extract_points_from_dataframe(path_HGTD_MC_exact, False, 'all')
-#points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
-points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
-points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
+# points_HGTD, E_loss_error_HGTD, dataframe_HGTD = extract_points_from_dataframe(path_HGTD, HGTD, n_points)
+# points_HAAL, E_loss_error_HAAL, dataframe_HAAL = extract_points_from_dataframe(path_HAAL, HAAL, n_points)
+# points_HGTD_avg, E_loss_error_HGTD_avg, dataframe_HGTD_avg = extract_points_from_dataframe(path_HGTD, HGTD_avg, n_points)
+# points_HAAL_avg, E_loss_error_HAAL_avg, dataframe_HAAL_avg = extract_points_from_dataframe(path_HAAL, HAAL_avg, n_points)
+# points_HGTD_MC, E_loss_error_HGTD_MC, dataframe_HGTD_MC = extract_points_from_dataframe(path_HGTD_MC, HGTD_avg, n_points)
+# points_HAAL_MC, E_loss_error_HAAL_MC, dataframe_HAAL_MC = extract_points_from_dataframe(path_HAAL_MC, HAAL_avg, n_points)
+# points_HGTD_MC_exact, E_loss_error_HGTD_MC_exact, dataframe_HGTD_MC_exact = extract_points_from_dataframe(path_HGTD_MC_exact, False, 'all')
+# points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
+# points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
+# points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
+points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
+n_points = np.shape(points_HGTD_MC_0deg2)[0]
 
 start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
@@ -845,11 +867,11 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HAAL_MC], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-#heatmap, extent, max_pv = get_image([points_HGTD_MC_exact, points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact, E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_exact, points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact, E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-#heatmap, extent, max_pv_combined = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
-
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
+heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
@@ -857,7 +879,7 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD_avg], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 #heatmap, extent, max_pv = get_image([points_HGTD_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC]), ROI=[-6, 6, -6, 6], steps=[50], ZoomOut=0)
 #heatmap, extent, max_pv = get_image([points_HAAL_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-#print(f'max_combined_histogram = {max_pv_combined}')
+
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
     return -(a*(x**2) + b*x + c)
@@ -888,7 +910,7 @@ def z_slice_selector(z_min, z_max, z_slices, data, errors):
     #print(f'max_pixel, z_value = {max_pixel_value, z_value}')
     return z_value, max_pixel_value
         
-z_value, max_pixel_value = z_slice_selector(-1, 1, 9, [points_HGTD_MC_0deg, points_HAAL_MC_0deg], [E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg])
+#z_value, max_pixel_value = z_slice_selector(-1, 1, 9, [points_HGTD_MC_0deg, points_HAAL_MC_0deg], [E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg])
 #print(f'z_value, max_pixel_value = {z_value, max_pixel_value}')
 
 # n_points_list = np.concatenate((np.array([1]), np.arange(10, 110, 10)))
