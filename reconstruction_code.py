@@ -31,7 +31,9 @@ e = scipy.constants.e
 # path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
 # path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
 # path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
-path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+#path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
+path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
 HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
@@ -48,6 +50,26 @@ Alex_avg = [-7.99, -0.40, -41.37]
 Hannah_avg= [7.36, -0.18, -6.90]
 Louis_avg = [7.91, -0.74, -41.73]
 HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
+
+#0deg
+hannah_s0 = [7, 0, -7]
+aaron_s1 = [-7, 0,-7]
+alex_a0 = [-7, 0, -40]
+louis_a1 = [7, 0, -40]
+HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
+
+garry_s0 = [3.5, 0, -3.5]
+harry_s1 = [-3.5, 0, -3.5]
+david_a0 = [-4.5, 0, -38.5]
+tony_a1 = [4.5, 0, -38.5]
+HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
+
+#0deg avg
+garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
+harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
+david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
+tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
+HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
 
 def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     '''
@@ -113,10 +135,10 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     
     #dropnan = dataframe.dropna(axis = 'rows')
     dropnan = dataframe
-    x_prime = -dropnan['X_1']
+    x_prime = dropnan['X_1']
     y_prime = dropnan['Y_1']
     z_prime = -np.abs(dropnan['Z_1'])
-    x_0_prime = -dropnan['X_2']
+    x_0_prime = dropnan['X_2']
     y_0_prime = dropnan['Y_2']
     z_0_prime = -np.abs(dropnan['Z_2'])
     E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
@@ -492,6 +514,9 @@ def plot_it2(xys, r1s, x_name='x', y_name='y', plot_title='Plot', individual_poi
     plt.show()
     return figure
 
+def gaussian(x, a, b, c):
+    return a*np.exp((-(x-b)**2)/(2*c**2))
+
 def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
@@ -587,21 +612,44 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         y_strip_heat = heatmap.T[ind[1]]
         x_strip_position = xedges[:-1] + xpixel/2
         print(len(y_strip_position))
+        
         #xs = np.array([x_strip_position, x_strip_heat])
         #ys = np.array([y_strip_position, y_strip_heat])
         print(x_strip_heat)
         #xys = [xs, ys]
         #plot_it2(xys, 0, x_name='position (cm)', y_name='heat', plot_title='Max strip heat')
-    
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-        ax.plot(x_strip_position, x_strip_heat, 'b', label='y')
-        ax.plot(y_strip_position, y_strip_heat, 'g', label='x') #note that everything is transposed in the final graph x on heatmap = y on graph
-        ax.legend()
-        ax.set_title('Position vs Intensity for each Axis')
-        ax.set_xlabel('Position Along Axis (cm)')
-        ax.set_ylabel('Intensity')
-        plt.show()
+        
+        # poptx, pcovx = curve_fit(gaussian, np.array(x_strip_position), np.array(x_strip_heat))
+        # popty, pcovy = curve_fit(gaussian, np.array(y_strip_position), np.array(y_strip_heat))
+        # #plt.plot(np.array(x_strip_position), gaussian(x_strip_position, *poptx), 'r-',
+        # #  label=f' cm')
+        # fig = plt.figure()
+        # ax = fig.add_subplot(1, 1, 1)
+        # ax.plot(np.array(x_strip_position), gaussian(x_strip_position, *poptx), 'b', label='y')
+        # ax.plot(np.array(y_strip_position), gaussian(y_strip_position, *popty), 'b', label='y')
+        # ax.legend()
+        # ax.set_title('Position vs Intensity for each Axis')
+        # ax.set_xlabel('Position Along Axis (cm)')
+        # ax.set_ylabel('Intensity')
+        # plt.show()
+        
+        # plt.title('Maximum intensity vs image slice distance z')
+        # plt.ylabel('Maximum intensity')
+        # plt.xlabel('Image slice z distance (cm)')
+        # plt.legend()
+        # plt.show()
+        
+        
+        
+        # fig = plt.figure()
+        # ax = fig.add_subplot(1, 1, 1)
+        # ax.plot(x_strip_position, x_strip_heat, 'b', label='y')
+        # ax.plot(y_strip_position, y_strip_heat, 'g', label='x') #note that everything is transposed in the final graph x on heatmap = y on graph
+        # ax.legend()
+        # ax.set_title('Position vs Intensity for each Axis')
+        # ax.set_xlabel('Position Along Axis (cm)')
+        # ax.set_ylabel('Intensity')
+        # plt.show()
     
     # # x/y_centre are actually the edges of the first maximum bin so not really the centre
     # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
@@ -808,7 +856,7 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped    
     print(f'elngth_x_list = {x_list1}')
     if len(sides)>1:
-        x_list_tot = np.concatenate([x_list1, -x_list2])
+        x_list_tot = np.concatenate([x_list1, x_list2])
         y_list_tot = np.concatenate([y_list1, y_list2])
     
     if len(sides)==1:
@@ -854,8 +902,10 @@ n_points = 10
 # points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
 # points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
 # points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
-points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
-n_points = np.shape(points_HGTD_MC_0deg2)[0]
+#points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
+#n_points = np.shape(points_HGTD_MC_0deg2)[0]
+#points_HAAL_lab_0deg, E_loss_error_HAAL_lab_0deg, dataframe_HAAL_lab_0deg = extract_points_from_dataframe(path_HAAL_0deg_lab, HAAL_0, 50)
+points_HGTD_lab_0deg, E_loss_error_HGTD_lab_0deg, dataframe_HGTD_lab_0deg = extract_points_from_dataframe(path_HGTD_0deg_lab, HGTD_0av, 25)
 
 start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
@@ -871,7 +921,9 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
-heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+#heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+#heatmap, extent, max_pv = get_image([points_HAAL_lab_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+heatmap, extent, max_pv = get_image([points_HGTD_lab_0deg], 10, n_points, -1.5, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
