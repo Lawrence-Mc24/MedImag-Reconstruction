@@ -31,6 +31,14 @@ path_HAAL_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_NEW_withe
 path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
 path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
 path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
+path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
+path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
+path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
+
+GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
+GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
+HAAL_adv_wind = [[8, 0, 8], [0, 0, 0], [-8, 0, 58], [58, 0, 8]]
+HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.74, 0.14, 12.55]]
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
 HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
@@ -94,9 +102,12 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
         
         # scatterer_1 = [7.5, 0, 0] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
         # scatterer_1 = [3.5, 0, -3.5] # Hary for 02.03.2021 lab set-up
-        dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
-        dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
-        dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+        try:
+            dataframe.loc[dataframe["Scatter Number"] == 1, "X_1"] = scatterer_1[0]
+            dataframe.loc[dataframe["Scatter Number"] == 1, "Y_1"] = scatterer_1[1]
+            dataframe.loc[dataframe["Scatter Number"] == 1, "Z_1"] = scatterer_1[2]
+        except:
+            pass
         
         # absorber_0 = [7.5, 0, -50] # HGTD_23_02_NEW_ENERGY UPPERBOUND set-up
         # absorber_0 = [4.5, 0, -38.5] # David for 02.03.2021 lab set-up
@@ -112,10 +123,10 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     
     #dropnan = dataframe.dropna(axis = 'rows')
     dropnan = dataframe
-    x_prime = -dropnan['X_1']
+    x_prime = dropnan['X_1']
     y_prime = dropnan['Y_1']
     z_prime = -np.abs(dropnan['Z_1'])
-    x_0_prime = -dropnan['X_2']
+    x_0_prime = dropnan['X_2']
     y_0_prime = dropnan['Y_2']
     z_0_prime = -np.abs(dropnan['Z_2'])
     E_loss = np.abs(dropnan['Energy (keV)_1'])*10**3
@@ -130,12 +141,66 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     points = np.array([r1[0][:], r1[1][:], r1[2][:], r2[0][:], r2[1][:], r2[2][:], E_loss]).T
     
     if n_points != 'all':
-        start00 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 0)][0]
-        start01 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 1)][0]
-        start10 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 0)][0]
-        start11 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 1)][0]
-        points = np.concatenate((points[start00:n_points], points[start01:start01+n_points], points[start10:start10+n_points], points[start11:start11+n_points]))
-        E_loss_error = np.concatenate((E_loss_error[start00:n_points], E_loss_error[start01:start01+n_points], E_loss_error[start10:start10+n_points], E_loss_error[start11:start11+n_points]))
+        start_indices = []
+        try:
+            start00 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 0)][0]
+        except:
+            pass
+        else:
+            start_indices.append(start00)
+            
+        try:
+            start01 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 1)][0]
+        except:
+            pass
+        else:
+            start_indices.append(start01)
+            
+        try:
+            start10 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 0)][0]
+        except:
+            pass
+        else:
+            start_indices.append(start10)
+            
+        try:
+            start11 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 1)][0]
+        except:
+            pass
+        else:
+            start_indices.append(start11)
+        print(f'start_indices = {start_indices}')
+        if len(start_indices) == 4:
+            points = np.concatenate((points[start_indices[0]:start_indices[0]+n_points], points[start_indices[1]:start_indices[1]+n_points], points[start_indices[2]:start_indices[2]+n_points], points[start_indices[3]:start_indices[3]+n_points]))
+            E_loss_error = np.concatenate((E_loss_error[start_indices[0]:start_indices[0]+n_points], E_loss_error[start_indices[1]:start_indices[1]+n_points], E_loss_error[start_indices[2]:start_indices[2]+n_points], E_loss_error[start_indices[3]:start_indices[3]+n_points]))
+        elif len(start_indices) == 3:
+            points = np.concatenate((points[start_indices[0]:start_indices[0]+n_points], points[start_indices[1]:start_indices[1]+n_points], points[start_indices[2]:start_indices[2]+n_points]))
+            E_loss_error = np.concatenate((E_loss_error[start_indices[0]:start_indices[0]+n_points], E_loss_error[start_indices[1]:start_indices[1]+n_points], E_loss_error[start_indices[2]:start_indices[2]+n_points]))
+        elif len(start_indices) == 2:
+            points = np.concatenate((points[start_indices[0]:start_indices[0]+n_points], points[start_indices[1]:start_indices[1]+n_points]))
+            E_loss_error = np.concatenate((E_loss_error[start_indices[0]:start_indices[0]+n_points], E_loss_error[start_indices[1]:start_indices[1]+n_points]))
+        elif len(start_indices) == 1:
+            points = np.concatenate((points[start_indices[0]:start_indices[0]+n_points]))
+            E_loss_error = np.concatenate((E_loss_error[start_indices[0]:start_indices[0]+n_points]))
+        else:
+            print('ERROR: invalid number of detector pairings (not within 1-4).')
+            
+        # points_cut = np.array([])
+        # E_loss_error_cut = np.array([])
+        # for i in start_indices:
+        #     points_cut = np.append(points_cut, points[i:i+n_points])
+        #     E_loss_error_cut = np.append(E_loss_error_cut, E_loss_error[i:i+n_points])
+        # return points_cut, E_loss_error_cut, dataframe
+        
+        # start00 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 0)][0]
+        # start01 = dataframe.index[(dataframe["Scatter Number"] == 0) & (dataframe["Absorber Number"] == 1)][0]
+        # start10 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 0)][0]
+        # # start11 = dataframe.index[(dataframe["Scatter Number"] == 1) & (dataframe["Absorber Number"] == 1)][0]
+        
+        # points = np.concatenate((points[start00:n_points], points[start01:start01+n_points], points[start10:start10+n_points]))
+        # #, points[start11:start11+n_points]
+        # E_loss_error = np.concatenate((E_loss_error[start00:n_points], E_loss_error[start01:start01+n_points], E_loss_error[start10:start10+n_points]))
+        # #, E_loss_error[start11:start11+n_points]
     
     return points, E_loss_error, dataframe
 
@@ -603,7 +668,7 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
     plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=0.001, y_stddev=0.001)), extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, bins2, points = {bins, bins2, n_points} \n centre = {centre}')
+    plt.title(f'bins, bins2, coincidences = {bins, bins2, n_points} \n centre = {centre}')
     plt.xlabel('x (cm)', fontsize=16)
     plt.ylabel('y (cm)', fontsize=16)
     plt.show()
@@ -683,8 +748,12 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
         y along axis 1.
 
     '''
-
-    
+    n_points1 = np.shape(sides[0])[0]
+    if np.shape(sides)[0]==2:
+        n_points2 = np.shape(sides[1])[0]
+    else:
+        n_points2=0
+    n_points_combined = n_points1+n_points2
     if estimate == False:
         estimate = image_plane   
     j = 0
@@ -698,7 +767,6 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
         y_list = []
         #E_loss_error = np.concatenate((E_loss_error[i][0:n_points], E_loss_error[i][2800:2800+n_points], E_loss_error[i][4100:4100+n_points], E_loss_error[i][6800:6800+n_points]))
         E_loss_error = E_loss_errors[i]
-        print(f'type(E_loss_error)')
         #for index, p in enumerate(np.concatenate((points[0:n_points], points[2800:2800+n_points], points[4100:4100+n_points], points[6800:6800+n_points]))):
         for index, p in enumerate(sides[i]):
             #print(f'\nindex = {index}\n')
@@ -762,7 +830,7 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped    
         
     if len(sides)>1:
-        x_list_tot = np.concatenate([x_list1, -x_list2])
+        x_list_tot = np.concatenate([x_list1, x_list2])
         y_list_tot = np.concatenate([y_list1, y_list2])
     
     if len(sides)==1:
@@ -789,10 +857,10 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
             heatmap2, extent2, bins2, y_bins2, xav, xerr, yav, yerr, max_pv = calculate_heatmap(x_list2, y_list2, bins=bins, dilate_erode_iterations=0, ZoomOut=ZoomOut)
             
     if plot is True:
-        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+        plot_heatmap(heatmap_combined, extent_combined, bins_combined, bins2_combined, n_points_combined, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
         if plot_individuals is True and len(sides)==2:
-            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
-            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+            plot_heatmap(heatmap1, extent1, bins1, y_bins1, n_points1, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
+            plot_heatmap(heatmap2, extent2, bins2, y_bins2, n_points2, centre=(f'{xav} +- {xerr}', f'{yav} +- {yerr}'))
     
     return heatmap_combined, extent_combined, max_pv
 
@@ -808,6 +876,13 @@ points_HGTD_MC_exact, E_loss_error_HGTD_MC_exact, dataframe_HGTD_MC_exact = extr
 points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
 points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
 points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
+points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind, dataframe_GHTD_adv_wind = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind, n_points)
+points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
+points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
+points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
+
+points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
+
 
 start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
@@ -819,18 +894,17 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HAAL_MC], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-heatmap, extent, max_pv = get_image([points_HGTD_MC_exact, points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact, E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_exact, points_HAAL_MC_exact], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_exact, E_loss_error_HAAL_MC_exact]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
 
+# heatmap, extent, max_pv = get_image([points_GHTD_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_GHTD_adv_wind, points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind, E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+heatmap, extent, max_pv = get_image([points_MC_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_MC_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
-# heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-# heatmap, extent, max_pv = get_image([points_HAAL], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-# heatmap, extent, max_pv = get_image([points_HGTD], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-# heatmap, extent, max_pv = get_image([points_HGTD_avg], 10, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-#heatmap, extent, max_pv = get_image([points_HGTD_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC]), ROI=[-6, 6, -6, 6], steps=[50], ZoomOut=0)
-#heatmap, extent, max_pv = get_image([points_HAAL_MC], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
@@ -862,8 +936,10 @@ def z_slice_selector(z_min, z_max, z_slices, data, errors):
     #print(f'max_pixel, z_value = {max_pixel_value, z_value}')
     return z_value, max_pixel_value
         
-# z_value, max_pixel_value = z_slice_selector(-2, 0, 4, points_HGTD_MC_exact, E_loss_error_HGTD_MC_exact)
-#print(f'z_value, max_pixel_value = {z_value, max_pixel_value}')
+# z_value, max_pixel_value = z_slice_selector(-1, 1, 4, points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind)
+# print(f'z_value, max_pixel_value = {z_value, max_pixel_value}')
+
+print(f'Run time = {time.time()-start_time}')
 
 # n_points_list = np.concatenate((np.array([1]), np.arange(10, 110, 10)))
 # run_time = []
