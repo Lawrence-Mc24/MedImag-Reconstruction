@@ -683,7 +683,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         
     heatmap2 = np.sum(heatmaps2, 0)
     
-    indices = np.where(heatmap2>0.90*np.max(heatmap2))
+    indices = np.where(heatmap2>0.95*np.max(heatmap2))
     xpixel2 = xedge2[1]-xedge2[0]
     ypixel2= yedge2[1]-yedge2[0]
     print(len(indices[0]))
@@ -774,7 +774,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
     # print(indices)
     # print(f'heatmap shape is {np.shape(heatmap)}')
-    indices1 = np.where(heatmap==np.max(heatmap))
+    indices1 = np.where(heatmap>0.95*np.max(heatmap))
     avs = []
     errs = []
     #yerrs = []
@@ -1019,9 +1019,9 @@ n_points = 10
 # points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
 #points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
 #points_HAAL_lab_0deg, E_loss_error_HAAL_lab_0deg, dataframe_HAAL_lab_0deg = extract_points_from_dataframe(path_HAAL_0deg_lab, HAAL_0av, 25)
-#points_HGTD_lab_0deg, E_loss_error_HGTD_lab_0deg, dataframe_HGTD_lab_0deg = extract_points_from_dataframe(path_HGTD_0deg_lab, HGTD_0av, 25)
-points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all')
-points_HAAL_MC_0deg2, E_loss_error_HAAL_MC_0deg2, dataframe_HAAL_MC_0deg2 = extract_points_from_dataframe(path_HAAL_0degree_MCexact, False, 'all')  
+points_HGTD_lab_0deg, E_loss_error_HGTD_lab_0deg, dataframe_HGTD_lab_0deg = extract_points_from_dataframe(path_HGTD_0deg_lab, HGTD_0av, 25)
+# points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all')
+# points_HAAL_MC_0deg2, E_loss_error_HAAL_MC_0deg2, dataframe_HAAL_MC_0deg2 = extract_points_from_dataframe(path_HAAL_0degree_MCexact, False, 'all')  
 
 #points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
 
@@ -1045,7 +1045,7 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 #heatmap, extent, max_pv = get_image([points_HAAL_lab_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-#heatmap, extent, max_pv = get_image([points_HGTD_lab_0deg], 10, n_points, -1.5, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+heatmap, extent, max_pv = get_image([points_HGTD_lab_0deg], 10, n_points, -1.5, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 
 
 
@@ -1055,7 +1055,7 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_MC_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_MC_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_lab_0deg, points_HAAL_lab_0deg], 10, n_points, 0, 662E3, 100, np.array([E_loss_error_HGTD_lab_0deg, E_loss_error_HAAL_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2, points_HAAL_MC_0deg2], 10, n_points, 0, 662E3, 100, np.array([E_loss_error_HGTD_MC_0deg2, E_loss_error_HAAL_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2, points_HAAL_MC_0deg2], 10, n_points, 0, 662E3, 100, np.array([E_loss_error_HGTD_MC_0deg2, E_loss_error_HAAL_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
