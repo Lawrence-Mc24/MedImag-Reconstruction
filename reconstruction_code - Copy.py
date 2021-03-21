@@ -1048,22 +1048,22 @@ bins_list = np.arange(10, 110, 10)
 run_time_points = np.array([])
 run_time_n = np.array([])
 run_time_bins = np.array([])
-# for n_points in n_points_list:
-#     start_time = time.time()
-#     points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
-#     points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
-#     heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+for n_points in n_points_list[:2]:
+    start_time = time.time()
+    points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
+    points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
+    heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
     
-#     print(f'Run time = {time.time()-start_time}')
-#     run_time_points = np.append(run_time_points, time.time()-start_time)
+    print(f'Run time = {time.time()-start_time}')
+    run_time_points = np.append(run_time_points, time.time()-start_time)
 
 points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points=10)
 points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points=10)
-# for n in n_list:
-#     start_time = time.time()
-#     heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], n, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-#     print(f'Run time = {time.time()-start_time}')
-#     run_time_n = np.append(run_time_n, time.time()-start_time)
+for n in n_list:
+    start_time = time.time()
+    heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], n, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+    print(f'Run time = {time.time()-start_time}')
+    run_time_n = np.append(run_time_n, time.time()-start_time)
 
 for bins in bins_list:
     start_time = time.time()
@@ -1071,11 +1071,11 @@ for bins in bins_list:
     print(f'Run time = {time.time()-start_time}')
     run_time_bins = np.append(run_time_bins, time.time()-start_time)
     
-# plot_it(5*n_points_list, [run_time_points], [0, 0], 'Number of coincidences', 'Run time (s)', 'Run time vs number of coincidences', individual_points=True)
-# plot_it(n_list, [run_time_n], [0, 0], 'Number of iterations through angle error', 'Run time (s)', 'Run time vs number of iterations through angle error', individual_points=True)
+plot_it(5*n_points_list, [run_time_points], [0, 0], 'Number of coincidences', 'Run time (s)', 'Run time vs number of coincidences', individual_points=True)
+plot_it(n_list, [run_time_n], [0, 0], 'Number of iterations through angle error', 'Run time (s)', 'Run time vs number of iterations through angle error', individual_points=True)
 plot_it(bins_list, [run_time_bins], [0, 0], 'Number of bins', 'Run time (s)', 'Run time vs number of bins', individual_points=True)
 
-# plot_it3([5*n_points_list, n_list, bins_list], [run_time_points, run_time_n, run_time_bins], ['Coincidences', 'Iterations through angle error', 'Bins'],
-         # 'Number of variable parameter', 'Run time (s)', 'Run time vs number of variable parameter')
+plot_it3([5*n_points_list, n_list, bins_list], [run_time_points, run_time_n, run_time_bins], ['Coincidences', 'Iterations through angle error', 'Bins'],
+         'Number of variable parameter', 'Run time (s)', 'Run time vs number of variable parameter')
 
 print(f'Total run time = {time.time()-start_time0}')
