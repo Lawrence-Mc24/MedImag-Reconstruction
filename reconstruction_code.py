@@ -804,7 +804,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         ax.set_title(f'Position vs Intensity for each Axis for {(x_strip_position[ind2[0]]), y_strip_position[ind2[1]]}')
         ax.set_xlabel('Position Along Axis (cm)')
         ax.set_ylabel('Intensity')
-        ax.text(-1.5, 12, f'$FWHM_x$ = {round(FWHMx, 5)} \n$FWHM_y$ = {round(FWHMy, 5)}')           
+        ax.text(1.05, 0.95, f'$FWHM_x$ = {round(FWHMx, 5)} \n$FWHM_y$ = {round(FWHMy, 5)}', transform=ax.transAxes, fontsize=14,
+        verticalalignment='top')           
         
         ax2 = fig.add_subplot(gs[1])
         ax2.plot(y_strip_position, np.zeros(len(y_strip_position)), 'r')
@@ -812,7 +813,8 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         ax2.plot(x_strip_position, xresiduals, 'bo')
         ax2.set_title('Residuals')
         ax2.legend()
-        ax2.text(0.5, 6, f'$\chi_x ^2$ = {round(chi_sq_x, 5)} \n $\chi_y ^2$ = {round(chi_sq_y, 5)}')
+        ax2.text(1.05, -0.15, f'$\chi_x ^2$ = {round(chi_sq_x, 1)} \n $\chi_y ^2$ = {round(chi_sq_y, 1)}', transform=ax.transAxes, fontsize=14,
+        verticalalignment='top')
         plt.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
         plt.show()
         
