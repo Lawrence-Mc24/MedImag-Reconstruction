@@ -14,26 +14,31 @@ from astropy.convolution.kernels import Gaussian2DKernel
 from astropy.convolution import convolve
 import time
 from scipy.optimize import curve_fit
+import matplotlib.gridspec as gridspec  
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
 c = scipy.constants.c
 e = scipy.constants.e
 
-path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 3.5cm
-path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 7cm
-# path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
-# path_HGTD_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HGTD_MC_E_CAL.csv"
-# path_HAAL_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HAAL_MC_E_CAL.csv"
-path_HAAL_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_E_CAL.csv'
-path_HGTD_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGTD_MC_E_CAL.csv'
-path_HAAL_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_NEW_withenergydiscrimination.csv'
-path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
-path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
-path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
+# path_HGTD = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HGTD_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 3.5cm
+# path_HAAL = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_02_03_TuesFri_30deg_new_energy_cal.csv' # Perpendicular distance between front detectors and source = 7cm
+# # path = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HGTD_02_03_TuesFri_30deg_block0.csv'
+# # path_HGTD_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HGTD_MC_E_CAL.csv"
+# # path_HAAL_MC = r"C:\Users\laure\Documents\Physics\Year 3\Group Study\Data\Analyst Data\30 Degree Christmas tree MC\HAAL_MC_E_CAL.csv"
+# path_HAAL_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_E_CAL.csv'
+# path_HGTD_MC = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGTD_MC_E_CAL.csv'
+# path_HAAL_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_NEW_withenergydiscrimination.csv'
+# path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
+# path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
+# path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
+path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
+path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
 path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
 path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
-path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
+# path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
+path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
 
 GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
 GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
@@ -43,6 +48,7 @@ HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.
 # path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
 # path_HGTD_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/GHDT_MC_0deg_run2_withscatters.csv'
 # path_HAAL_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/HAAL_MC_0deg_run2_withscatters.csv'
+
 
 
 HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
@@ -60,6 +66,32 @@ HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
 # Hannah_avg= [7.36, -0.18, -6.90]
 # Louis_avg = [7.91, -0.74, -41.73]
 # HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
+
+#0deg
+hannah_s0 = [7, 0, -7]
+aaron_s1 = [-7, 0,-7]
+alex_a0 = [-7, 0, -40]
+louis_a1 = [7, 0, -40]
+HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
+
+garry_s0 = [3.5, 0, -3.5]
+harry_s1 = [-3.5, 0, -3.5]
+david_a0 = [-4.5, 0, -38.5]
+tony_a1 = [4.5, 0, -38.5]
+HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
+
+#0deg avg
+garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
+harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
+david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
+tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
+HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
+
+hannah_s0av = [7.136844762, -0.06010336613, -7.709084905]
+aaron_s1av = [-5.358504936, -0.08532627278, -7.643826009]
+alex_a0av = [-6.859290497, -0.1002481564, -42.58231713]
+louis_a1av = [6.879909859, -0.001533590775, -42.57443662]
+HAAL_0av = [hannah_s0av, aaron_s1av, alex_a0av, louis_a1av]
 
 def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     '''
@@ -128,7 +160,7 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     
     #dropnan = dataframe.dropna(axis = 'rows')
     dropnan = dataframe
-    
+
     x_prime = dropnan['X_1']
     y_prime = dropnan['Y_1']
     z_prime = -np.abs(dropnan['Z_1'])
@@ -374,6 +406,8 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
     while True:
         counter += 1
         z = z_prime/(-a*np.cos(psi)*np.sin(theta) + np.cos(theta))
+        if np.abs(psi) >= 2*np.pi:
+            return x_prime_vals, y_prime_vals, ds
         
         if counter > 5000:
             if psi == 0 or psi == np.pi or psi == 2*np.pi:
@@ -421,8 +455,6 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
             psi=np.pi
             continue
         
-        if np.abs(psi) >= 2*np.pi:
-            return x_prime_vals, y_prime_vals, ds
     # print(f'counter = {counter}')
     return x_prime_vals, y_prime_vals, ds
     
@@ -611,6 +643,9 @@ def plot_it3(xs, ys, labels, x_name='x', y_name='y', plot_title='Plot', individu
     plt.show()
     return figure
 
+def gaussian(x, a, b, c):
+    return a*np.exp((-(x-b)**2)/(2*c**2))
+
 def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     '''
     Calculate heatmap and its extent using np.histogram2d() from x and y values for a given 
@@ -693,53 +728,107 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
             hist = binary_erode(binary_dilate(hist, dilate_erode_iterations), dilate_erode_iterations)
             hist[hist != 0] = 1
         heatmaps2.append(hist)
+        
     heatmap2 = np.sum(heatmaps2, 0)
-    indices = np.where(heatmap==np.max(heatmap))
-    if len(indices[0])==1:
-
-        x_strip_heat = heatmap[ind[0]] 
+    
+    indices = np.where(heatmap2>0.95*np.max(heatmap2))
+    xpixel2 = xedge2[1]-xedge2[0]
+    ypixel2= yedge2[1]-yedge2[0]
+    print(len(indices[0]))
+    for i in range(len(indices[0])):
+        ind2 = (indices[0][i], indices[1][i])
+        # print(f'BOOLEAN: {np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)==ind2}')
+        # print(f'{ind2}')
+        np.unravel_index(np.argmax(heatmap2, axis=None), heatmap2.shape)
+        
+        row_strip_heat = heatmap2[ind2[0]]
+        
         print(f'fml {indices[0]}')
-        #print(len(x_strip_heat))
-        y_strip_position = yedges[:-1] + ypixel/2
+        #print(len(row_strip_heat))
+        y_strip_position = yedge2[:-1] + ypixel2/2
         #print(len(x_strip_position))
         #print(f'shape is {np.shape(xs)}')
-        y_strip_heat = heatmap.T[ind[1]]
-        x_strip_position = xedges[:-1] + xpixel/2
-        print(len(y_strip_position))
-        #xs = np.array([x_strip_position, x_strip_heat])
-        #ys = np.array([y_strip_position, y_strip_heat])
-        print(x_strip_heat)
+        col_strip_heat = heatmap2.T[ind2[1]]
+        x_strip_position = xedge2[:-1] + xpixel2/2
+        print(f'xedge2 has length = {len(xedge2)}')
+        print(f'yedge2 has length = {len(yedge2)}')
+        print(f'x_strip_heat length = {len(row_strip_heat)}')
+        print(f'y_strip_heat length = {len(col_strip_heat)}')
+        
+        #xs = np.array([x_strip_position, row_strip_heat])
+        #ys = np.array([y_strip_position, col_strip_heat])
+
         #xys = [xs, ys]
         #plot_it2(xys, 0, x_name='position (cm)', y_name='heat', plot_title='Max strip heat')
-    
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
-        ax.plot(x_strip_position, x_strip_heat, 'b', label='y')
-        ax.plot(y_strip_position, y_strip_heat, 'g', label='x') #note that everything is transposed in the final graph x on heatmap = y on graph
+        
+        poptx, pcovx = curve_fit(gaussian, np.array(x_strip_position), np.array(col_strip_heat))
+        popty, pcovy = curve_fit(gaussian, np.array(y_strip_position), np.array(row_strip_heat))
+        
+        xresiduals = col_strip_heat - gaussian(x_strip_position, *poptx)
+        yresiduals = row_strip_heat - gaussian(y_strip_position, *popty)
+        
+        chi_sq_x = np.sum( xresiduals**2 / gaussian(x_strip_position, *poptx) )
+        chi_sq_y = np.sum( yresiduals**2 / gaussian(y_strip_position, *popty) )
+        
+        half_xmax = 0.5*np.max(gaussian(x_strip_position, *poptx))
+        half_ymax = 0.5*np.max(gaussian(y_strip_position, *popty))
+        
+        print(f'halves: {(half_xmax, half_ymax)}')
+        
+        def funcx(x):
+            return gaussian(x, *poptx) - half_xmax
+        def funcy(y):
+            return gaussian(y, *popty) - half_ymax
+        
+        xguess = np.abs(0.25*(x_strip_position[ind2[0]] - x_strip_position[0]))
+        yguess = np.abs(0.25*(y_strip_position[ind2[1]] - y_strip_position[1]))
+        
+        xsols = scipy.optimize.fsolve(funcx, [-xguess, xguess])       
+        ysols = scipy.optimize.fsolve(funcy, [-yguess, yguess])
+        
+        print(f'solutions are {xsols, ysols}')
+        
+        FWHMx = np.abs(xsols[1] - xsols[0])
+        FWHMy = np.abs(ysols[1] - ysols[0])
+        
+        
+        fig = plt.figure(figsize=(8, 8))
+        gs = gridspec.GridSpec(2, 1, height_ratios=[5,3], hspace=0.3)
+        ax = fig.add_subplot(gs[0])    
+        ax.plot(np.array(x_strip_position), gaussian(x_strip_position, *poptx), 'k', linestyle='dashed', label='Gaussian fit - x')
+        ax.plot(np.array(y_strip_position), gaussian(y_strip_position, *popty), 'k', linestyle='dashed', label='Gaussian fit - y')
+        ax.plot(x_strip_position, col_strip_heat, 'b', label='x')
+        ax.plot(y_strip_position, row_strip_heat, 'g', label='y') #note that everything is transposed in the final graph, x pixel on heatmap = y on graph
+        #ax.hlines([half_xmax, half_ymax], [xsols[0], ysols[0]], [xsols[1], ysols[1]], 'r', label='FWHM')
         ax.legend()
-        ax.set_title('Position vs Intensity for each Axis')
+        ax.set_title(f'Position vs Intensity for each Axis for {(x_strip_position[ind2[0]]), y_strip_position[ind2[1]]}')
         ax.set_xlabel('Position Along Axis (cm)')
         ax.set_ylabel('Intensity')
+        ax.text(-1.5, 12, f'$FWHM_x$ = {round(FWHMx, 5)} \n$FWHM_y$ = {round(FWHMy, 5)}')           
+        
+        ax2 = fig.add_subplot(gs[1])
+        ax2.plot(y_strip_position, np.zeros(len(y_strip_position)), 'r')
+        ax2.plot(y_strip_position, yresiduals, 'go')
+        ax2.plot(x_strip_position, xresiduals, 'bo')
+        ax2.set_title('Residuals')
+        ax2.legend()
+        ax2.text(0.5, 6, f'$\chi_x ^2$ = {round(chi_sq_x, 5)} \n $\chi_y ^2$ = {round(chi_sq_y, 5)}')
+        plt.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
         plt.show()
+        
     
     # # x/y_centre are actually the edges of the first maximum bin so not really the centre
     # x_centre = extent[0] + (extent[1]-extent[0])*ind2[0]/bins2
     # y_centre = extent[2] + (extent[3]-extent[2])*ind2[1]/bins2
-    print(indices)
-    pixel_x = xedges[1]-xedges[0]
-    pixel_y = yedges[1]-yedges[0]
-    print(f'pixelx = {pixel_x}')
-    print(f'pixely = {pixel_y}')
-    #xavs = []
-    #print(len(xedges))
-    #print(len(yedges))
-    print(f'heatmap shape is {np.shape(heatmap)}')
+    # print(indices)
+    # print(f'heatmap shape is {np.shape(heatmap)}')
+    indices1 = np.where(heatmap>0.95*np.max(heatmap))
     avs = []
     errs = []
     #yerrs = []
-    for i in range(len(indices[0])):
-        xrow = indices[0][i]
-        yrow = indices[1][i]
+    for i in range(len(indices1[0])):
+        xrow = indices1[0][i]
+        yrow = indices1[1][i]
         xmin = yedges[xrow]
         xmax = yedges[xrow+1]
         ymin = xedges[yrow]
@@ -972,17 +1061,18 @@ n_points = 2
 # points_HAAL_MC_exact, E_loss_error_HAAL_MC_exact, dataframe_HAAL_MC_exact = extract_points_from_dataframe(path_HAAL_MC_exact, False, 'all')
 # points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
 # points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
-# points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
-# n_points = np.shape(points_HGTD_MC_0deg2)[0]
-
-points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
-points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
-points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind, dataframe_GHTD_adv_wind = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind, n_points)
-points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
+# points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind, dataframe_GHTD_adv_wind = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind, n_points)
+# points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
 points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
 points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
+#points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
+#points_HAAL_lab_0deg, E_loss_error_HAAL_lab_0deg, dataframe_HAAL_lab_0deg = extract_points_from_dataframe(path_HAAL_0deg_lab, HAAL_0av, 25)
+# points_HGTD_lab_0deg, E_loss_error_HGTD_lab_0deg, dataframe_HGTD_lab_0deg = extract_points_from_dataframe(path_HGTD_0deg_lab, HGTD_0av, 25)
+# points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all')
+# points_HAAL_MC_0deg2, E_loss_error_HAAL_MC_0deg2, dataframe_HAAL_MC_0deg2 = extract_points_from_dataframe(path_HAAL_0degree_MCexact, False, 'all')  
 
-points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
+#points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
+
 
 
 start_time0 = time.time()
@@ -1000,14 +1090,19 @@ start_time0 = time.time()
 # heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg], 10, n_points, 2, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg, points_HAAL_MC_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg, E_loss_error_HAAL_MC_0deg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
 
+# heatmap, extent, max_pv = get_image([points_HGTD_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_HAAL_MC_0deg2], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_MC_0deg2]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+#heatmap, extent, max_pv = get_image([points_HAAL_lab_0deg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_HGTD_lab_0deg], 10, n_points, -1.5, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_lab_0deg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+
+
 
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind, points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind, E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_MC_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_MC_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
-
-
 
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
@@ -1042,12 +1137,12 @@ def z_slice_selector(z_min, z_max, z_slices, data, errors):
 # z_value, max_pixel_value = z_slice_selector(-1, 1, 4, points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind)
 # print(f'z_value, max_pixel_value = {z_value, max_pixel_value}')
 
-n_points_list = np.concatenate((np.array([1]), np.arange(10, 110, 10)))    
-n_list = np.arange(1, 11, 1)
-bins_list = np.arange(10, 110, 10)
-run_time_points = np.array([])
-run_time_n = np.array([])
-run_time_bins = np.array([])
+# n_points_list = np.concatenate((np.array([1]), np.arange(10, 110, 10)))    
+# n_list = np.arange(1, 11, 1)
+# bins_list = np.arange(10, 110, 10)
+# run_time_points = np.array([])
+# run_time_n = np.array([])
+# run_time_bins = np.array([])
 # for n_points in n_points_list:
 #     start_time = time.time()
 #     points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
@@ -1057,23 +1152,23 @@ run_time_bins = np.array([])
 #     print(f'Run time = {time.time()-start_time}')
 #     run_time_points = np.append(run_time_points, time.time()-start_time)
 
-points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points=10)
-points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points=10)
+# points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points=10)
+# points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points=10)
 # for n in n_list:
 #     start_time = time.time()
 #     heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], n, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 #     print(f'Run time = {time.time()-start_time}')
 #     run_time_n = np.append(run_time_n, time.time()-start_time)
 
-for bins in bins_list:
-    start_time = time.time()
-    heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, bins, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-    print(f'Run time = {time.time()-start_time}')
-    run_time_bins = np.append(run_time_bins, time.time()-start_time)
+# for bins in bins_list:
+#     start_time = time.time()
+#     heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, bins, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+#     print(f'Run time = {time.time()-start_time}')
+#     run_time_bins = np.append(run_time_bins, time.time()-start_time)
     
 # plot_it(5*n_points_list, [run_time_points], [0, 0], 'Number of coincidences', 'Run time (s)', 'Run time vs number of coincidences', individual_points=True)
 # plot_it(n_list, [run_time_n], [0, 0], 'Number of iterations through angle error', 'Run time (s)', 'Run time vs number of iterations through angle error', individual_points=True)
-plot_it(bins_list, [run_time_bins], [0, 0], 'Number of bins', 'Run time (s)', 'Run time vs number of bins', individual_points=True)
+# plot_it(bins_list, [run_time_bins], [0, 0], 'Number of bins', 'Run time (s)', 'Run time vs number of bins', individual_points=True)
 
 # plot_it3([5*n_points_list, n_list, bins_list], [run_time_points, run_time_n, run_time_bins], ['Coincidences', 'Iterations through angle error', 'Bins'],
          # 'Number of variable parameter', 'Run time (s)', 'Run time vs number of variable parameter')
