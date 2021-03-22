@@ -860,17 +860,19 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
 
     return heatmap2, extent, bins, bins2, round(avav[0], 5), round(err[0], 5), round(avav[1], 5), round(err[1], 5), np.amax(heatmap)
 
-def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
+def plot_heatmap(heatmap, extent, bins, n_points, thresh_var,centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
+    # heatmap = heatmap/np.std(heatmap)
+    # print(f'max value is {np.amax(heatmap)}')
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
-    plt.imshow(convolve(heatmap.T, Gaussian2DKernel(x_stddev=0.001, y_stddev=0.001)), extent=extent, origin='lower')
+    heatmap_convolve = convolve(heatmap.T, Gaussian2DKernel(x_stddev=0.5, y_stddev=0.5))
+    heatmap_convolve = heatmap_convolve/np.std(heatmap_convolve)
+    print(f'max value is {np.amax(heatmap_convolve)}')
+    plt.imshow(heatmap_convolve, extent=extent, origin='lower')
     plt.colorbar()
-    plt.title(f'bins, bins2, coincidences = {bins, bins2, n_points} \n centre = {centre}')
-    plt.xlabel('x (cm)', fontsize=16)
-    plt.ylabel('y (cm)', fontsize=16)
+    print(f'centre = {centre}')
     plt.show()
-    # plt.imshow(heatmap.T, extent=extent, origin='lower')
     
 def threshold_maker(heatmap):
     return filters.threshold_otsu(heatmap)
