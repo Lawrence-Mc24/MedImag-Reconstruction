@@ -14,7 +14,8 @@ from astropy.convolution.kernels import Gaussian2DKernel
 from astropy.convolution import convolve
 import time
 from scipy.optimize import curve_fit
-import matplotlib.gridspec as gridspec  
+import matplotlib.gridspec as gridspec
+from skimage import filters
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -32,18 +33,23 @@ e = scipy.constants.e
 # path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
 # path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
 # path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
-path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
-path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
-path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
-path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
-path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
+# path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+# path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
+# path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
+# path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
+# path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
 # path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
-path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
+# path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
 
-GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
-GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
-HAAL_adv_wind = [[8, 0, 8], [0, 0, 0], [-8, 0, 58], [58, 0, 8]]
-HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.74, 0.14, 12.55]]
+path_HGTD_30deg_lab = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Lab Data/HGTD_02_03_TuesFri_30deg_new_energy_cal.csv'
+path_HAAL_30deg_lab = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Lab Data/HAAL_02_03_TuesFri_30deg_new_energy_cal.csv'
+path_HGTD_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HGDT_MC_NEW_withenergydiscrimination.csv'
+path_HAAL_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HAAL_MC_NEW_withenergydiscrimination.csv'
+
+# GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
+# GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
+# HAAL_adv_wind = [[8, 0, 8], [0, 0, 0], [-8, 0, 58], [58, 0, 8]]
+# HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.74, 0.14, 12.55]]
 
 # path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
 # path_HGTD_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/GHDT_MC_0deg_run2_withscatters.csv'
@@ -51,47 +57,47 @@ HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.
 
 
 
-HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
-HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
+# HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
+# HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
 
 # 30 deg set-up
-# David_avg = [-24.46, -0.15, -33.41]
-# Garry_avg = [1.30, -0.08, -4.17]
-# Harry_avg = [-5.30, -0.09, -1.44]
-# Tony_avg = [-16.63, -0.19, -38.20]
-# HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
+David_avg = [-24.42, 0.00, -33.51]
+Garry_avg = [1.32, -0.06, 4.10]
+Harry_avg = [-5.30, 0.03, 1.41]
+Tony_avg = [-16.64, -0.16, 38.03]
+HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
 
-# Aaron_avg = [-8.03, -0.06, -6.80]
-# Alex_avg = [-7.99, -0.40, -41.37]
-# Hannah_avg= [7.36, -0.18, -6.90]
-# Louis_avg = [7.91, -0.74, -41.73]
-# HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
+Aaron_avg = [-7.66, -0.04, -6.43]
+Alex_avg = [-7.63, -0.06, -42.04]
+Hannah_avg= [7.50, -0.06, -6.83]
+Louis_avg = [7.54, 0.13, -41.83]
+HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
 
 #0deg
-hannah_s0 = [7, 0, -7]
-aaron_s1 = [-7, 0,-7]
-alex_a0 = [-7, 0, -40]
-louis_a1 = [7, 0, -40]
-HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
+# hannah_s0 = [7, 0, -7]
+# aaron_s1 = [-7, 0,-7]
+# alex_a0 = [-7, 0, -40]
+# louis_a1 = [7, 0, -40]
+# HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
 
-garry_s0 = [3.5, 0, -3.5]
-harry_s1 = [-3.5, 0, -3.5]
-david_a0 = [-4.5, 0, -38.5]
-tony_a1 = [4.5, 0, -38.5]
-HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
+# garry_s0 = [3.5, 0, -3.5]
+# harry_s1 = [-3.5, 0, -3.5]
+# david_a0 = [-4.5, 0, -38.5]
+# tony_a1 = [4.5, 0, -38.5]
+# HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
 
 #0deg avg
-garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
-harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
-david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
-tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
-HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
+# garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
+# harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
+# david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
+# tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
+# HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
 
-hannah_s0av = [7.136844762, -0.06010336613, -7.709084905]
-aaron_s1av = [-5.358504936, -0.08532627278, -7.643826009]
-alex_a0av = [-6.859290497, -0.1002481564, -42.58231713]
-louis_a1av = [6.879909859, -0.001533590775, -42.57443662]
-HAAL_0av = [hannah_s0av, aaron_s1av, alex_a0av, louis_a1av]
+# hannah_s0av = [7.136844762, -0.06010336613, -7.709084905]
+# aaron_s1av = [-5.358504936, -0.08532627278, -7.643826009]
+# alex_a0av = [-6.859290497, -0.1002481564, -42.58231713]
+# louis_a1av = [6.879909859, -0.001533590775, -42.57443662]
+# HAAL_0av = [hannah_s0av, aaron_s1av, alex_a0av, louis_a1av]
 
 def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     '''
@@ -861,22 +867,13 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
     
 def threshold_maker(heatmap):
-    thresh_init = np.mean(heatmap)
-    print(f'thresh_init is {thresh_init}')
-    foreground = heatmap[heatmap > thresh_init]
-    background = heatmap[heatmap <= thresh_init]
-    thresh_var = (np.mean(background)+np.mean(foreground))/2
-    diff = thresh_init - thresh_var
-    while abs(diff) > 0.1:
-        foreground = heatmap[heatmap > thresh_var]
-        background = heatmap[heatmap <= thresh_var]
-        diff = thresh_var - (np.mean(background)+np.mean(foreground))/2
-        thresh_var = (np.mean(background)+np.mean(foreground))/2
-    return thresh_var
+    return filters.threshold_otsu(heatmap)
+
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.6*np.amax(h)] = 0
+    h[h < threshold_maker(h)] = 0
+    # h[h < 0.6*np.amax(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
