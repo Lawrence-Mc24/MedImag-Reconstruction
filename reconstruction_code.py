@@ -36,8 +36,8 @@ e = scipy.constants.e
 # path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
 # path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
 # path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
-path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
-path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
+# path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
+# path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
 # path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
 # path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
 
@@ -46,10 +46,10 @@ path_HAAL_30deg_lab = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg
 path_HGTD_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HGDT_MC_NEW_withenergydiscrimination.csv'
 path_HAAL_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HAAL_MC_NEW_withenergydiscrimination.csv'
 
-GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
-GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
-HAAL_adv_wind = [[8, 0, 8], [0, 0, 0], [-8, 0, 58], [58, 0, 8]]
-HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.74, 0.14, 12.55]]
+# GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
+# GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
+# HAAL_adv_wind = [[8, 0, 8], [0, 0, 0], [-8, 0, 58], [58, 0, 8]]
+# HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.74, 0.14, 12.55]]
 
 # path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
 # path_HGTD_MC_0deg = 'D:/University/Year 3/Group Studies/Data/Master Data/0deg_Double_Xmas_Tree/Monte Carlo/GHDT_MC_0deg_run2_withscatters.csv'
@@ -853,14 +853,14 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     avav = np.mean(np.array(avs), axis=0)
     err = np.sqrt(np.std(np.array(avs), axis=0)**2 + np.sum(np.array(errs)**2, axis=0))
     # err = np.sqrt(np.sum(np.array(errs)**2, axis=0))
-    plot_heatmap(heatmap_unchopped, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points='no chop',
+    plot_heatmap(heatmap_unchopped, np.array([xedges[0], xedges[-1], yedges[0], yedges[-1]]), bins, y_bins, n_points = 'no chop', 
                  centre=(f'{avav[0]:.3g} \u00B1 {err[0]:.3g}', f'{avav[1]:.3g} \u00B1 {err[1]:.3g}'))
-    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points='chopped',
+    plot_heatmap(heatmap[chop_indices[0]+1:chop_indices[1], chop_indices[2]+1:chop_indices[3]], extent, bins, y_bins, n_points = 'chopped', 
                  centre=(f'{avav[0]:.3g} \u00B1 {err[0]:.3g}', f'{avav[1]:.3g} \u00B1 {err[1]:.3g}'))
 
     return heatmap2, extent, bins, bins2, round(avav[0], 5), round(err[0], 5), round(avav[1], 5), round(err[1], 5), np.amax(heatmap)
 
-def plot_heatmap(heatmap, extent, bins, n_points, thresh_var,centre='(x, y)'):
+def plot_heatmap(heatmap, extent, bins, y_bins, n_points, centre='(x, y)'):
     '''Plot a heatmap using plt.imshow().'''
     plt.clf()
     # heatmap = heatmap/np.std(heatmap)
@@ -1056,7 +1056,7 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     return heatmap_combined, extent_combined, max_pv_combined
 
 
-n_points = 2
+n_points = 1
 # points_HGTD, E_loss_error_HGTD, dataframe_HGTD = extract_points_from_dataframe(path_HGTD, HGTD, n_points)
 # points_HAAL, E_loss_error_HAAL, dataframe_HAAL = extract_points_from_dataframe(path_HAAL, HAAL, n_points)
 # points_HGTD_avg, E_loss_error_HGTD_avg, dataframe_HGTD_avg = extract_points_from_dataframe(path_HGTD, HGTD_avg, n_points)
@@ -1069,9 +1069,9 @@ n_points = 2
 # points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
 # points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind, dataframe_GHTD_adv_wind = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind, n_points)
 
-points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
-points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
-points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
+# points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
+# points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
+# points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
 
 #points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
 #points_HAAL_lab_0deg, E_loss_error_HAAL_lab_0deg, dataframe_HAAL_lab_0deg = extract_points_from_dataframe(path_HAAL_0deg_lab, HAAL_0av, 25)
@@ -1081,6 +1081,8 @@ points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_win
 #points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
 # points_HGTD_30deg_lab, E_loss_error_HGTD_30deg_lab, dataframe_HGTD_30deg_lab = extract_points_from_dataframe(path_HGTD_30deg_lab, HGTD_avg, n_points)
 # points_HAAL_30deg_lab, E_loss_error_HAAL_30deg_lab, dataframe_HAAL_30deg_lab = extract_points_from_dataframe(path_HAAL_30deg_lab, HAAL_avg, n_points)
+points_HGTD_30deg_lab, E_loss_error_HGTD_30deg_lab, dataframe_HGTD_30deg_lab = extract_points_from_dataframe(path_HGTD_30deg_lab, HGTD_avg, n_points)
+points_HAAL_30deg_lab, E_loss_error_HAAL_30deg_lab, dataframe_HAAL_30deg_lab = extract_points_from_dataframe(path_HAAL_30deg_lab, HAAL_avg, n_points)
 
 
 start_time = time.time()
@@ -1110,9 +1112,11 @@ start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind, points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind, E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
-heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
+# heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_MC_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_MC_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent, max_pv_combined = get_image([points_HAAL_30deg_lab], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_30deg_lab]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
+heatmap, extent, max_pv_combined = get_image([points_HGTD_30deg_lab, points_HAAL_30deg_lab], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD_30deg_lab, E_loss_error_HAAL_30deg_lab]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
+
 
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
