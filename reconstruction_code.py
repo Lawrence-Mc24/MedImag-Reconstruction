@@ -15,6 +15,7 @@ from astropy.convolution import convolve
 import time
 from scipy.optimize import curve_fit
 import matplotlib.gridspec as gridspec
+from skimage import filters
 
 h = scipy.constants.h
 m_e = scipy.constants.m_e
@@ -32,13 +33,18 @@ e = scipy.constants.e
 # path_HGTD_MC_exact = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_NEW_withenergydiscrimination.csv'
 # path_HGTD_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HGDT_MC_0deg_xmas.csv'
 # path_HAAL_MC_0deg = 'U:\Physics\Yr 3\MI Group Studies\MC data\HAAL_MC_0deg_xmas.csv'
-path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
-path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
-path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
+# path_HGTD_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_MC_0deg_xmas_run2.csv'
+# path_HAAL_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_0deg_Xmas_LAB.csv'
+# path_HGTD_0deg_lab = r'C:\Users\lawre\Documents\Y3_Compton_Camera\GHDT_0deg_Xmas_LAB.csv'
 path_GHTD_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\GHDT_AdvWind_1203.csv'
 path_HAAL_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\Lab data\HAAL_AdvWind_1203.csv'
 # path_MC_adv_wind = 'U:\Physics\Yr 3\MI Group Studies\MC data\MC_windmill\MC_windmill_combined.csv'
-path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
+# path_HAAL_0degree_MCexact = r'C:\Users\lawre\Documents\Y3_Compton_Camera\HAAL_MC_0deg_run2_withscatters.csv'
+
+path_HGTD_30deg_lab = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Lab Data/HGTD_02_03_TuesFri_30deg_new_energy_cal.csv'
+path_HAAL_30deg_lab = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Lab Data/HAAL_02_03_TuesFri_30deg_new_energy_cal.csv'
+path_HGTD_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HGDT_MC_NEW_withenergydiscrimination.csv'
+path_HAAL_30deg_MC = 'D:/University/Year 3/Group Studies/Data/Master Data/30deg_Double_Xmas_Tree/Monte Carlo/HAAL_MC_NEW_withenergydiscrimination.csv'
 
 GHTD_adv_wind = [[-8, 0, -8], [8, 0, -8], [8, 0, -58], [-58, 0, -8]]
 GHTD_adv_wind_avg = [[-8.81, -0.08, -8.86], [8.83, -0.26, -8.83], [8.01, 0.02, -60.29], [-60.66, 0.46, -8.38]]
@@ -51,47 +57,47 @@ HAAL_adv_wind_avg = [[8.43, -0.11, 8.57], [0, 0, 0], [-4.06, -0.17, 56.27], [56.
 
 
 
-HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
-HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
+# HGTD = [[-3.5, 0, -3.5], [3.5, 0, -3.5], [4.5, 0, -38.5], [-4.5, 0, -38.5]]
+# HAAL = [[7, 0, -7], [-7, 0, -7], [-7, 0, -40], [7, 0, -40]]
 
 # 30 deg set-up
-# David_avg = [-24.46, -0.15, -33.41]
-# Garry_avg = [1.30, -0.08, -4.17]
-# Harry_avg = [-5.30, -0.09, -1.44]
-# Tony_avg = [-16.63, -0.19, -38.20]
-# HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
+David_avg = [-24.42, 0.00, -33.51]
+Garry_avg = [1.32, -0.06, 4.10]
+Harry_avg = [-5.30, 0.03, 1.41]
+Tony_avg = [-16.64, -0.16, 38.03]
+HGTD_avg = [Garry_avg, Harry_avg, David_avg, Tony_avg]
 
-# Aaron_avg = [-8.03, -0.06, -6.80]
-# Alex_avg = [-7.99, -0.40, -41.37]
-# Hannah_avg= [7.36, -0.18, -6.90]
-# Louis_avg = [7.91, -0.74, -41.73]
-# HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
+Aaron_avg = [-7.66, -0.04, -6.43]
+Alex_avg = [-7.63, -0.06, -42.04]
+Hannah_avg= [7.50, -0.06, -6.83]
+Louis_avg = [7.54, 0.13, -41.83]
+HAAL_avg = [Hannah_avg, Aaron_avg, Alex_avg, Louis_avg]
 
 #0deg
-hannah_s0 = [7, 0, -7]
-aaron_s1 = [-7, 0,-7]
-alex_a0 = [-7, 0, -40]
-louis_a1 = [7, 0, -40]
-HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
+# hannah_s0 = [7, 0, -7]
+# aaron_s1 = [-7, 0,-7]
+# alex_a0 = [-7, 0, -40]
+# louis_a1 = [7, 0, -40]
+# HAAL_0 = [hannah_s0, aaron_s1, alex_a0, louis_a1]
 
-garry_s0 = [3.5, 0, -3.5]
-harry_s1 = [-3.5, 0, -3.5]
-david_a0 = [-4.5, 0, -38.5]
-tony_a1 = [4.5, 0, -38.5]
-HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
+# garry_s0 = [3.5, 0, -3.5]
+# harry_s1 = [-3.5, 0, -3.5]
+# david_a0 = [-4.5, 0, -38.5]
+# tony_a1 = [4.5, 0, -38.5]
+# HGTD_0 = [garry_s0, harry_s1, david_a0, tony_a1]
 
 #0deg avg
-garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
-harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
-david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
-tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
-HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
+# garry_s0av = [3.903283406, -0.08243861174, -3.962042813]
+# harry_s1av = [-3.893215894, -0.03190995697, -3.966048599]
+# david_a0av = [-4.494120416, 0.01496647702, -41.22487467]
+# tony_a1av = [4.505124158, -0.09677833706, -41.43871005]
+# HGTD_0av = [garry_s0av, harry_s1av, david_a0av, tony_a1av]
 
-hannah_s0av = [7.136844762, -0.06010336613, -7.709084905]
-aaron_s1av = [-5.358504936, -0.08532627278, -7.643826009]
-alex_a0av = [-6.859290497, -0.1002481564, -42.58231713]
-louis_a1av = [6.879909859, -0.001533590775, -42.57443662]
-HAAL_0av = [hannah_s0av, aaron_s1av, alex_a0av, louis_a1av]
+# hannah_s0av = [7.136844762, -0.06010336613, -7.709084905]
+# aaron_s1av = [-5.358504936, -0.08532627278, -7.643826009]
+# alex_a0av = [-6.859290497, -0.1002481564, -42.58231713]
+# louis_a1av = [6.879909859, -0.001533590775, -42.57443662]
+# HAAL_0av = [hannah_s0av, aaron_s1av, alex_a0av, louis_a1av]
 
 def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
     '''
@@ -208,7 +214,7 @@ def extract_points_from_dataframe(path, detector_coordinates, n_points=10):
             pass
         else:
             start_indices.append(start11)
-        print(f'start_indices = {start_indices}')
+        # print(f'start_indices = {start_indices}')
         if len(start_indices) == 4:
             points = np.concatenate((points[start_indices[0]:start_indices[0]+n_points], points[start_indices[1]:start_indices[1]+n_points], points[start_indices[2]:start_indices[2]+n_points], points[start_indices[3]:start_indices[3]+n_points]))
             E_loss_error = np.concatenate((E_loss_error[start_indices[0]:start_indices[0]+n_points], E_loss_error[start_indices[1]:start_indices[1]+n_points], E_loss_error[start_indices[2]:start_indices[2]+n_points], E_loss_error[start_indices[3]:start_indices[3]+n_points]))
@@ -316,13 +322,13 @@ def phi_angle(z):
 
     '''
     if z[0] == 0 and z[1] == 0:
-        print(f'phi = 0')
+        # print(f'phi = 0')
         return 0
     
     phi = np.arccos(z[0]/np.sqrt(z[0]**2 + z[1]**2))
     if z[1]<0:
         phi = 2*np.pi - phi
-    print(f'phi is {phi}')    
+    # print(f'phi is {phi}')    
     return phi
 
 def dz(theta, phi, psi, z_prime, a):
@@ -361,8 +367,8 @@ def psi_calculator(ds, theta, phi, z_prime, a, n, alpha):
 
 def x_prime_y_prime_output(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds=0):
     a = np.tan(alpha)
-    print(f'a value = {a}')
-    print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
+    # print(f'a value = {a}')
+    # print(f'value is {(theta+np.arctan(a))*(180/np.pi)}')
     if alpha + theta > np.pi/2-0.01:
         return x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, ROI, ds)
     x_prime_vals = np.array([])
@@ -412,9 +418,9 @@ def x_prime_y_prime_parabola(z_prime, theta, phi, alpha, steps, r1, estimate, RO
         if counter > 5000:
             if psi == 0 or psi == np.pi or psi == 2*np.pi:
                 print(f'psi = {psi}')
-                print(f'iteration = {iteration}')
-                print(f'anticlockwise = {anticlockwise}')
-                print(f'z= {z}')
+                # print(f'iteration = {iteration}')
+                # print(f'anticlockwise = {anticlockwise}')
+                # print(f'z= {z}')
         if z<0:
             iteration = 'second'
             psi+=np.pi
@@ -672,26 +678,26 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     h_, xedges_, yedges_ = np.histogram2d(xtot, ytot, bins)
     pixel_size_x = abs(xedges_[0] - xedges_[1])
     pixel_size_y = abs(yedges_[0] - yedges_[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     extend_x = 2*dilate_erode_iterations*pixel_size_x #might need to replace 5* with less, eg 2
     extend_y = 2*dilate_erode_iterations*pixel_size_y
     y_bins = int(round((pixel_size_y/pixel_size_x)*bins))
-    print(f'y_bins = {y_bins}')
-    print(f'type(y_bins) = {type(y_bins)}')
+    # print(f'y_bins = {y_bins}')
+    # print(f'type(y_bins) = {type(y_bins)}')
     h, xedges, yedges = np.histogram2d(xtot, ytot, [bins, y_bins], range=[[xedges_[0]- extend_x, xedges_[-1] + extend_x], [yedges_[0] - extend_y, yedges_[-1] + extend_y]])
     
     pixel_size_x = abs(xedges[0] - xedges[1])
     pixel_size_y = abs(yedges[0] - yedges[1])
-    print(f'pixel_size_x = {pixel_size_x}')
-    print(f'pixel_size_y = {pixel_size_y}')
+    # print(f'pixel_size_x = {pixel_size_x}')
+    # print(f'pixel_size_y = {pixel_size_y}')
     # np.where(xtot<extent[0], 0, xtot)
     # np.where(xtot>extent[1], 0, xtot)
     # np.where(ytot<extent[2], 0, ytot)
     # np.where(ytot>extent[3], 0, ytot)
 
     heatmaps = []
-    print(f'len(x) = {len(x)}')
+    # print(f'len(x) = {len(x)}')
     for i in range(len(x)):
         hist = np.histogram2d(x[i], y[i], np.array([xedges, yedges]))[0]
         hist[hist != 0] = 1
@@ -703,16 +709,16 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
     heatmap_unchopped = heatmap.copy()
     
     chop_indices, ind = image_slicer(heatmap, ZoomOut)
-    print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
-    print(f'chop_indices = {chop_indices}')
-    print(chop_indices[0])
+    # print(f'[xedges[ind[0]], yedges[ind[1]]] = {[xedges[ind[0]], yedges[ind[1]]]}')
+    # print(f'chop_indices = {chop_indices}')
+    # print(chop_indices[0])
     # x_chop = xedges[chop_indices[0]+1:chop_indices[1]]
     # y_chop = yedges[chop_indices[2]+1:chop_indices[3]]
     
     x_chop = xedges[chop_indices[0]+1], xedges[chop_indices[1]]
     y_chop = yedges[chop_indices[2]+1], yedges[chop_indices[3]]
     bins2 = 50
-    print(f'y_bins = {y_bins}', f', x_bins = {bins}')
+    # print(f'y_bins = {y_bins}', f', x_bins = {bins}')
     
     extent = np.array([x_chop[0], x_chop[-1], y_chop[0], y_chop[-1]])
     
@@ -742,17 +748,17 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         
         row_strip_heat = heatmap2[ind2[0]]
         
-        print(f'fml {indices[0]}')
+        # print(f'fml {indices[0]}')
         #print(len(row_strip_heat))
         y_strip_position = yedge2[:-1] + ypixel2/2
         #print(len(x_strip_position))
         #print(f'shape is {np.shape(xs)}')
         col_strip_heat = heatmap2.T[ind2[1]]
         x_strip_position = xedge2[:-1] + xpixel2/2
-        print(f'xedge2 has length = {len(xedge2)}')
-        print(f'yedge2 has length = {len(yedge2)}')
-        print(f'x_strip_heat length = {len(row_strip_heat)}')
-        print(f'y_strip_heat length = {len(col_strip_heat)}')
+        # print(f'xedge2 has length = {len(xedge2)}')
+        # print(f'yedge2 has length = {len(yedge2)}')
+        # print(f'x_strip_heat length = {len(row_strip_heat)}')
+        # print(f'y_strip_heat length = {len(col_strip_heat)}')
         
         #xs = np.array([x_strip_position, row_strip_heat])
         #ys = np.array([y_strip_position, col_strip_heat])
@@ -772,7 +778,7 @@ def calculate_heatmap(x, y, bins=50, dilate_erode_iterations=2, ZoomOut=0):
         half_xmax = 0.5*np.max(gaussian(x_strip_position, *poptx))
         half_ymax = 0.5*np.max(gaussian(y_strip_position, *popty))
         
-        print(f'halves: {(half_xmax, half_ymax)}')
+        # print(f'halves: {(half_xmax, half_ymax)}')
         
         def funcx(x):
             return gaussian(x, *poptx) - half_xmax
@@ -867,22 +873,12 @@ def plot_heatmap(heatmap, extent, bins, bins2, n_points, centre='(x, y)'):
     # plt.imshow(heatmap.T, extent=extent, origin='lower')
     
 def threshold_maker(heatmap):
-    thresh_init = np.mean(heatmap)
-    print(f'thresh_init is {thresh_init}')
-    foreground = heatmap[heatmap > thresh_init]
-    background = heatmap[heatmap <= thresh_init]
-    thresh_var = (np.mean(background)+np.mean(foreground))/2
-    diff = thresh_init - thresh_var
-    while abs(diff) > 0.1:
-        foreground = heatmap[heatmap > thresh_var]
-        background = heatmap[heatmap <= thresh_var]
-        diff = thresh_var - (np.mean(background)+np.mean(foreground))/2
-        thresh_var = (np.mean(background)+np.mean(foreground))/2
-    return thresh_var
+    return filters.threshold_otsu(heatmap)
+
 
 def image_slicer(h, ZoomOut=0):
     ind = np.unravel_index(np.argmax(h, axis=None), h.shape)
-    h[h < 0.6*np.amax(h)] = 0
+    h[h < threshold_maker(h)] = 0
     chop_indices = np.arange(4)
     for i in range(np.shape(h)[0]):
         if np.sum(h[ind[0]-i]) == 0:
@@ -1021,7 +1017,7 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     
     #assume side 1 is the side you're 'looking' from in the final image. 
     #assume rotation around y-axis to view side 2 projections from side 1 persepective -> x coords of side 2 are flipped    
-    print(f'elngth_x_list = {x_list1}')
+    # print(f'length_x_list = {x_list1}')
     if len(sides)>1:
         x_list_tot = np.concatenate([x_list1, x_list2])
         y_list_tot = np.concatenate([y_list1, y_list2])
@@ -1058,7 +1054,7 @@ def get_image(sides, n, n_points, image_plane, source_energy, bins, E_loss_error
     return heatmap_combined, extent_combined, max_pv_combined
 
 
-n_points = 100
+n_points = 2
 # points_HGTD, E_loss_error_HGTD, dataframe_HGTD = extract_points_from_dataframe(path_HGTD, HGTD, n_points)
 # points_HAAL, E_loss_error_HAAL, dataframe_HAAL = extract_points_from_dataframe(path_HAAL, HAAL, n_points)
 # points_HGTD_avg, E_loss_error_HGTD_avg, dataframe_HGTD_avg = extract_points_from_dataframe(path_HGTD, HGTD_avg, n_points)
@@ -1070,20 +1066,22 @@ n_points = 100
 # points_HGTD_MC_0deg, E_loss_error_HGTD_MC_0deg, dataframe_HGTD_MC_0deg = extract_points_from_dataframe(path_HGTD_MC_0deg, False, 'all')
 # points_HAAL_MC_0deg, E_loss_error_HAAL_MC_0deg, dataframe_HAAL_MC_0deg = extract_points_from_dataframe(path_HAAL_MC_0deg, False, 'all')
 # points_GHTD_adv_wind, E_loss_error_GHTD_adv_wind, dataframe_GHTD_adv_wind = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind, n_points)
+
 points_HAAL_adv_wind, E_loss_error_HAAL_adv_wind, dataframe_HAAL_adv_wind = extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind, n_points)
 points_GHTD_adv_wind_avg, E_loss_error_GHTD_adv_wind_avg, dataframe_GHTD_adv_wind_avg = extract_points_from_dataframe(path_GHTD_adv_wind, GHTD_adv_wind_avg, n_points)
 points_HAAL_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg, dataframe_HAAL_adv_wind_avg= extract_points_from_dataframe(path_HAAL_adv_wind, HAAL_adv_wind_avg, n_points)
+
 #points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all') 
 #points_HAAL_lab_0deg, E_loss_error_HAAL_lab_0deg, dataframe_HAAL_lab_0deg = extract_points_from_dataframe(path_HAAL_0deg_lab, HAAL_0av, 25)
 # points_HGTD_lab_0deg, E_loss_error_HGTD_lab_0deg, dataframe_HGTD_lab_0deg = extract_points_from_dataframe(path_HGTD_0deg_lab, HGTD_0av, 25)
 # points_HGTD_MC_0deg2, E_loss_error_HGTD_MC_0deg2, dataframe_HGTD_MC_0deg2 = extract_points_from_dataframe(path_HGTD_0degree_MCexact, False, 'all')
 # points_HAAL_MC_0deg2, E_loss_error_HAAL_MC_0deg2, dataframe_HAAL_MC_0deg2 = extract_points_from_dataframe(path_HAAL_0degree_MCexact, False, 'all')  
-
 #points_MC_adv_wind, E_loss_error_MC_adv_wind, dataframe_MC_adv_wind = extract_points_from_dataframe(path_MC_adv_wind, False, 'all')
+# points_HGTD_30deg_lab, E_loss_error_HGTD_30deg_lab, dataframe_HGTD_30deg_lab = extract_points_from_dataframe(path_HGTD_30deg_lab, HGTD_avg, n_points)
+# points_HAAL_30deg_lab, E_loss_error_HAAL_30deg_lab, dataframe_HAAL_30deg_lab = extract_points_from_dataframe(path_HAAL_30deg_lab, HAAL_avg, n_points)
 
 
-
-start_time0 = time.time()
+start_time = time.time()
 # heatmap, extent, max_pv = get_image([points_HGTD, points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD, E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent = get_image([points_HAAL], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
 # heatmap, extent = get_image([points_HGTD], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HGTD]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
@@ -1112,6 +1110,7 @@ start_time0 = time.time()
 # heatmap, extent, max_pv = get_image([points_GHTD_adv_wind, points_HAAL_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind, E_loss_error_HAAL_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 heatmap, extent, max_pv = get_image([points_GHTD_adv_wind_avg, points_HAAL_adv_wind_avg], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_GHTD_adv_wind_avg, E_loss_error_HAAL_adv_wind_avg]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0)
 # heatmap, extent, max_pv = get_image([points_MC_adv_wind], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_MC_adv_wind]), ROI=[-25, 25, -25, 25], steps=[50], ZoomOut=0)
+# heatmap, extent, max_pv_combined = get_image([points_HAAL_30deg_lab], 10, n_points, 0, 662E3, 100, E_loss_errors = np.array([E_loss_error_HAAL_30deg_lab]), ROI=[-25, 25, -25, 25], steps=[50, 50], ZoomOut=0, plot_individuals=True)
 
 def func(x, a, b, c):
     #return a*np.exp((-(x-b)**2)/(2*c**2))
@@ -1182,4 +1181,4 @@ def z_slice_selector(z_min, z_max, z_slices, data, errors):
 # plot_it3([5*n_points_list, n_list, bins_list], [run_time_points, run_time_n, run_time_bins], ['Coincidences', 'Iterations through angle error', 'Bins'],
          # 'Number of variable parameter', 'Run time (s)', 'Run time vs number of variable parameter')
 
-print(f'Total run time = {time.time()-start_time0}')
+print(f'Total run time = {time.time()-start_time}')
